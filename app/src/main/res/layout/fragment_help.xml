@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.help.HelpFragment">
+
+    <Button
+        android:id="@+id/button_compat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_compat"
+        app:layout_constraintTop_toBottomOf="@id/guideline_h1"
+        app:layout_constraintStart_toEndOf="@id/guideline_v1"/>
+
+    <Button
+        android:id="@+id/button_nexus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_nexus"
+        app:layout_constraintTop_toBottomOf="@id/guideline_h1"
+        app:layout_constraintStart_toEndOf="@id/button_compat" />
+
+    <Button
+        android:id="@+id/button_logs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_logs"
+        app:layout_constraintTop_toBottomOf="@id/guideline_h1"
+        app:layout_constraintStart_toEndOf="@id/button_nexus" />
+
+    <Button
+        android:id="@+id/button_release"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_release"
+        app:layout_constraintTop_toBottomOf="@id/guideline_h1"
+        app:layout_constraintStart_toEndOf="@id/button_logs" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_h1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="20dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_v1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="20dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

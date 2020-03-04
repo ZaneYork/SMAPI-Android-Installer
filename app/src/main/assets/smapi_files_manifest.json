@@ -1,0 +1,172 @@
+[
+  {
+    "targetPath": "smapi-internal/0Harmony.dll",
+    "assetPath": "smapi/0Harmony.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/config.json",
+    "assetPath": "smapi/config.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/metadata.json",
+    "assetPath": "smapi/metadata.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/Mono.Cecil.dll",
+    "assetPath": "smapi/Mono.Cecil.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/MonoGame.Framework.dll",
+    "assetPath": "assemblies/MonoGame.Framework.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/MonoMod.RuntimeDetour.dll",
+    "assetPath": "smapi/MonoMod.RuntimeDetour.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/MonoMod.Utils.dll",
+    "assetPath": "smapi/MonoMod.Utils.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/mscorlib.dll",
+    "assetPath": "assemblies/mscorlib.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/Newtonsoft.Json.dll",
+    "assetPath": "apk/Newtonsoft.Json.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/SMAPI.Toolkit.CoreInterfaces.dll",
+    "assetPath": "apk/SMAPI.Toolkit.CoreInterfaces.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/SMAPI.Toolkit.dll",
+    "assetPath": "apk/SMAPI.Toolkit.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/StardewModdingAPI.dll",
+    "assetPath": "apk/StardewModdingAPI.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/StardewValley.dll",
+    "assetPath": "assemblies/StardewValley.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/StardewValley.GameData.dll",
+    "assetPath": "assemblies/StardewValley.GameData.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/System.Core.dll",
+    "assetPath": "assemblies/System.Core.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/System.Data.dll",
+    "assetPath": "apk/System.Data.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/System.dll",
+    "assetPath": "assemblies/System.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/System.Net.Http.dll",
+    "assetPath": "assemblies/System.Net.Http.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/System.Numerics.dll",
+    "assetPath": "apk/System.Numerics.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/System.Runtime.Serialization.dll",
+    "assetPath": "assemblies/System.Runtime.Serialization.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/System.ServiceModel.Internals.dll",
+    "assetPath": "assemblies/System.ServiceModel.Internals.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/System.Xml.dll",
+    "assetPath": "assemblies/System.Xml.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/System.Xml.Linq.dll",
+    "assetPath": "smapi/System.Xml.Linq.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/TMXTile.dll",
+    "assetPath": "smapi/TMXTile.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/xTile.dll",
+    "assetPath": "assemblies/xTile.dll",
+    "origin": 1
+  },
+  {
+    "targetPath": "smapi-internal/i18n/de.json",
+    "assetPath": "smapi/i18n/de.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/default.json",
+    "assetPath": "smapi/i18n/default.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/es.json",
+    "assetPath": "smapi/i18n/es.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/fr.json",
+    "assetPath": "smapi/i18n/fr.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/ja.json",
+    "assetPath": "smapi/i18n/ja.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/pt.json",
+    "assetPath": "smapi/i18n/pt.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/ru.json",
+    "assetPath": "smapi/i18n/ru.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/tr.json",
+    "assetPath": "smapi/i18n/tr.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/zh.json",
+    "assetPath": "smapi/i18n/zh.json",
+    "origin": 0
+  }
+]

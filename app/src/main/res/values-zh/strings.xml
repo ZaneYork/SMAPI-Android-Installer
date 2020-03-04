@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">SMAPI安装器</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">SMAPI安装器</string>
+    <string name="nav_header_subtitle">ZaneYork@qq.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">设置</string>
+
+    <string name="menu_install">安装</string>
+    <string name="menu_config">配置</string>
+    <string name="menu_config_edit">编辑</string>
+    <string name="menu_help">帮助</string>
+
+    <string name="button_install">安装</string>
+    <string name="extracting_package">正在抽取安装包</string>
+    <string name="patching_package">正在安装SMAPI补丁</string>
+    <string name="signing_package">正在签名安装包</string>
+    <string name="installing_package">正在安装</string>
+    <string name="install_progress_title">安装进度</string>
+    <string name="ok">OK</string>
+    <string name="error_game_not_found">无法找到游戏本体，你是否安装了星露谷物语？</string>
+    <string name="error">错误</string>
+    <string name="failed_to_sign_game">无法签名安装包，请联系开发者获取帮助</string>
+    <string name="failed_to_patch_game">无法修改安装包，请联系开发者获取帮助</string>
+    <string name="unpacking_smapi_files">正在解包</string>
+    <string name="failed_to_unpack_smapi_files">无法解包SMAPI环境</string>
+    <string name="confirm">确认</string>
+    <string name="cancel">取消</string>
+    <string name="confirm_delete_mod">确定删除该MOD?</string>
+    <string name="text_install_tip1">注意：需要1.4.5.142版本的游戏本体</string>
+    <string name="text_install_tip2">更新或安装期间需要安装游戏本体</string>
+    <string name="duplicate_mod_found">发现该MOD存在多份拷贝，请从以下位置删除重复MOD：%s</string>
+    <string name="error_smapi_not_installed">SMAPI尚未安装，请先点击安装按钮</string>
+    <string name="error_failed_to_repair">无法修复SMAPI环境</string>
+    <string name="save">保存</string>
+    <string name="button_compat">兼容性</string>
+    <string name="button_nexus">N网</string>
+    <string name="button_release">官网</string>
+    <string name="test_message">暂处于内测阶段, Q群：860453392</string>
+    <string name="button_logs">日志</string>
+    <string name="smapi_game_name">SMAPI星露谷物语</string>
+</resources>

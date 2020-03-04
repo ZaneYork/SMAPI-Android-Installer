@@ -1,0 +1,62 @@
+[
+  {
+    "targetPath": "classes.dex",
+    "assetPath": "apk/classes.dex",
+    "compression": 8
+  },
+  {
+    "targetPath": "res/mipmap-mdpi-v4/ic_launcher_foreground.png",
+    "assetPath": "apk/ic_launcher_foreground.png",
+    "compression": 8
+  },
+  {
+    "targetPath": "res/mipmap-hdpi-v4/ic_launcher_foreground.png",
+    "assetPath": "apk/ic_launcher_foreground.png",
+    "compression": 8
+  },
+  {
+    "targetPath": "res/mipmap-xhdpi-v4/ic_launcher_foreground.png",
+    "assetPath": "apk/ic_launcher_foreground.png",
+    "compression": 8
+  },
+  {
+    "targetPath": "res/mipmap-xxhdpi-v4/ic_launcher_foreground.png",
+    "assetPath": "apk/ic_launcher_foreground.png",
+    "compression": 8
+  },
+  {
+    "targetPath": "res/mipmap-xxxhdpi-v4/ic_launcher_foreground.png",
+    "assetPath": "apk/ic_launcher_foreground.png",
+    "compression": 8
+  },
+  {
+    "targetPath": "assemblies/Newtonsoft.Json.dll",
+    "assetPath": "apk/Newtonsoft.Json.dll",
+    "compression": 0
+  },
+  {
+    "targetPath": "assemblies/SMAPI.Toolkit.CoreInterfaces.dll",
+    "assetPath": "apk/SMAPI.Toolkit.CoreInterfaces.dll",
+    "compression": 0
+  },
+  {
+    "targetPath": "assemblies/SMAPI.Toolkit.dll",
+    "assetPath": "apk/SMAPI.Toolkit.dll",
+    "compression": 0
+  },
+  {
+    "targetPath": "assemblies/StardewModdingAPI.dll",
+    "assetPath": "apk/StardewModdingAPI.dll",
+    "compression": 0
+  },
+  {
+    "targetPath": "assemblies/System.Data.dll",
+    "assetPath": "apk/System.Data.dll",
+    "compression": 0
+  },
+  {
+    "targetPath": "assemblies/System.Numerics.dll",
+    "assetPath": "apk/System.Numerics.dll",
+    "compression": 0
+  }
+]

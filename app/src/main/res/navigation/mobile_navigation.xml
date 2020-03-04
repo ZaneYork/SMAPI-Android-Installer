@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_install">
+
+    <fragment
+        android:id="@+id/nav_install"
+        android:name="com.zane.smapiinstaller.ui.install.InstallFragment"
+        android:label="@string/menu_install"
+        tools:layout="@layout/fragment_install">
+    </fragment>
+    <fragment
+        android:id="@+id/config_edit_fragment"
+        android:name="com.zane.smapiinstaller.ui.config.ConfigEditFragment"
+        android:label="@string/menu_config_edit" />
+    <fragment
+        android:id="@+id/nav_config"
+        android:name="com.zane.smapiinstaller.ui.config.ConfigFragment"
+        android:label="@string/menu_config"
+        tools:layout="@layout/fragment_config">
+        <action
+            android:id="@+id/action_nav_config_to_config_edit_fragment"
+            app:destination="@id/config_edit_fragment">
+            <argument android:name="configPath" app:argType="string"/>
+            <argument android:name="editable" android:defaultValue="true" app:argType="boolean"/>
+        </action>
+    </fragment>
+    <fragment
+        android:id="@+id/nav_help"
+        android:name="com.zane.smapiinstaller.ui.help.HelpFragment"
+        android:label="@string/menu_help"
+        tools:layout="@layout/fragment_help">
+        <action
+            android:id="@+id/action_nav_help_to_config_edit_fragment"
+            app:destination="@id/config_edit_fragment" >
+            <argument android:name="configPath" app:argType="string"/>
+            <argument android:name="editable" android:defaultValue="true" app:argType="boolean"/>
+        </action>
+    </fragment>
+</navigation>

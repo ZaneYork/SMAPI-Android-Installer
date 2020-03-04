@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">SMAPI Installer</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">SMAPI Installer</string>
+    <string name="nav_header_subtitle">ZaneYork@qq.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_install">Install</string>
+    <string name="menu_config">Config</string>
+    <string name="menu_config_edit">Edit</string>
+    <string name="menu_help">Help</string>
+
+    <string name="button_install">Install</string>
+    <string name="extracting_package">Extracting Install Package</string>
+    <string name="patching_package">Patching SMAPI</string>
+    <string name="signing_package">Signing</string>
+    <string name="installing_package">Installing</string>
+    <string name="install_progress_title">Install Progress</string>
+    <string name="ok">OK</string>
+    <string name="error_game_not_found">Can\'t find the Stardew Valley\'s apk, did you install it?</string>
+    <string name="error">Error</string>
+    <string name="failed_to_sign_game">Failed to sign the game, please ask developer for help</string>
+    <string name="failed_to_patch_game">Failed to patch the game, please ask developer for help</string>
+    <string name="unpacking_smapi_files">Unpacking</string>
+    <string name="failed_to_unpack_smapi_files">Failed to unpack smapi files</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm_delete_mod">Are you sure to delete it?</string>
+    <string name="text_install_tip1">Notes: Game version 1.4.5.142 is required.</string>
+    <string name="text_install_tip2">The base game is required when updating/installing.</string>
+    <string name="duplicate_mod_found">Found duplicate copy of mod, please delete duplicate of them: %s</string>
+    <string name="error_smapi_not_installed">SMAPI has not installed yet, press install first</string>
+    <string name="error_failed_to_repair">Failed to repair SMAPI environment</string>
+    <string name="save">Save</string>
+    <string name="button_compat">Compat</string>
+    <string name="button_nexus">Nexus</string>
+    <string name="button_release">Release</string>
+    <string name="test_message">Still at test stage now, not release yet.</string>
+    <string name="button_logs">Logs</string>
+    <string name="smapi_game_name">SMAPI Stardew Valley</string>
+</resources>
