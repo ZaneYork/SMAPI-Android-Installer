@@ -1,20 +1,17 @@
 package com.zane.smapiinstaller.ui.config;
 
-import android.content.Context;
 import android.view.View;
 
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class ConfigViewModel extends ViewModel {
+class ConfigViewModel extends ViewModel {
 
     private MutableLiveData<List<ModManifestEntry>> modList;
 

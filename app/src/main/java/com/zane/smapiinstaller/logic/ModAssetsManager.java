@@ -26,9 +26,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ModAssetsManager {
 
-    private View root;
+    private final View root;
 
-    private static String TAG = "MANAGER";
+    private static final String TAG = "MANAGER";
 
     public ModAssetsManager(View root) {
         this.root = root;

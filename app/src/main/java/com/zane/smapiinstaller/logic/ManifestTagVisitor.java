@@ -1,13 +1,12 @@
 package com.zane.smapiinstaller.logic;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
 import pxb.android.axml.NodeVisitor;
 
-public class ManifestTagVisitor extends NodeVisitor {
+class ManifestTagVisitor extends NodeVisitor {
 
-    private Predicate<AttrArgs> attrProcessLogic;
+    private final Predicate<AttrArgs> attrProcessLogic;
 
     public ManifestTagVisitor(NodeVisitor nv, Predicate<AttrArgs> attrProcessLogic) {
         super(nv);
@@ -33,7 +32,7 @@ public class ManifestTagVisitor extends NodeVisitor {
         int type;
         Object obj;
 
-        public AttrArgs(String ns, String name, int resourceId, int type, Object obj) {
+        AttrArgs(String ns, String name, int resourceId, int type, Object obj) {
             this.ns = ns;
             this.name = name;
             this.resourceId = resourceId;

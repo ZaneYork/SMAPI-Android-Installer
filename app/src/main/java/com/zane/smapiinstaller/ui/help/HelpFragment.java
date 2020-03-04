@@ -5,20 +5,18 @@ import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.ui.config.ConfigFragmentDirections;
 
 import java.io.File;
 
@@ -38,12 +36,10 @@ public class HelpFragment extends Fragment {
     }
     @OnClick(R.id.button_release) void release() {
         CommonLogic.showConfirmDialog(this.getView(), R.string.confirm, R.string.test_message, (dialog, which)-> {
-            switch (which) {
-                case POSITIVE:
-                    if(this.getString(R.string.test_message).contains("860453392")) {
-                        CommonLogic.openUrl(this.getContext(), "mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26k%3D" + "AAflCLHiWw1haM1obu_f-CpGsETxXc6b");
-                    }
-                    break;
+            if (which == DialogAction.POSITIVE) {
+                if (this.getString(R.string.test_message).contains("860453392")) {
+                    CommonLogic.openUrl(this.getContext(), "mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26k%3D" + "AAflCLHiWw1haM1obu_f-CpGsETxXc6b");
+                }
             }
         });
     }

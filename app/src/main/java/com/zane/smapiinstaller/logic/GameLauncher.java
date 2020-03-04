@@ -11,7 +11,7 @@ import com.zane.smapiinstaller.constant.Constants;
 
 public class GameLauncher {
 
-    private View root;
+    private final View root;
 
     public GameLauncher(View root) {
         this.root = root;

@@ -1,13 +1,12 @@
 package com.zane.smapiinstaller.ui.config;
 
-import android.app.Activity;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.CommonLogic;
@@ -51,7 +50,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
 
     static class ViewHolder extends RecyclerView.ViewHolder{
         private String modPath;
-        public void setModPath(String modPath) {
+        void setModPath(String modPath) {
             this.modPath = modPath;
             File file = new File(modPath, "config.json");
             if(!file.exists()) {
@@ -73,13 +72,11 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         }
         @OnClick(R.id.button_remove_mod) void removeMod() {
             CommonLogic.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_mod, (dialog, which)->{
-                switch (which){
-                    case POSITIVE:
-                        File file = new File(modPath);
-                        if(file.exists()) {
-                            file.delete();
-                        }
-                        break;
+                if (which == DialogAction.POSITIVE) {
+                    File file = new File(modPath);
+                    if (file.exists()) {
+                        file.delete();
+                    }
                 }
             });
         }

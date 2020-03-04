@@ -44,9 +44,9 @@ public class ApkPatcher {
 
     private static final String PASSWORD = "android";
 
-    private Context context;
+    private final Context context;
 
-    private static String TAG = "PATCHER";
+    private static final String TAG = "PATCHER";
 
     public ApkPatcher(Context context) {
         this.context = context;

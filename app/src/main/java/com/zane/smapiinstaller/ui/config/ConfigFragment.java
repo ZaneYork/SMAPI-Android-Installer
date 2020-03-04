@@ -4,11 +4,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,10 +14,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.entity.ModManifestEntry;
-import com.zane.smapiinstaller.logic.ModAssetsManager;
-
-import java.util.List;
 
 public class ConfigFragment extends Fragment {
 

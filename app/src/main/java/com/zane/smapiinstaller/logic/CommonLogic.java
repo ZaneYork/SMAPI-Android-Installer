@@ -10,11 +10,9 @@ import android.util.Log;
 import android.view.View;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.zane.smapiinstaller.R;
@@ -24,7 +22,6 @@ import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,26 +106,20 @@ public class CommonLogic {
     public static void showAlertDialog(View view, int title, String message) {
         Activity activity = getActivityFromView(view);
         if(activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()->{
-                new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show();
-            });
+            activity.runOnUiThread(()-> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
         }
     }
     public static void showAlertDialog(View view, int title, int message) {
         Activity activity = getActivityFromView(view);
         if(activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()->{
-                new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show();
-            });
+            activity.runOnUiThread(()-> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
         }
     }
 
     public static void showConfirmDialog(View view, int title, int message, MaterialDialog.SingleButtonCallback callback) {
         Activity activity = getActivityFromView(view);
         if(activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()->{
-                new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show();
-            });
+            activity.runOnUiThread(()-> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
         }
     }
 
