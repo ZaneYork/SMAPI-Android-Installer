@@ -7,11 +7,16 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
+import com.google.common.collect.Iterables;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.CommonLogic;
 
+import org.apache.commons.lang3.StringUtils;
+import org.zeroturnaround.zip.commons.FileUtils;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -23,21 +28,22 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.ViewHolder> {
-    private List<ModManifestEntry> modList;
+    private ConfigViewModel model;
 
-    public ModManifestAdapter(List<ModManifestEntry> modList){
-        this.modList=modList;
+    public ModManifestAdapter(ConfigViewModel model){
+        this.model=model;
     }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.mod_list_item,null);
+        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.mod_list_item,parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ModManifestEntry mod = modList.get(position);
+        ModManifestEntry mod = model.getModList().get(position);
         holder.modName.setText(mod.getName());
         holder.modDescription.setText(mod.getDescription());
         holder.setModPath(mod.getAssetPath());
@@ -45,10 +51,10 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
 
     @Override
     public int getItemCount() {
-        return modList.size();
+        return model.getModList().size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder{
         private String modPath;
         void setModPath(String modPath) {
             this.modPath = modPath;
@@ -75,7 +81,15 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
                 if (which == DialogAction.POSITIVE) {
                     File file = new File(modPath);
                     if (file.exists()) {
-                        file.delete();
+                        try {
+                            FileUtils.forceDelete(file);
+                            List<Integer> removed = model.removeAll(entry -> StringUtils.equals(entry.getAssetPath(), modPath));
+                            for (int idx : removed) {
+                                notifyItemRemoved(idx);
+                            }
+                        } catch (IOException e) {
+                            CommonLogic.showAlertDialog(itemView, R.string.error, e.getMessage());
+                        }
                     }
                 }
             });

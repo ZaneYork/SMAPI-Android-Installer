@@ -2,7 +2,7 @@
   {
     "assetPath":"mods/virtual-keyboard.zip",
     "Name": "VirtualKeyboard",
-    "UniqueID": "SMAPI.VirtualKeyboard"
+    "UniqueID": "VirtualKeyboard"
   },
   {
     "assetPath":"mods/custom-localization.zip",

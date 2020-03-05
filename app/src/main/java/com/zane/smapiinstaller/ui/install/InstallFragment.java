@@ -13,6 +13,8 @@ import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 
+import org.apache.commons.lang3.StringUtils;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import butterknife.ButterKnife;
@@ -52,12 +54,12 @@ public class InstallFragment extends Fragment {
                     CommonLogic.setProgressDialogState(root, dialog, R.string.extracting_package, 0);
                     String path = patcher.extract();
                     if (path == null) {
-                        CommonLogic.showAlertDialog(root, R.string.error, R.string.error_game_not_found);
+                        CommonLogic.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
                         return;
                     }
                     CommonLogic.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 10);
                     if (!CommonLogic.unpackSmapiFiles(context, path, false)) {
-                        CommonLogic.showAlertDialog(root, R.string.error, R.string.failed_to_unpack_smapi_files);
+                        CommonLogic.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
                         return;
                     }
                     ModAssetsManager modAssetsManager = new ModAssetsManager(root);
@@ -65,13 +67,13 @@ public class InstallFragment extends Fragment {
                     modAssetsManager.installDefaultMods();
                     CommonLogic.setProgressDialogState(root, dialog, R.string.patching_package, 25);
                     if (!patcher.patch(path)) {
-                        CommonLogic.showAlertDialog(root, R.string.error, R.string.failed_to_patch_game);
+                        CommonLogic.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
                         return;
                     }
                     CommonLogic.setProgressDialogState(root, dialog, R.string.signing_package, 55);
                     String signPath = patcher.sign(path);
                     if (signPath == null) {
-                        CommonLogic.showAlertDialog(root, R.string.error, R.string.failed_to_sign_game);
+                        CommonLogic.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
                         return;
                     }
                     CommonLogic.setProgressDialogState(root, dialog, R.string.installing_package, 99);

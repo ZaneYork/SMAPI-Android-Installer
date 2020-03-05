@@ -59,6 +59,17 @@ public class CommonLogic {
         return null;
     }
 
+    public static <T> T getAssetJson(Context context, String filename, Class<T> tClass) {
+        try {
+            InputStream inputStream = context.getAssets().open(filename);
+            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+                return new Gson().fromJson(CharStreams.toString(reader), tClass);
+            }
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
     public static <T> T getAssetJson(Context context, String filename, Type type) {
         try {
             InputStream inputStream = context.getAssets().open(filename);
@@ -177,25 +188,16 @@ public class CommonLogic {
         context.startActivity(intent);
     }
 
-    public static byte[] modifyManifest(byte[] bytes, Predicate<ManifestTagVisitor.AttrArgs> processLogic) {
+    public static byte[] modifyManifest(byte[] bytes, Predicate<ManifestTagVisitor.AttrArgs> processLogic) throws IOException {
         AxmlReader reader = new AxmlReader(bytes);
         AxmlWriter writer = new AxmlWriter();
-        try {
-            reader.accept(new AxmlVisitor(writer) {
-                @Override
-                public NodeVisitor child(String ns, String name) {
-                    NodeVisitor child = super.child(ns, name);
-                    return new ManifestTagVisitor(child, processLogic);
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            return writer.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        reader.accept(new AxmlVisitor(writer) {
+            @Override
+            public NodeVisitor child(String ns, String name) {
+                NodeVisitor child = super.child(ns, name);
+                return new ManifestTagVisitor(child, processLogic);
+            }
+        });
+        return writer.toByteArray();
     }
 }

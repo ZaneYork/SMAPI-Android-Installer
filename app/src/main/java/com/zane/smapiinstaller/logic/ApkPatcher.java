@@ -11,16 +11,20 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.google.gson.reflect.TypeToken;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 
 import net.fornwall.apksigner.KeyStoreFileManager;
 import net.fornwall.apksigner.ZipSigner;
 
+import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ByteSource;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
@@ -29,7 +33,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -48,6 +51,8 @@ public class ApkPatcher {
 
     private static final String TAG = "PATCHER";
 
+    private AtomicReference<String> errorMessage = new AtomicReference<>();
+
     public ApkPatcher(Context context) {
         this.context = context;
     }
@@ -56,8 +61,10 @@ public class ApkPatcher {
         PackageManager packageManager = context.getPackageManager();
         List<String> packageNames = CommonLogic.getAssetJson(context, "package_names.json", new TypeToken<List<String>>() {
         }.getType());
-        if (packageNames == null)
+        if (packageNames == null) {
+            errorMessage.set(context.getString(R.string.error_game_not_found));
             return null;
+        }
         for (String packageName : packageNames) {
             try {
                 PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
@@ -69,6 +76,7 @@ public class ApkPatcher {
                     File dest = new File(externalFilesDir.getAbsolutePath() + "/SMAPI Installer/");
                     if (!dest.exists()) {
                         if (!dest.mkdir()) {
+                            errorMessage.set(String.format(context.getString(R.string.error_failed_to_create_file), dest.getAbsolutePath()));
                             return null;
                         }
                     }
@@ -78,6 +86,7 @@ public class ApkPatcher {
                 }
             } catch (PackageManager.NameNotFoundException | IOException e) {
                 Log.e(TAG, "Extract error", e);
+                errorMessage.set(e.getLocalizedMessage());
             }
         }
         return null;
@@ -90,29 +99,36 @@ public class ApkPatcher {
         if (!file.exists())
             return false;
         try {
-            List<ManifestEntry> manifestEntries = CommonLogic.getAssetJson(context, "apk_files_manifest.json", new TypeToken<List<ManifestEntry>>() {
-            }.getType());
-            if (manifestEntries == null)
+            ApkFilesManifest apkFilesManifest = CommonLogic.getAssetJson(context, "apk_files_manifest.json", ApkFilesManifest.class);
+            if (apkFilesManifest == null)
                 return false;
+            List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             List<ZipEntrySource> zipEntrySourceList = new ArrayList<>();
-            for (ManifestEntry entry : manifestEntries) {
-                zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), CommonLogic.getAssetBytes(context, entry.getAssetPath()), entry.getCompression()));
-            }
             byte[] manifest = ZipUtil.unpackEntry(file, "AndroidManifest.xml");
-            byte[] modifiedManifest = modifyManifest(manifest);
+            List<ApkFilesManifest> apkFilesManifests = Lists.newArrayList(apkFilesManifest);
+            byte[] modifiedManifest = modifyManifest(manifest, apkFilesManifests);
+            if(apkFilesManifests.size() == 0) {
+                errorMessage.set(context.getString(R.string.error_no_supported_game_version));
+                return false;
+            }
             if(modifiedManifest == null) {
+                errorMessage.set(context.getString(R.string.failed_to_process_manifest));
                 return false;
             }
             zipEntrySourceList.add(new ByteSource("AndroidManifest.xml", modifiedManifest, Deflater.DEFLATED));
+            for (ManifestEntry entry : manifestEntries) {
+                zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), CommonLogic.getAssetBytes(context, entry.getAssetPath()), entry.getCompression()));
+            }
             ZipUtil.addOrReplaceEntries(file, zipEntrySourceList.toArray(new ZipEntrySource[0]));
             return true;
         } catch (Exception e) {
             Log.e(TAG, "Patch error", e);
+            errorMessage.set(e.getLocalizedMessage());
         }
         return false;
     }
 
-    private byte[] modifyManifest(byte[] bytes) {
+    private byte[] modifyManifest(byte[] bytes, List<ApkFilesManifest> manifests) {
         AtomicReference<String> packageName = new AtomicReference<>();
         Predicate<ManifestTagVisitor.AttrArgs> processLogic = (attr) -> {
             if (attr.type == NodeVisitor.TYPE_STRING) {
@@ -140,9 +156,32 @@ public class ApkPatcher {
                         break;
                 }
             }
+            else if(attr.type == NodeVisitor.TYPE_FIRST_INT) {
+                if(StringUtils.equals(attr.name, "versionCode")){
+                    long versionCode = (int) attr.obj;
+                    Iterables.removeIf(manifests, manifest -> {
+                        if (manifest.getMinBuildCode() != null) {
+                            if (versionCode < manifest.getMinBuildCode()) {
+                                return true;
+                            }
+                        }
+                        if (manifest.getMaxBuildCode() != null) {
+                            if (versionCode > manifest.getMinBuildCode()) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                }
+            }
             return true;
         };
-        return CommonLogic.modifyManifest(bytes, processLogic);
+        try {
+            return CommonLogic.modifyManifest(bytes, processLogic);
+        }catch (Exception e) {
+            errorMessage.set(e.getLocalizedMessage());
+            return null;
+        }
     }
 
     public String sign(String apkPath) {
@@ -156,16 +195,14 @@ public class ApkPatcher {
                 }
                 String alias = ks.aliases().nextElement();
                 X509Certificate publicKey = (X509Certificate) ks.getCertificate(alias);
-                try {
-                    PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "android".toCharArray());
-                    ZipSigner.signZip(publicKey, privateKey, "SHA1withRSA", apkPath, signApkPath);
-                    new File(apkPath).delete();
-                    return signApkPath;
-                } catch (NoSuchAlgorithmException ignored) {
-                }
+                PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "android".toCharArray());
+                ZipSigner.signZip(publicKey, privateKey, "SHA1withRSA", apkPath, signApkPath);
+                new File(apkPath).delete();
+                return signApkPath;
             }
         } catch (Exception e) {
             Log.e(TAG, "Sign error", e);
+            errorMessage.set(e.getLocalizedMessage());
         }
         return null;
     }
@@ -179,6 +216,7 @@ public class ApkPatcher {
             context.startActivity(intent);
         } catch (ActivityNotFoundException e) {
             Log.e(TAG, "Install error", e);
+            errorMessage.set(e.getLocalizedMessage());
         }
     }
 
@@ -196,4 +234,7 @@ public class ApkPatcher {
             return Uri.fromFile(file);
     }
 
+    public AtomicReference<String> getErrorMessage() {
+        return errorMessage;
+    }
 }

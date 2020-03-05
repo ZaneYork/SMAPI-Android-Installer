@@ -26,8 +26,11 @@ public class GameLauncher {
                 CommonLogic.showAlertDialog(root, R.string.error, R.string.error_failed_to_repair);
                 return;
             }
-            Intent intent = packageManager.getLaunchIntentForPackage(Constants.TARGET_PACKAGE_NAME);
-            context.startActivity(intent);
+            ModAssetsManager modAssetsManager = new ModAssetsManager(root);
+            if(modAssetsManager.checkModEnvironment()) {
+                Intent intent = packageManager.getLaunchIntentForPackage(Constants.TARGET_PACKAGE_NAME);
+                context.startActivity(intent);
+            }
         } catch (PackageManager.NameNotFoundException ignored) {
             CommonLogic.showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed);
         }

@@ -61,7 +61,7 @@ public class ConfigEditFragment extends Fragment {
             }
         }
         catch (Exception e) {
-            CommonLogic.showAlertDialog(getView(), R.string.error, e.getMessage());
+            CommonLogic.showAlertDialog(getView(), R.string.error, e.getLocalizedMessage());
         }
     }
 

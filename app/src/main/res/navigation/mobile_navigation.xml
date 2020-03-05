@@ -39,4 +39,9 @@
             <argument android:name="editable" android:defaultValue="true" app:argType="boolean"/>
         </action>
     </fragment>
+    <fragment
+        android:id="@+id/nav_download"
+        android:name="com.zane.smapiinstaller.ui.download.DownloadableContentFragment"
+        android:label="@string/menu_download"
+        tools:layout="@layout/fragment_download_content_list" />
 </navigation>

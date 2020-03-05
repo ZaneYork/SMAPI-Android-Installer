@@ -40,4 +40,8 @@
     <string name="test_message">Still at test stage now, not release yet.</string>
     <string name="button_logs">Logs</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
+    <string name="error_failed_to_create_file">Failed to create target file : %s</string>
+    <string name="failed_to_process_manifest">Failed to process AndroidManifest.xml file</string>
+    <string name="error_no_supported_game_version">Game version not supported, upgrade or download compat package first</string>
+    <string name="menu_download">Download</string>
 </resources>

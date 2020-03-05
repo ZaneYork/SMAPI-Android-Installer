@@ -17,7 +17,6 @@ import com.zane.smapiinstaller.R;
 
 public class ConfigFragment extends Fragment {
 
-    private ConfigViewModel configViewModel;
 
     @BindView(R.id.view_mod_list)
     RecyclerView recyclerView;
@@ -26,13 +25,11 @@ public class ConfigFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_config, container, false);
         ButterKnife.bind(this, root);
-        configViewModel = new ConfigViewModel(root);
         recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
-        recyclerView.setAdapter(new ModManifestAdapter(configViewModel.getModList().getValue()));
-        recyclerView.addItemDecoration(new DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL));
-        configViewModel.getModList().observe(getViewLifecycleOwner(), modList -> {
-            recyclerView.getAdapter().notifyDataSetChanged();
-        });
+        ConfigViewModel configViewModel = new ConfigViewModel(root);
+        ModManifestAdapter modManifestAdapter = new ModManifestAdapter(configViewModel);
+        recyclerView.setAdapter(modManifestAdapter);
+        recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         return root;
     }
 }

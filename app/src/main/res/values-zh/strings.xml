@@ -40,4 +40,8 @@
     <string name="test_message">暂处于内测阶段, Q群：860453392</string>
     <string name="button_logs">日志</string>
     <string name="smapi_game_name">SMAPI星露谷物语</string>
+    <string name="error_failed_to_create_file">无法创建以下文件: %s</string>
+    <string name="failed_to_process_manifest">无法处理AndroidManifest.xml文件</string>
+    <string name="error_no_supported_game_version">游戏版本不支持，请更新版本或者下载兼容包</string>
+    <string name="menu_download">下载</string>
 </resources>

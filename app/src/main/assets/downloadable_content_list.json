@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "contents": [
+    {
+      "type": "COMPAT",
+      "name": "SMAPI for 1.4.5.135",
+      "description": "SMAPI compat package pack for game 1.4.5.135 - 1.4.5.137",
+      "url": "http://dl.zaneyork.cn"
+    },
+    {
+      "type": "COMPAT",
+      "name": "SMAPI for 1.4.4.122",
+      "description": "SMAPI compat package pack for game 1.4.4.122 - 1.4.4.128",
+      "url": "http://dl.zaneyork.cn"
+    }
+  ]
+}

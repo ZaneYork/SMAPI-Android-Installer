@@ -16,6 +16,8 @@ import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 
+import org.apache.commons.lang3.StringUtils;
+import org.zeroturnaround.zip.NameMapper;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ModAssetsManager {
 
@@ -43,7 +46,7 @@ public class ModAssetsManager {
             if(currentFile != null && currentFile.exists()) {
                 boolean foundManifest = false;
                 for(File file : currentFile.listFiles(File::isFile)) {
-                    if(file.getName().equalsIgnoreCase("manifest.json")) {
+                    if(StringUtils.equalsIgnoreCase(file.getName(), "manifest.json")) {
                         ModManifestEntry manifest = CommonLogic.getFileJson(file, new TypeToken<ModManifestEntry>(){}.getType());
                         foundManifest = true;
                         if(manifest != null) {
@@ -70,7 +73,7 @@ public class ModAssetsManager {
         File modFolder = new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH);
         ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(), ModManifestEntry::getUniqueID);
         for (ModManifestEntry mod : modManifestEntries) {
-            if(installedModMap.containsKey(mod.getUniqueID())) {
+            if(installedModMap.containsKey(mod.getUniqueID()) || installedModMap.containsKey(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"))) {
                 ImmutableList<ModManifestEntry> installedMods = installedModMap.get(mod.getUniqueID());
                 if(installedMods.size() > 1) {
                     CommonLogic.showAlertDialog(root, R.string.error,
@@ -79,7 +82,7 @@ public class ModAssetsManager {
                     return false;
                 }
                 try {
-                    ZipUtil.unpackEntry(context.getAssets().open(mod.getAssetPath()), mod.getName(), new File(installedMods.get(0).getAssetPath()));
+                    ZipUtil.unpack(context.getAssets().open(mod.getAssetPath()), new File(installedMods.get(0).getAssetPath()), (name)-> StringUtils.removeStart(name, mod.getName() + "/"));
                 } catch (IOException e) {
                     Log.e(TAG, "Install Mod Error", e);
                 }
@@ -92,6 +95,10 @@ public class ModAssetsManager {
                 }
             }
         }
+        return true;
+    }
+
+    public boolean checkModEnvironment() {
         return true;
     }
 }
