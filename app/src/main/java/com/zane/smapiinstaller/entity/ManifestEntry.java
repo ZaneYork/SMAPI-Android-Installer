@@ -8,4 +8,5 @@ public class ManifestEntry {
     private String assetPath;
     private int compression;
     private int origin;
+    private boolean external;
 }

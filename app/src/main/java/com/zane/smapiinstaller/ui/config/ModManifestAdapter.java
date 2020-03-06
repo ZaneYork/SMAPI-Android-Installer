@@ -7,7 +7,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
-import com.google.common.collect.Iterables;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.CommonLogic;
@@ -77,7 +76,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             ButterKnife.bind(this, itemView);
         }
         @OnClick(R.id.button_remove_mod) void removeMod() {
-            CommonLogic.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_mod, (dialog, which)->{
+            CommonLogic.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which)->{
                 if (which == DialogAction.POSITIVE) {
                     File file = new File(modPath);
                     if (file.exists()) {

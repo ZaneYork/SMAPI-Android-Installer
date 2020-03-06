@@ -27,8 +27,8 @@
     <string name="failed_to_unpack_smapi_files">无法解包SMAPI环境</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
-    <string name="confirm_delete_mod">确定删除该MOD?</string>
-    <string name="text_install_tip1">注意：需要1.4.5.142版本的游戏本体</string>
+    <string name="confirm_delete_content">确定删除该内容?</string>
+    <string name="text_install_tip1">注意：需要不低于1.4.5.138版本的游戏本体</string>
     <string name="text_install_tip2">更新或安装期间需要安装游戏本体</string>
     <string name="duplicate_mod_found">发现该MOD存在多份拷贝，请从以下位置删除重复MOD：%s</string>
     <string name="error_smapi_not_installed">SMAPI尚未安装，请先点击安装按钮</string>
@@ -44,4 +44,9 @@
     <string name="failed_to_process_manifest">无法处理AndroidManifest.xml文件</string>
     <string name="error_no_supported_game_version">游戏版本不支持，请更新版本或者下载兼容包</string>
     <string name="menu_download">下载</string>
+    <string name="error_failed_to_download">无法下载目标资源</string>
+    <string name="error_depends_on_mod">%s依赖%s前置，请先安装它</string>
+    <string name="locale_pack">语言包</string>
+    <string name="info">提示</string>
+    <string name="download_unpack_success">已完成下载安装</string>
 </resources>

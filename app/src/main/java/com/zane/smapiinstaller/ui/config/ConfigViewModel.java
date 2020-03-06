@@ -31,8 +31,7 @@ class ConfigViewModel extends ViewModel {
     private RecyclerView view;
 
     ConfigViewModel(View root) {
-        ModAssetsManager manager = new ModAssetsManager(root);
-        this.modList = manager.findAllInstalledMods();
+        this.modList = ModAssetsManager.findAllInstalledMods();
         Collections.sort(this.modList, (a, b)-> a.getName().compareTo(b.getName()));
     }
 

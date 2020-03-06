@@ -6,7 +6,8 @@ import lombok.Data;
 
 @Data
 public class ApkFilesManifest {
-    private Long minBuildCode;
+    private long minBuildCode;
     private Long maxBuildCode;
+    private String basePath;
     private List<ManifestEntry> manifestEntries;
 }

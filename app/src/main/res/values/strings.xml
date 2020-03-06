@@ -27,8 +27,8 @@
     <string name="failed_to_unpack_smapi_files">Failed to unpack smapi files</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
-    <string name="confirm_delete_mod">Are you sure to delete it?</string>
-    <string name="text_install_tip1">Notes: Game version 1.4.5.142 is required.</string>
+    <string name="confirm_delete_content">Are you sure to delete it?</string>
+    <string name="text_install_tip1">Notes: Game version 1.4.5.138 or later is required.</string>
     <string name="text_install_tip2">The base game is required when updating/installing.</string>
     <string name="duplicate_mod_found">Found duplicate copy of mod, please delete duplicate of them: %s</string>
     <string name="error_smapi_not_installed">SMAPI has not installed yet, press install first</string>
@@ -44,4 +44,9 @@
     <string name="failed_to_process_manifest">Failed to process AndroidManifest.xml file</string>
     <string name="error_no_supported_game_version">Game version not supported, upgrade or download compat package first</string>
     <string name="menu_download">Download</string>
+    <string name="error_failed_to_download">Failed to download target resources</string>
+    <string name="error_depends_on_mod">The %s is depends on %s, please install it first</string>
+    <string name="locale_pack">Locale Pack</string>
+    <string name="info">Info</string>
+    <string name="download_unpack_success">Download and unpack success</string>
 </resources>

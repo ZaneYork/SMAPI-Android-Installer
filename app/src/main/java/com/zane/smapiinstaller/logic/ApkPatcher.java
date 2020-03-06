@@ -12,7 +12,6 @@ import android.util.Log;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.google.gson.reflect.TypeToken;
 import com.zane.smapiinstaller.BuildConfig;
@@ -99,13 +98,9 @@ public class ApkPatcher {
         if (!file.exists())
             return false;
         try {
-            ApkFilesManifest apkFilesManifest = CommonLogic.getAssetJson(context, "apk_files_manifest.json", ApkFilesManifest.class);
-            if (apkFilesManifest == null)
-                return false;
-            List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             List<ZipEntrySource> zipEntrySourceList = new ArrayList<>();
             byte[] manifest = ZipUtil.unpackEntry(file, "AndroidManifest.xml");
-            List<ApkFilesManifest> apkFilesManifests = Lists.newArrayList(apkFilesManifest);
+            List<ApkFilesManifest> apkFilesManifests = CommonLogic.findAllApkFileManifest(context);
             byte[] modifiedManifest = modifyManifest(manifest, apkFilesManifests);
             if(apkFilesManifests.size() == 0) {
                 errorMessage.set(context.getString(R.string.error_no_supported_game_version));
@@ -116,8 +111,15 @@ public class ApkPatcher {
                 return false;
             }
             zipEntrySourceList.add(new ByteSource("AndroidManifest.xml", modifiedManifest, Deflater.DEFLATED));
+            ApkFilesManifest apkFilesManifest = apkFilesManifests.get(0);
+            List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             for (ManifestEntry entry : manifestEntries) {
-                zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), CommonLogic.getAssetBytes(context, entry.getAssetPath()), entry.getCompression()));
+                if(entry.isExternal()) {
+                    zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), CommonLogic.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath()), entry.getCompression()));
+                }
+                else {
+                    zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), CommonLogic.getAssetBytes(context, entry.getAssetPath()), entry.getCompression()));
+                }
             }
             ZipUtil.addOrReplaceEntries(file, zipEntrySourceList.toArray(new ZipEntrySource[0]));
             return true;
@@ -160,13 +162,11 @@ public class ApkPatcher {
                 if(StringUtils.equals(attr.name, "versionCode")){
                     long versionCode = (int) attr.obj;
                     Iterables.removeIf(manifests, manifest -> {
-                        if (manifest.getMinBuildCode() != null) {
-                            if (versionCode < manifest.getMinBuildCode()) {
-                                return true;
-                            }
+                        if (versionCode < manifest.getMinBuildCode()) {
+                            return true;
                         }
                         if (manifest.getMaxBuildCode() != null) {
-                            if (versionCode > manifest.getMinBuildCode()) {
+                            if (versionCode > manifest.getMaxBuildCode()) {
                                 return true;
                             }
                         }

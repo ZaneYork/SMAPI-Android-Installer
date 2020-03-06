@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.DownloadableContentList;
 import com.zane.smapiinstaller.logic.CommonLogic;
+import com.zane.smapiinstaller.logic.DownloadabeContentManager;
 
 /**
  * A fragment representing a list of Items.
@@ -38,8 +39,8 @@ public class DownloadableContentFragment extends Fragment {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            DownloadableContentList contentList = CommonLogic.getAssetJson(context, "downloadable_content_list.json", DownloadableContentList.class);
-            recyclerView.setAdapter(new DownloadableContentAdapter(contentList.getContents()));
+            DownloadabeContentManager manager = new DownloadabeContentManager(view);
+            recyclerView.setAdapter(new DownloadableContentAdapter(manager.getDownloadableContentList().getContents()));
             recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         }
         return view;
