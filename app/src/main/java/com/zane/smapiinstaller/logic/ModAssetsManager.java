@@ -110,7 +110,7 @@ public class ModAssetsManager {
                                     Joiner.on(",").join(Lists.transform(installedMods, item -> CommonLogic.toPrettyPath(item.getAssetPath())))));
                     return false;
                 }
-                else if(installedModMap.size() == 0) {
+                else if(installedMods.size() == 0) {
                     installedMods = installedModMap.get(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"));
                 }
                 try {
