@@ -11,7 +11,7 @@
 ## 其它
 ### BUG反馈
 1. 填写这个[数据收集表](https://docs.qq.com/form/edit/DWlJZc0paV2xxR2JL)
-2. 加入QQ群 860453392 反馈
+2. 加入QQ群 [860453392](https://jq.qq.com/?_wv=1027&k=55svbYs) 反馈
 
 ### 工作原理
 1. 抽取游戏本体的安装包
