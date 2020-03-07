@@ -49,4 +49,7 @@
     <string name="locale_pack">語言包</string>
     <string name="info">提示</string>
     <string name="download_unpack_success">已完成下載安裝</string>
+    <string name="progress">進度</string>
+    <string name="downloading">正在下載: %d KB / %d KB</string>
+    <string name="menu_about">關於</string>
 </resources>

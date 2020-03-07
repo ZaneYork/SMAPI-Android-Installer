@@ -38,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
@@ -59,7 +60,7 @@ public class CommonLogic {
 
     public static InputStream getLocalAsset(Context context, String filename) throws IOException {
         File file = new File(context.getFilesDir(), filename);
-        if(file.exists()){
+        if (file.exists()) {
             return new FileInputStream(file);
         }
         return context.getAssets().open(filename);
@@ -94,8 +95,7 @@ public class CommonLogic {
             FileOutputStream outputStream = new FileOutputStream(file);
             try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
                 writer.write(new Gson().toJson(content));
-            }
-            finally {
+            } finally {
                 FileUtils.moveFile(file, new File(context.getFilesDir(), filename));
             }
         } catch (Exception ignored) {
@@ -136,8 +136,8 @@ public class CommonLogic {
 
     public static void setProgressDialogState(View view, MaterialDialog dialog, int message, int progress) {
         Activity activity = getActivityFromView(view);
-        if(activity != null && !activity.isFinishing() && !dialog.isCancelled()) {
-            activity.runOnUiThread(()->{
+        if (activity != null && !activity.isFinishing() && !dialog.isCancelled()) {
+            activity.runOnUiThread(() -> {
                 dialog.incrementProgress(progress - dialog.getCurrentProgress());
                 dialog.setContent(message);
             });
@@ -159,62 +159,80 @@ public class CommonLogic {
 
     public static void showAlertDialog(View view, int title, String message) {
         Activity activity = getActivityFromView(view);
-        if(activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()-> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
         }
     }
+
     public static void showAlertDialog(View view, int title, int message) {
         Activity activity = getActivityFromView(view);
-        if(activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()-> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
         }
     }
 
     public static void showConfirmDialog(View view, int title, int message, MaterialDialog.SingleButtonCallback callback) {
         Activity activity = getActivityFromView(view);
-        if(activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()-> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
         }
     }
 
     public static void showConfirmDialog(View view, int title, String message, MaterialDialog.SingleButtonCallback callback) {
         Activity activity = getActivityFromView(view);
-        if(activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()-> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
         }
+    }
+
+    public static AtomicReference<MaterialDialog> showProgressDialog(View view, int title, String message) {
+        Activity activity = getActivityFromView(view);
+        AtomicReference<MaterialDialog> reference = new AtomicReference<>();
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(() -> {
+                MaterialDialog dialog = new MaterialDialog.Builder(activity)
+                        .title(title)
+                        .content(message)
+                        .progress(false, 100, true)
+                        .cancelable(false)
+                        .show();
+                reference.set(dialog);
+            });
+        }
+        return reference;
     }
 
     public static List<ApkFilesManifest> findAllApkFileManifest(Context context) {
         ApkFilesManifest apkFilesManifest = CommonLogic.getAssetJson(context, "apk_files_manifest.json", ApkFilesManifest.class);
         ArrayList<ApkFilesManifest> apkFilesManifests = Lists.newArrayList(apkFilesManifest);
         File compatFolder = new File(context.getFilesDir(), "compat");
-        if(compatFolder.exists()) {
+        if (compatFolder.exists()) {
             for (File directory : compatFolder.listFiles(File::isDirectory)) {
                 File manifestFile = new File(directory, "apk_files_manifest.json");
-                if(manifestFile.exists()) {
+                if (manifestFile.exists()) {
                     ApkFilesManifest manifest = getFileJson(manifestFile, ApkFilesManifest.class);
-                    if(manifest != null) {
+                    if (manifest != null) {
                         apkFilesManifests.add(manifest);
                     }
                 }
             }
         }
-        Collections.sort(apkFilesManifests, (a, b)-> Long.compare(b.getMinBuildCode(), a.getMinBuildCode()));
+        Collections.sort(apkFilesManifests, (a, b) -> Long.compare(b.getMinBuildCode(), a.getMinBuildCode()));
         return apkFilesManifests;
     }
 
     public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMod) {
         List<ManifestEntry> manifestEntries = CommonLogic.getAssetJson(context, "smapi_files_manifest.json", new TypeToken<List<ManifestEntry>>() {
         }.getType());
-        if(manifestEntries == null)
+        if (manifestEntries == null)
             return false;
         File basePath = new File(Environment.getExternalStorageDirectory() + "/StardewValley/");
-        if(!basePath.exists()) {
-            if(!basePath.mkdir()) {
+        if (!basePath.exists()) {
+            if (!basePath.mkdir()) {
                 return false;
             }
         }
-        File noMedia = new File(basePath,".nomedia");
+        File noMedia = new File(basePath, ".nomedia");
         if (!noMedia.exists()) {
             try {
                 noMedia.createNewFile();
@@ -225,7 +243,7 @@ public class CommonLogic {
             File targetFile = new File(basePath, entry.getTargetPath());
             switch (entry.getOrigin()) {
                 case 0:
-                    if(!checkMod || !targetFile.exists()) {
+                    if (!checkMod || !targetFile.exists()) {
                         try (InputStream inputStream = context.getAssets().open(entry.getAssetPath())) {
                             if (!targetFile.getParentFile().exists()) {
                                 if (!targetFile.getParentFile().mkdirs()) {
@@ -241,7 +259,7 @@ public class CommonLogic {
                     }
                     break;
                 case 1:
-                    if(!checkMod || !targetFile.exists()) {
+                    if (!checkMod || !targetFile.exists()) {
                         ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath(), targetFile);
                     }
                     break;
@@ -275,7 +293,7 @@ public class CommonLogic {
     }
 
     public static String getFileHash(Context context, String filename) {
-        try(InputStream inputStream = getLocalAsset(context, filename)){
+        try (InputStream inputStream = getLocalAsset(context, filename)) {
             return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
         } catch (IOException ignored) {
         }
@@ -283,7 +301,7 @@ public class CommonLogic {
     }
 
     public static String getFileHash(File file) {
-        try(InputStream inputStream = new FileInputStream(file)){
+        try (InputStream inputStream = new FileInputStream(file)) {
             return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
         } catch (IOException ignored) {
         }

@@ -44,4 +44,9 @@
         android:name="com.zane.smapiinstaller.ui.download.DownloadableContentFragment"
         android:label="@string/menu_download"
         tools:layout="@layout/fragment_download_content_list" />
+    <fragment
+        android:id="@+id/nav_about"
+        android:name="com.zane.smapiinstaller.ui.about.AboutFragment"
+        android:label="@string/menu_about"
+        tools:layout="@layout/fragment_about" />
 </navigation>

@@ -17,6 +17,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.FileCallback;
+import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.model.Response;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.DownloadableContent;
@@ -31,6 +32,8 @@ import org.zeroturnaround.zip.commons.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DownloadableContent}
@@ -71,6 +74,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
         Button buttonRemove;
         @BindView(R.id.button_download_content)
         Button buttonDownload;
+        private AtomicBoolean downloading = new AtomicBoolean(false);
 
         public DownloadableContent downloadableContent;
 
@@ -134,16 +138,40 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                     return;
                 }
             }
+            if (downloading.get())
+                return;
+            downloading.set(true);
             ModManifestEntry finalModManifestEntry = modManifestEntry;
+            AtomicReference<MaterialDialog> dialogRef = CommonLogic.showProgressDialog(itemView, R.string.progress, "");
             OkGo.<File>get(downloadableContent.getUrl()).execute(new FileCallback(file.getParentFile().getAbsolutePath(), file.getName()) {
                 @Override
                 public void onError(Response<File> response) {
                     super.onError(response);
+                    MaterialDialog dialog = dialogRef.get();
+                    if (dialog != null && !dialog.isCancelled()) {
+                        dialog.dismiss();
+                    }
+                    downloading.set(false);
                     CommonLogic.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
                 }
 
                 @Override
+                public void downloadProgress(Progress progress) {
+                    super.downloadProgress(progress);
+                    MaterialDialog dialog = dialogRef.get();
+                    if (dialog != null && !dialog.isCancelled()) {
+                        dialog.setContent(R.string.downloading, progress.currentSize / 1024, progress.totalSize / 1024);
+                        dialog.setProgress((int) (progress.currentSize / progress.totalSize));
+                    }
+                }
+
+                @Override
                 public void onSuccess(Response<File> response) {
+                    MaterialDialog dialog = dialogRef.get();
+                    if (dialog != null && !dialog.isCancelled()) {
+                        dialog.dismiss();
+                    }
+                    downloading.set(false);
                     File downloadedFile = response.body();
                     String hash = CommonLogic.getFileHash(downloadedFile);
                     if (!StringUtils.equalsIgnoreCase(hash, downloadableContent.getHash())) {

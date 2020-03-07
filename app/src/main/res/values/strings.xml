@@ -37,7 +37,7 @@
     <string name="button_compat">Compat</string>
     <string name="button_nexus">Nexus</string>
     <string name="button_release">Release</string>
-    <string name="test_message">Still at test stage now, not release yet.</string>
+    <string name="test_message">Still at test stage now.</string>
     <string name="button_logs">Logs</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
     <string name="error_failed_to_create_file">Failed to create target file : %s</string>
@@ -49,4 +49,10 @@
     <string name="locale_pack">Locale Pack</string>
     <string name="info">Info</string>
     <string name="download_unpack_success">Download and unpack success</string>
+    <string name="progress">Progress</string>
+    <string name="downloading">Downloading: %d KB / %d KB</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="menu_about">About</string>
 </resources>
