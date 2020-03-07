@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">SMAPI安裝器</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">SMAPI安裝器</string>
+    <string name="nav_header_subtitle">ZaneYork@qq.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">設置</string>
+
+    <string name="menu_install">安裝</string>
+    <string name="menu_config">配置</string>
+    <string name="menu_config_edit">編輯</string>
+    <string name="menu_help">幫助</string>
+
+    <string name="button_install">安裝</string>
+    <string name="extracting_package">正在抽取安裝包</string>
+    <string name="patching_package">正在安裝SMAPI補丁</string>
+    <string name="signing_package">正在簽名安裝包</string>
+    <string name="installing_package">正在安裝</string>
+    <string name="install_progress_title">安裝進度</string>
+    <string name="ok">OK</string>
+    <string name="error_game_not_found">無法找到遊戲本體，你是否安裝了星露穀物語？</string>
+    <string name="error">錯誤</string>
+    <string name="failed_to_sign_game">無法簽名安裝包，請聯繫開發者獲取幫助</string>
+    <string name="failed_to_patch_game">無法修改安裝包，請聯繫開發者獲取幫助</string>
+    <string name="unpacking_smapi_files">正在解包</string>
+    <string name="failed_to_unpack_smapi_files">無法解包SMAPI環境</string>
+    <string name="confirm">確認</string>
+    <string name="cancel">取消</string>
+    <string name="confirm_delete_content">確定刪除該內容?</string>
+    <string name="text_install_tip1">注意：需要不低於1.4.5.138版本的遊戲本體</string>
+    <string name="text_install_tip2">更新或安裝期間需要安裝遊戲本體</string>
+    <string name="duplicate_mod_found">發現該MOD存在多份拷貝，請從以下位置刪除重複MOD：%s</string>
+    <string name="error_smapi_not_installed">SMAPI尚未安裝，請先點擊安裝按鈕</string>
+    <string name="error_failed_to_repair">無法修復SMAPI環境</string>
+    <string name="save">保存</string>
+    <string name="button_compat">兼容性</string>
+    <string name="button_nexus">N網</string>
+    <string name="button_release">官網</string>
+    <string name="test_message">暫處於內測階段, Q群：860453392</string>
+    <string name="button_logs">日誌</string>
+    <string name="smapi_game_name">SMAPI星露穀物語</string>
+    <string name="error_failed_to_create_file">無法創建以下文件: %s</string>
+    <string name="failed_to_process_manifest">無法處理AndroidManifest.xml文件</string>
+    <string name="error_no_supported_game_version">遊戲版本不支持，請更新版本或者下載兼容包</string>
+    <string name="menu_download">下載</string>
+    <string name="error_failed_to_download">無法下載目標資源</string>
+    <string name="error_depends_on_mod">%s依賴%s前置，請先安裝它</string>
+    <string name="locale_pack">語言包</string>
+    <string name="info">提示</string>
+    <string name="download_unpack_success">已完成下載安裝</string>
+</resources>

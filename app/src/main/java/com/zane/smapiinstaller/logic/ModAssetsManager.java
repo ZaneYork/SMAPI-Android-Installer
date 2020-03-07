@@ -113,10 +113,12 @@ public class ModAssetsManager {
                 else if(installedMods.size() == 0) {
                     installedMods = installedModMap.get(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"));
                 }
-                try {
-                    ZipUtil.unpack(context.getAssets().open(mod.getAssetPath()), new File(installedMods.get(0).getAssetPath()), (name)-> StringUtils.removeStart(name, mod.getName() + "/"));
-                } catch (IOException e) {
-                    Log.e(TAG, "Install Mod Error", e);
+                if(installedMods.size() > 0) {
+                    try {
+                        ZipUtil.unpack(context.getAssets().open(mod.getAssetPath()), new File(installedMods.get(0).getAssetPath()), (name) -> StringUtils.removeStart(name, mod.getName() + "/"));
+                    } catch (IOException e) {
+                        Log.e(TAG, "Install Mod Error", e);
+                    }
                 }
             }
             else {
