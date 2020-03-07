@@ -161,7 +161,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                     MaterialDialog dialog = dialogRef.get();
                     if (dialog != null && !dialog.isCancelled()) {
                         dialog.setContent(R.string.downloading, progress.currentSize / 1024, progress.totalSize / 1024);
-                        dialog.setProgress((int) (progress.currentSize / progress.totalSize));
+                        dialog.setProgress((int) (progress.currentSize * 100.0 / progress.totalSize));
                     }
                 }
 
