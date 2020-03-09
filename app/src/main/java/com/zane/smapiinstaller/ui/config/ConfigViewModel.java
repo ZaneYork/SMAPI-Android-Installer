@@ -32,7 +32,15 @@ class ConfigViewModel extends ViewModel {
 
     ConfigViewModel(View root) {
         this.modList = ModAssetsManager.findAllInstalledMods();
-        Collections.sort(this.modList, (a, b)-> a.getName().compareTo(b.getName()));
+        Collections.sort(this.modList, (a, b)-> {
+            if(a.getContentPackFor() != null &&  b.getContentPackFor() == null) {
+                return 1;
+            }
+            else if(b.getContentPackFor() != null) {
+                return -1;
+            }
+            return a.getName().compareTo(b.getName());
+        });
     }
 
     @NonNull

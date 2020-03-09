@@ -27,8 +27,8 @@ public class GameLauncher {
                 return;
             }
             ModAssetsManager modAssetsManager = new ModAssetsManager(root);
-            modAssetsManager.checkModEnvironment((isOk) -> {
-                if(isOk) {
+            modAssetsManager.checkModEnvironment((isConfirm) -> {
+                if(isConfirm) {
                     Intent intent = packageManager.getLaunchIntentForPackage(Constants.TARGET_PACKAGE_NAME);
                     context.startActivity(intent);
                 }

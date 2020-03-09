@@ -12,29 +12,18 @@ import android.view.View;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.CharStreams;
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 
-import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
-import org.zeroturnaround.zip.commons.FileUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,93 +35,6 @@ import pxb.android.axml.AxmlWriter;
 import pxb.android.axml.NodeVisitor;
 
 public class CommonLogic {
-
-    public static String getFileText(File file) {
-        try {
-            InputStream inputStream = new FileInputStream(file);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return CharStreams.toString(reader);
-            }
-        } catch (Exception ignored) {
-        }
-        return null;
-    }
-
-    public static InputStream getLocalAsset(Context context, String filename) throws IOException {
-        File file = new File(context.getFilesDir(), filename);
-        if (file.exists()) {
-            return new FileInputStream(file);
-        }
-        return context.getAssets().open(filename);
-    }
-
-    public static <T> T getFileJson(File file, Type type) {
-        try {
-            InputStream inputStream = new FileInputStream(file);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return new Gson().fromJson(CharStreams.toString(reader), type);
-            }
-        } catch (Exception ignored) {
-        }
-        return null;
-    }
-
-    public static <T> T getFileJson(File file, Class<T> tClass) {
-        try {
-            InputStream inputStream = new FileInputStream(file);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return new Gson().fromJson(CharStreams.toString(reader), tClass);
-            }
-        } catch (Exception ignored) {
-        }
-        return null;
-    }
-
-    public static void writeAssetJson(Context context, String filename, Object content) {
-        try {
-            String tmpFilename = filename + ".tmp";
-            File file = new File(context.getFilesDir(), tmpFilename);
-            FileOutputStream outputStream = new FileOutputStream(file);
-            try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
-                writer.write(new Gson().toJson(content));
-            } finally {
-                FileUtils.moveFile(file, new File(context.getFilesDir(), filename));
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    public static <T> T getAssetJson(Context context, String filename, Class<T> tClass) {
-        try {
-            InputStream inputStream = getLocalAsset(context, filename);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return new Gson().fromJson(CharStreams.toString(reader), tClass);
-            }
-        } catch (IOException ignored) {
-        }
-        return null;
-    }
-
-    public static <T> T getAssetJson(Context context, String filename, Type type) {
-        try {
-            InputStream inputStream = getLocalAsset(context, filename);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return new Gson().fromJson(CharStreams.toString(reader), type);
-            }
-        } catch (IOException ignored) {
-        }
-        return null;
-    }
-
-    public static byte[] getAssetBytes(Context context, String filename) {
-        try {
-            try (InputStream inputStream = getLocalAsset(context, filename)) {
-                return ByteStreams.toByteArray(inputStream);
-            }
-        } catch (IOException ignored) {
-        }
-        return new byte[0];
-    }
 
     public static void setProgressDialogState(View view, MaterialDialog dialog, int message, int progress) {
         Activity activity = getActivityFromView(view);
@@ -202,15 +104,22 @@ public class CommonLogic {
         return reference;
     }
 
+    public static void openUrl(Context context, String url) {
+        Intent intent = new Intent();
+        intent.setData(Uri.parse(url));
+        intent.setAction(Intent.ACTION_VIEW);
+        context.startActivity(intent);
+    }
+
     public static List<ApkFilesManifest> findAllApkFileManifest(Context context) {
-        ApkFilesManifest apkFilesManifest = CommonLogic.getAssetJson(context, "apk_files_manifest.json", ApkFilesManifest.class);
+        ApkFilesManifest apkFilesManifest = com.zane.smapiinstaller.utils.FileUtils.getAssetJson(context, "apk_files_manifest.json", ApkFilesManifest.class);
         ArrayList<ApkFilesManifest> apkFilesManifests = Lists.newArrayList(apkFilesManifest);
         File compatFolder = new File(context.getFilesDir(), "compat");
         if (compatFolder.exists()) {
             for (File directory : compatFolder.listFiles(File::isDirectory)) {
                 File manifestFile = new File(directory, "apk_files_manifest.json");
                 if (manifestFile.exists()) {
-                    ApkFilesManifest manifest = getFileJson(manifestFile, ApkFilesManifest.class);
+                    ApkFilesManifest manifest = com.zane.smapiinstaller.utils.FileUtils.getFileJson(manifestFile, ApkFilesManifest.class);
                     if (manifest != null) {
                         apkFilesManifests.add(manifest);
                     }
@@ -222,7 +131,7 @@ public class CommonLogic {
     }
 
     public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMod) {
-        List<ManifestEntry> manifestEntries = CommonLogic.getAssetJson(context, "smapi_files_manifest.json", new TypeToken<List<ManifestEntry>>() {
+        List<ManifestEntry> manifestEntries = com.zane.smapiinstaller.utils.FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeToken<List<ManifestEntry>>() {
         }.getType());
         if (manifestEntries == null)
             return false;
@@ -268,13 +177,6 @@ public class CommonLogic {
         return true;
     }
 
-    public static void openUrl(Context context, String url) {
-        Intent intent = new Intent();
-        intent.setData(Uri.parse(url));
-        intent.setAction(Intent.ACTION_VIEW);
-        context.startActivity(intent);
-    }
-
     public static byte[] modifyManifest(byte[] bytes, Predicate<ManifestTagVisitor.AttrArgs> processLogic) throws IOException {
         AxmlReader reader = new AxmlReader(bytes);
         AxmlWriter writer = new AxmlWriter();
@@ -286,26 +188,6 @@ public class CommonLogic {
             }
         });
         return writer.toByteArray();
-    }
-
-    public static String toPrettyPath(String path) {
-        return StringUtils.removeStart(path, Environment.getExternalStorageDirectory().getAbsolutePath());
-    }
-
-    public static String getFileHash(Context context, String filename) {
-        try (InputStream inputStream = getLocalAsset(context, filename)) {
-            return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
-        } catch (IOException ignored) {
-        }
-        return null;
-    }
-
-    public static String getFileHash(File file) {
-        try (InputStream inputStream = new FileInputStream(file)) {
-            return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
-        } catch (IOException ignored) {
-        }
-        return null;
     }
 
 }

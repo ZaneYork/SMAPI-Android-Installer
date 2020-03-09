@@ -10,6 +10,7 @@ import android.widget.EditText;
 import com.google.gson.Gson;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.logic.CommonLogic;
+import com.zane.smapiinstaller.utils.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,7 +45,7 @@ public class ConfigEditFragment extends Fragment {
         }
         configPath = this.getArguments().getString("configPath");
         if(configPath != null) {
-            String fileText = CommonLogic.getFileText(new File(configPath));
+            String fileText = FileUtils.getFileText(new File(configPath));
             if(fileText != null) {
                 editText.setText(fileText);
             }

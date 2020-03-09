@@ -1,6 +1,5 @@
 package com.zane.smapiinstaller.ui.download;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -131,7 +130,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
             }
             File file = new File(context.getCacheDir(), downloadableContent.getName() + ".zip");
             if (file.exists()) {
-                if (!StringUtils.equalsIgnoreCase(CommonLogic.getFileHash(file), downloadableContent.getHash())) {
+                if (!StringUtils.equalsIgnoreCase(com.zane.smapiinstaller.utils.FileUtils.getFileHash(file), downloadableContent.getHash())) {
                     file.delete();
                 } else {
                     unpackLogic(context, file, modManifestEntry);
@@ -173,7 +172,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                     }
                     downloading.set(false);
                     File downloadedFile = response.body();
-                    String hash = CommonLogic.getFileHash(downloadedFile);
+                    String hash = com.zane.smapiinstaller.utils.FileUtils.getFileHash(downloadedFile);
                     if (!StringUtils.equalsIgnoreCase(hash, downloadableContent.getHash())) {
                         CommonLogic.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
                         return;

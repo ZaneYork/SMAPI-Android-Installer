@@ -19,6 +19,7 @@ import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
+import com.zane.smapiinstaller.utils.FileUtils;
 
 import net.fornwall.apksigner.KeyStoreFileManager;
 import net.fornwall.apksigner.ZipSigner;
@@ -58,7 +59,7 @@ public class ApkPatcher {
 
     public String extract() {
         PackageManager packageManager = context.getPackageManager();
-        List<String> packageNames = CommonLogic.getAssetJson(context, "package_names.json", new TypeToken<List<String>>() {
+        List<String> packageNames = FileUtils.getAssetJson(context, "package_names.json", new TypeToken<List<String>>() {
         }.getType());
         if (packageNames == null) {
             errorMessage.set(context.getString(R.string.error_game_not_found));
@@ -115,10 +116,10 @@ public class ApkPatcher {
             List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             for (ManifestEntry entry : manifestEntries) {
                 if(entry.isExternal()) {
-                    zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), CommonLogic.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath()), entry.getCompression()));
+                    zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath()), entry.getCompression()));
                 }
                 else {
-                    zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), CommonLogic.getAssetBytes(context, entry.getAssetPath()), entry.getCompression()));
+                    zipEntrySourceList.add(new ByteSource(entry.getTargetPath(), FileUtils.getAssetBytes(context, entry.getAssetPath()), entry.getCompression()));
                 }
             }
             ZipUtil.addOrReplaceEntries(file, zipEntrySourceList.toArray(new ZipEntrySource[0]));

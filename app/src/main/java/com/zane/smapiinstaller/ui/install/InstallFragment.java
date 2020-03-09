@@ -1,11 +1,13 @@
 package com.zane.smapiinstaller.ui.install;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.zane.smapiinstaller.R;
@@ -38,6 +40,19 @@ public class InstallFragment extends Fragment {
 
     @OnClick(R.id.button_install)
     void Install() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            CommonLogic.showConfirmDialog(root, R.string.confirm, R.string.android_version_confirm, ((dialog, which) -> {
+                if(which == DialogAction.POSITIVE) {
+                    installLogic();
+                }
+            }));
+        }
+        else {
+            installLogic();
+        }
+    }
+
+    private void installLogic() {
         new MaterialDialog.Builder(context).title(R.string.install_progress_title).content(R.string.extracting_package).contentGravity(GravityEnum.CENTER)
                 .progress(false, 100, true).cancelable(false).cancelListener(dialog -> {
             if (task != null) {

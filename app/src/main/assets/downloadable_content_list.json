@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "contents": [
     {
       "type": "COMPAT",
@@ -11,10 +11,10 @@
     },
     {
       "type": "LOCALE",
-      "name": "中文汉化v2.4",
+      "name": "中文汉化v2.5",
       "description": "简体中文语言包，感谢Wabi-Sabi提供",
-      "url": "http://zaneyork.cn/download/locale/locale_pack_zh_2.4.zip",
-      "hash": "59be19240160de61046f05619f3e448d180137e0989feb537e392a014588615f"
+      "url": "http://zaneyork.cn/download/locale/locale_pack_zh_2.5.zip",
+      "hash": "64eb016f22ecb7ba54318e55e11ddeb9fc3d634187d90fad1df5501113881382"
     }
   ]
 }
