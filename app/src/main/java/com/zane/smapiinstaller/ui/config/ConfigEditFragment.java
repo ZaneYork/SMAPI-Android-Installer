@@ -7,10 +7,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.google.gson.Gson;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.FileUtils;
+import com.zane.smapiinstaller.utils.JSONUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -54,7 +54,7 @@ public class ConfigEditFragment extends Fragment {
     }
     @OnClick(R.id.button_config_save) void onConfigSave() {
         try {
-            new Gson().fromJson(editText.getText().toString(), Object.class);
+            JSONUtil.checkJson(editText.getText().toString());
             FileOutputStream outputStream = new FileOutputStream(configPath);
             try(OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream)){
                 outputStreamWriter.write(editText.getText().toString());

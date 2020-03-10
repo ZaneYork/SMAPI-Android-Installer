@@ -2,13 +2,14 @@ package com.zane.smapiinstaller.utils;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -36,18 +37,16 @@ public class FileUtils {
     public static InputStream getLocalAsset(Context context, String filename) throws IOException {
         File file = new File(context.getFilesDir(), filename);
         if (file.exists()) {
-            return new FileInputStream(file);
+            return new BOMInputStream(new FileInputStream(file));
         }
         return context.getAssets().open(filename);
     }
 
-    public static <T> T getFileJson(File file, Type type) {
+    public static <T> T getFileJson(File file, TypeReference<T> type) {
         try {
             InputStream inputStream = new FileInputStream(file);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.setLenient();
-                return gsonBuilder.create().fromJson(CharStreams.toString(reader), type);
+            try (InputStreamReader reader = new InputStreamReader(new BOMInputStream(inputStream), StandardCharsets.UTF_8)) {
+                return JSONUtil.fromJson(CharStreams.toString(reader), type);
             }
         } catch (Exception ignored) {
         }
@@ -57,10 +56,8 @@ public class FileUtils {
     public static <T> T getFileJson(File file, Class<T> tClass) {
         try {
             InputStream inputStream = new FileInputStream(file);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.setLenient();
-                return gsonBuilder.create().fromJson(CharStreams.toString(reader), tClass);
+            try (InputStreamReader reader = new InputStreamReader(new BOMInputStream(inputStream), StandardCharsets.UTF_8)) {
+                return JSONUtil.fromJson(CharStreams.toString(reader), tClass);
             }
         } catch (Exception ignored) {
         }
@@ -73,7 +70,7 @@ public class FileUtils {
             File file = new File(context.getFilesDir(), tmpFilename);
             FileOutputStream outputStream = new FileOutputStream(file);
             try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
-                writer.write(new Gson().toJson(content));
+                writer.write(JSONUtil.toJson(content));
             } finally {
                 org.zeroturnaround.zip.commons.FileUtils.moveFile(file, new File(context.getFilesDir(), filename));
             }
@@ -85,18 +82,18 @@ public class FileUtils {
         try {
             InputStream inputStream = getLocalAsset(context, filename);
             try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return new Gson().fromJson(CharStreams.toString(reader), tClass);
+                return JSONUtil.fromJson(CharStreams.toString(reader), tClass);
             }
         } catch (IOException ignored) {
         }
         return null;
     }
 
-    public static <T> T getAssetJson(Context context, String filename, Type type) {
+    public static <T> T getAssetJson(Context context, String filename, TypeReference<T> type) {
         try {
             InputStream inputStream = getLocalAsset(context, filename);
             try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return new Gson().fromJson(CharStreams.toString(reader), type);
+                return JSONUtil.fromJson(CharStreams.toString(reader), type);
             }
         } catch (IOException ignored) {
         }

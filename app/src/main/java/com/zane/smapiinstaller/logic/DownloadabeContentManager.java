@@ -2,13 +2,13 @@ package com.zane.smapiinstaller.logic;
 
 import android.view.View;
 
-import com.google.gson.Gson;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.DownloadableContentList;
 import com.zane.smapiinstaller.utils.FileUtils;
+import com.zane.smapiinstaller.utils.JSONUtil;
 
 public class DownloadabeContentManager {
 
@@ -28,8 +28,8 @@ public class DownloadabeContentManager {
             OkGo.<String>get(Constants.DLC_LIST_UPDATE_URL).execute(new StringCallback(){
                 @Override
                 public void onSuccess(Response<String> response) {
-                    DownloadableContentList content = new Gson().fromJson(response.body(), DownloadableContentList.class);
-                    if(downloadableContentList.getVersion() < content.getVersion()) {
+                    DownloadableContentList content = JSONUtil.fromJson(response.body(), DownloadableContentList.class);
+                    if(content != null && downloadableContentList.getVersion() < content.getVersion()) {
                         FileUtils.writeAssetJson(root.getContext(), "downloadable_content_list.json", content);
                         downloadableContentList = content;
                     }

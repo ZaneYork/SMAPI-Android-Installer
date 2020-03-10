@@ -10,10 +10,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
-import com.google.gson.reflect.TypeToken;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
@@ -59,8 +59,7 @@ public class ApkPatcher {
 
     public String extract() {
         PackageManager packageManager = context.getPackageManager();
-        List<String> packageNames = FileUtils.getAssetJson(context, "package_names.json", new TypeToken<List<String>>() {
-        }.getType());
+        List<String> packageNames = FileUtils.getAssetJson(context, "package_names.json", new TypeReference<List<String>>() { });
         if (packageNames == null) {
             errorMessage.set(context.getString(R.string.error_game_not_found));
             return null;

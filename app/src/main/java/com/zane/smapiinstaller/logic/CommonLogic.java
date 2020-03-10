@@ -10,10 +10,10 @@ import android.util.Log;
 import android.view.View;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import com.google.gson.reflect.TypeToken;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
@@ -131,8 +131,7 @@ public class CommonLogic {
     }
 
     public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMod) {
-        List<ManifestEntry> manifestEntries = com.zane.smapiinstaller.utils.FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeToken<List<ManifestEntry>>() {
-        }.getType());
+        List<ManifestEntry> manifestEntries = com.zane.smapiinstaller.utils.FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeReference<List<ManifestEntry>>() { });
         if (manifestEntries == null)
             return false;
         File basePath = new File(Environment.getExternalStorageDirectory() + "/StardewValley/");

@@ -13,4 +13,7 @@ public class ModManifestEntry {
     private String Description;
     private Set<ModManifestEntry> Dependencies;
     private ModManifestEntry ContentPackFor;
+
+    private String MinimumVersion;
+    private Boolean IsRequired;
 }

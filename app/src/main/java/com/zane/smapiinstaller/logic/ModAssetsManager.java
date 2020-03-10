@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.afollestad.materialdialogs.DialogAction;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -14,7 +15,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Queues;
-import com.google.gson.reflect.TypeToken;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
@@ -51,8 +51,7 @@ public class ModAssetsManager {
                 boolean foundManifest = false;
                 for (File file : currentFile.listFiles(File::isFile)) {
                     if (StringUtils.equalsIgnoreCase(file.getName(), "manifest.json")) {
-                        ModManifestEntry manifest = FileUtils.getFileJson(file, new TypeToken<ModManifestEntry>() {
-                        }.getType());
+                        ModManifestEntry manifest = FileUtils.getFileJson(file, ModManifestEntry.class);
                         foundManifest = true;
                         if (manifest != null) {
                             manifest.setAssetPath(file.getParentFile().getAbsolutePath());
@@ -81,8 +80,7 @@ public class ModAssetsManager {
                 boolean foundManifest = false;
                 for (File file : currentFile.listFiles(File::isFile)) {
                     if (StringUtils.equalsIgnoreCase(file.getName(), "manifest.json")) {
-                        ModManifestEntry manifest = FileUtils.getFileJson(file, new TypeToken<ModManifestEntry>() {
-                        }.getType());
+                        ModManifestEntry manifest = FileUtils.getFileJson(file, ModManifestEntry.class);
                         foundManifest = true;
                         if (manifest != null) {
                             manifest.setAssetPath(file.getParentFile().getAbsolutePath());
@@ -101,8 +99,7 @@ public class ModAssetsManager {
 
     public boolean installDefaultMods() {
         Activity context = CommonLogic.getActivityFromView(root);
-        List<ModManifestEntry> modManifestEntries = FileUtils.getAssetJson(context, "mods_manifest.json", new TypeToken<List<ModManifestEntry>>() {
-        }.getType());
+        List<ModManifestEntry> modManifestEntries = FileUtils.getAssetJson(context, "mods_manifest.json", new TypeReference<List<ModManifestEntry>>() { });
         if (modManifestEntries == null)
             return false;
         File modFolder = new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH);
@@ -179,6 +176,9 @@ public class ModAssetsManager {
         Iterable<String> dependencyErrors = Iterables.filter(Iterables.transform(installedModMap.values(), mod -> {
             if (mod.getDependencies() != null) {
                 ArrayList<ModManifestEntry> unsatisfiedDependencies = Lists.newArrayList(Iterables.filter(mod.getDependencies(), dependency -> {
+                    if(dependency.getIsRequired() != null && !dependency.getIsRequired()) {
+                        return false;
+                    }
                     ImmutableList<ModManifestEntry> entries = installedModMap.get(dependency.getUniqueID());
                     if (entries.size() != 1)
                         return true;
@@ -186,10 +186,10 @@ public class ModAssetsManager {
                     if (StringUtils.isBlank(version)) {
                         return true;
                     }
-                    if (StringUtils.isBlank(dependency.getVersion())) {
+                    if (StringUtils.isBlank(dependency.getMinimumVersion())) {
                         return false;
                     }
-                    if (VersionUtil.compareVersion(version, dependency.getVersion()) < 0) {
+                    if (VersionUtil.compareVersion(version, dependency.getMinimumVersion()) < 0) {
                         return true;
                     }
                     return false;
@@ -219,16 +219,19 @@ public class ModAssetsManager {
         Iterable<String> dependencyErrors = Iterables.filter(Iterables.transform(installedModMap.values(), mod -> {
             ModManifestEntry dependency = mod.getContentPackFor();
             if (dependency != null) {
+                if(dependency.getIsRequired() != null && !dependency.getIsRequired()) {
+                    return null;
+                }
                 ImmutableList<ModManifestEntry> entries = installedModMap.get(dependency.getUniqueID());
                 if (entries.size() != 1)
                     return root.getContext().getString(R.string.error_depends_on_mod, mod.getUniqueID(), dependency.getUniqueID());
                 String version = entries.get(0).getVersion();
                 if (!StringUtils.isBlank(version)) {
-                    if (StringUtils.isBlank(dependency.getVersion())) {
+                    if (StringUtils.isBlank(dependency.getMinimumVersion())) {
                         return null;
                     }
-                    if (VersionUtil.compareVersion(version, dependency.getVersion()) < 0) {
-                        return root.getContext().getString(R.string.error_depends_on_mod, mod.getUniqueID(), dependency.getUniqueID());
+                    if (VersionUtil.compareVersion(version, dependency.getMinimumVersion()) < 0) {
+                        return root.getContext().getString(R.string.error_depends_on_mod_version, mod.getUniqueID(), dependency.getUniqueID(), dependency.getMinimumVersion());
                     }
                 }
                 return null;

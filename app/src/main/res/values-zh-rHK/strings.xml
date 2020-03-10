@@ -53,4 +53,5 @@
     <string name="downloading">正在下載: %d KB / %d KB</string>
     <string name="menu_about">關於</string>
     <string name="android_version_confirm">你的系統版本過老，可能會導致0Harmony無效，建議升級到安卓6及以上版本</string>
+    <string name="error_depends_on_mod_version" >The %s is depends on %s %s version or later, please update it first</string>
 </resources>
