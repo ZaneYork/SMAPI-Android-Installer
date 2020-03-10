@@ -33,9 +33,6 @@ public class HelpFragment extends Fragment {
     @OnClick(R.id.button_nexus) void nexus() {
         CommonLogic.openUrl(this.getContext(), "https://www.nexusmods.com/stardewvalley/mods/");
     }
-    @OnClick(R.id.button_release) void release() {
-        CommonLogic.openUrl(this.getContext(), "https://github.com/ZaneYork/SMAPI-Android-Installer/releases");
-    }
     @OnClick({R.id.button_logs}) void showLog() {
         NavController controller = Navigation.findNavController(this.getView());
         File logFile = new File(Environment.getExternalStorageDirectory(), Constants.LOG_PATH);

@@ -3,13 +3,116 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:divider="@drawable/horizontal_divider"
+    android:padding="10dp"
     android:showDividers="middle"
+    android:orientation="vertical"
     tools:context=".ui.about.AboutFragment">
 
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/test_message" />
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/img_qq_1"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/tencentqq"
+            android:contentDescription="@string/icon_desc" />
+        <Button
+            android:id="@+id/button_qq_group_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/img_qq_1"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:text="@string/button_qq_group_1_text" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/img_qq_2"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/tencentqq"
+            android:contentDescription="@string/icon_desc" />
+        <Button
+            android:id="@+id/button_qq_group_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/img_qq_2"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:text="@string/button_qq_group_2_text" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/img_test"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/ic_menu_share"
+            android:contentDescription="@string/icon_desc" />
+        <TextView
+            android:id="@+id/button_release"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/img_test"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:text="@string/button_release" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/img_heart"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/heart"
+            android:contentDescription="@string/icon_desc" />
+        <Button
+            android:id="@+id/button_donation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/img_heart"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:gravity="center"
+            android:textSize="24sp"
+            android:text="@string/button_donation_text" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 </LinearLayout>

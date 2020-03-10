@@ -1,6 +1,8 @@
 package com.zane.smapiinstaller.logic;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -109,6 +111,17 @@ public class CommonLogic {
         intent.setData(Uri.parse(url));
         intent.setAction(Intent.ACTION_VIEW);
         context.startActivity(intent);
+    }
+
+    public static boolean copyToClipboard(Context context, String copyStr) {
+        try {
+            ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData mClipData = ClipData.newPlainText("Label", copyStr);
+            cm.setPrimaryClip(mClipData);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public static List<ApkFilesManifest> findAllApkFileManifest(Context context) {

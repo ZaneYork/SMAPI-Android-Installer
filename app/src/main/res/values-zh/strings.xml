@@ -4,7 +4,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">SMAPI安装器</string>
     <string name="nav_header_subtitle">ZaneYork@qq.com</string>
-    <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">设置</string>
 
     <string name="menu_install">安装</string>
@@ -45,13 +44,16 @@
     <string name="error_no_supported_game_version">游戏版本不支持，请更新版本或者下载兼容包</string>
     <string name="menu_download">下载</string>
     <string name="error_failed_to_download">无法下载目标资源</string>
-    <string name="error_depends_on_mod">%s依赖%s前置，请先安装它</string>
+    <string name="error_depends_on_mod">%1$s依赖%2$s前置，请先安装它</string>
     <string name="locale_pack">语言包</string>
     <string name="info">提示</string>
     <string name="download_unpack_success">已完成下载安装</string>
     <string name="progress">进度</string>
-    <string name="downloading">正在下载: %d KB / %d KB</string>
+    <string name="downloading">正在下载: %1$d KB / %2$d KB</string>
     <string name="menu_about">关于</string>
     <string name="android_version_confirm">你的系统版本过老，可能会导致0Harmony无效，建议升级到安卓6及以上版本</string>
-    <string name="error_depends_on_mod_version" >%s依赖%s %s版本，请先更新它</string>
+    <string name="button_qq_group_1_text">QQ群①: 860453392</string>
+    <string name="button_donation_text">捐赠</string>
+    <string name="button_qq_group_2_text">QQ群②: 1078428449</string>
+    <string name="error_depends_on_mod_version">%1$s依赖%2$s %3$s版本，请先更新它</string>
 </resources>

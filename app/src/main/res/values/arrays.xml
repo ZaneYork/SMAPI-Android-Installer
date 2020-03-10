@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="donation_methods">
+        <item>Alipay</item>
+        <item>WeChat</item>
+        <item>QQ</item>
+        <item>Red Packet Code</item>
+    </string-array>
+</resources>

@@ -1,65 +1,82 @@
 package com.zane.smapiinstaller.ui.about;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.didikee.donate.AlipayDonate;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.logic.CommonLogic;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link AboutFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.time.Duration;
+
 public class AboutFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public AboutFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment AboutFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static AboutFragment newInstance(String param1, String param2) {
-        AboutFragment fragment = new AboutFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_about, container, false);
+        View root = inflater.inflate(R.layout.fragment_about, container, false);
+        ButterKnife.bind(this, root);
+        return root;
+    }
+    @OnClick(R.id.button_release) void release() {
+        CommonLogic.openUrl(this.getContext(), "https://github.com/ZaneYork/SMAPI-Android-Installer/releases");
+    }
+    @OnClick({R.id.button_qq_group_1, R.id.button_qq_group_2}) void joinQQ(Button which) {
+        String baseUrl = "mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26k%3D";
+        if(which.getId() == R.id.button_qq_group_1) {
+            CommonLogic.openUrl(this.getContext(), baseUrl + "AAflCLHiWw1haM1obu_f-CpGsETxXc6b");
+        }
+        else {
+            CommonLogic.openUrl(this.getContext(), baseUrl + "kshK7BavcS2jXZ6exDvezc18ksLB8YsM");
+        }
+    }
+
+    @OnClick(R.id.button_donation) void donation() {
+        Context context = this.getContext();
+        new MaterialDialog.Builder(context).title(R.string.button_donation_text).items(R.array.donation_methods).itemsCallback((dialog, itemView, position, text) -> {
+            switch (position){
+                case 0:
+                    boolean hasInstalledAlipayClient = AlipayDonate.hasInstalledAlipayClient(context);
+                    if (hasInstalledAlipayClient) {
+                        AlipayDonate.startAlipayClient(this.getActivity(), "fkx13570v1pp2xenyrx4y3f");
+                    }
+                    else {
+                        CommonLogic.openUrl(context, "http://dl.zaneyork.cn/alipay.png");
+                    }
+                    break;
+                case 1:
+                    CommonLogic.openUrl(context, "http://dl.zaneyork.cn/wechat.png");
+                    break;
+                case 2:
+                    CommonLogic.openUrl(context, "http://dl.zaneyork.cn/qqpay.png");
+                    break;
+                case 3:
+                    hasInstalledAlipayClient = AlipayDonate.hasInstalledAlipayClient(context);
+                    if (hasInstalledAlipayClient) {
+                        if (CommonLogic.copyToClipboard(context, "9188262")) {
+                            PackageManager packageManager = context.getPackageManager();
+                            Intent intent = packageManager.getLaunchIntentForPackage("com.eg.android.AlipayGphone");
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            context.startActivity(intent);
+                            Toast.makeText(context, R.string.toast_redpacket_message, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                    break;
+            }
+        }).show();
     }
 }

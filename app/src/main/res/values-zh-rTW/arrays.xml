@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="donation_methods">
+        <item>支付寶</item>
+        <item>微信</item>
+        <item>QQ</item>
+        <item>紅包碼</item>
+    </string-array>
+</resources>

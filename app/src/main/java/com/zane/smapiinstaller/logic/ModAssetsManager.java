@@ -180,6 +180,15 @@ public class ModAssetsManager {
                         return false;
                     }
                     ImmutableList<ModManifestEntry> entries = installedModMap.get(dependency.getUniqueID());
+                    if(entries.size() == 0) {
+                        for (String key : installedModMap.keySet()) {
+                            if(StringUtils.equalsIgnoreCase(key, dependency.getUniqueID())) {
+                                dependency.setUniqueID(key);
+                                entries = installedModMap.get(dependency.getUniqueID());
+                                break;
+                            }
+                        }
+                    }
                     if (entries.size() != 1)
                         return true;
                     String version = entries.get(0).getVersion();
@@ -223,6 +232,15 @@ public class ModAssetsManager {
                     return null;
                 }
                 ImmutableList<ModManifestEntry> entries = installedModMap.get(dependency.getUniqueID());
+                if(entries.size() == 0) {
+                    for (String key : installedModMap.keySet()) {
+                        if(StringUtils.equalsIgnoreCase(key, dependency.getUniqueID())) {
+                            dependency.setUniqueID(key);
+                            entries = installedModMap.get(dependency.getUniqueID());
+                            break;
+                        }
+                    }
+                }
                 if (entries.size() != 1)
                     return root.getContext().getString(R.string.error_depends_on_mod, mod.getUniqueID(), dependency.getUniqueID());
                 String version = entries.get(0).getVersion();
