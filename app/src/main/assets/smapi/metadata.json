@@ -158,11 +158,6 @@
             "~1.1.2 | Status": "AssumeBroken" // crashes game on startup
         },
 
-        "Fix Dice": {
-            "ID": "ashley.fixdice",
-            "~1.1.2 | Status": "AssumeBroken" // crashes game on startup
-        },
-
         "Grass Growth": {
             "ID": "bcmpinc.GrassGrowth",
             "~1.0 | Status": "AssumeBroken"

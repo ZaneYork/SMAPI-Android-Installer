@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.microsoft.appcenter.AppCenter;
+import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
@@ -42,12 +44,11 @@ public class InstallFragment extends Fragment {
     void Install() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             CommonLogic.showConfirmDialog(root, R.string.confirm, R.string.android_version_confirm, ((dialog, which) -> {
-                if(which == DialogAction.POSITIVE) {
+                if (which == DialogAction.POSITIVE) {
                     installLogic();
                 }
             }));
-        }
-        else {
+        } else {
             installLogic();
         }
     }
@@ -95,7 +96,12 @@ public class InstallFragment extends Fragment {
                     patcher.install(signPath);
                     dialog.incrementProgress(1);
 
-                } finally {
+                }
+                catch (Exception e) {
+                    Crashes.trackError(e);
+                    CommonLogic.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
+                }
+                finally {
                     if (!dialog.isCancelled()) {
                         dialog.dismiss();
                     }

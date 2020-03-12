@@ -8,5 +8,7 @@ public class Constants {
 
     public static final String DLC_LIST_UPDATE_URL = "http://dl.zaneyork.cn/smapi/downloadable_content_list.json";
 
+    public static final String HELP_LIST_UPDATE_URL = "http://dl.zaneyork.cn/smapi/help_item_list.json";
+
     public static final String APP_CENTER_SECRET = "cb44e94a-7b2f-431e-9ad9-48013ec8c208";
 }

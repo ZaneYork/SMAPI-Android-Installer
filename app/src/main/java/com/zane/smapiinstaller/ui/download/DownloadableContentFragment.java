@@ -2,20 +2,19 @@ package com.zane.smapiinstaller.ui.download;
 
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.DownloadableContentList;
-import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.logic.DownloadabeContentManager;
+import com.zane.smapiinstaller.logic.UpdatableListManager;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * A fragment representing a list of Items.
@@ -39,8 +38,13 @@ public class DownloadableContentFragment extends Fragment {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            DownloadabeContentManager manager = new DownloadabeContentManager(view);
-            recyclerView.setAdapter(new DownloadableContentAdapter(manager.getDownloadableContentList().getContents()));
+            UpdatableListManager<DownloadableContentList> manager = new UpdatableListManager<>(view, "downloadable_content_list.json", DownloadableContentList.class, Constants.DLC_LIST_UPDATE_URL);
+            DownloadableContentAdapter adapter = new DownloadableContentAdapter(manager.getList().getContents());
+            recyclerView.setAdapter(adapter);
+            manager.registerListChangeListener((list) -> {
+                adapter.setDownloadableContentList(list.getContents());
+                return true;
+            });
             recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         }
         return view;

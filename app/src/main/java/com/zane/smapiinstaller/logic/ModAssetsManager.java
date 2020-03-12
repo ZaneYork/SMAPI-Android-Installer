@@ -78,19 +78,25 @@ public class ModAssetsManager {
             File currentFile = files.poll();
             if (currentFile != null && currentFile.exists()) {
                 boolean foundManifest = false;
-                for (File file : currentFile.listFiles(File::isFile)) {
-                    if (StringUtils.equalsIgnoreCase(file.getName(), "manifest.json")) {
-                        ModManifestEntry manifest = FileUtils.getFileJson(file, ModManifestEntry.class);
-                        foundManifest = true;
-                        if (manifest != null) {
-                            manifest.setAssetPath(file.getParentFile().getAbsolutePath());
-                            mods.add(manifest);
+                File[] listFiles = currentFile.listFiles(File::isFile);
+                if(listFiles != null) {
+                    for (File file : listFiles) {
+                        if (StringUtils.equalsIgnoreCase(file.getName(), "manifest.json")) {
+                            ModManifestEntry manifest = FileUtils.getFileJson(file, ModManifestEntry.class);
+                            foundManifest = true;
+                            if (manifest != null && StringUtils.isNoneBlank(manifest.getUniqueID())) {
+                                manifest.setAssetPath(file.getParentFile().getAbsolutePath());
+                                mods.add(manifest);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
                 if (!foundManifest) {
-                    files.addAll(Lists.newArrayList(currentFile.listFiles(File::isDirectory)));
+                    File[] listDirectories = currentFile.listFiles(File::isDirectory);
+                    if(listDirectories != null) {
+                        files.addAll(Lists.newArrayList(listDirectories));
+                    }
                 }
             }
         } while (!files.isEmpty());

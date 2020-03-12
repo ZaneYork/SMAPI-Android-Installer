@@ -30,6 +30,15 @@
         app:layout_constraintTop_toBottomOf="@id/guideline_h1"
         app:layout_constraintStart_toEndOf="@id/button_nexus" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/view_help_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toEndOf="@id/guideline_v1"
+        app:layout_constraintEnd_toStartOf="@id/guideline_v2"
+        app:layout_constraintTop_toBottomOf="@id/button_compat"/>
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_h1"
         android:layout_width="wrap_content"
@@ -38,9 +47,24 @@
         app:layout_constraintGuide_begin="20dp" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_h2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_end="60dp" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_v1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_begin="20dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_v2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="20dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

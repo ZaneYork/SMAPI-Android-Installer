@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.view.View;
 
+import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 
@@ -35,6 +36,9 @@ public class GameLauncher {
             });
         } catch (PackageManager.NameNotFoundException ignored) {
             CommonLogic.showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed);
+        } catch (Exception e) {
+            Crashes.trackError(e);
+            CommonLogic.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
         }
     }
 }

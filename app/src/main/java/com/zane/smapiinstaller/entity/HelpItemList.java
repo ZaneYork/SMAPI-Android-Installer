@@ -7,6 +7,6 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class DownloadableContentList extends UpdatableList {
-    List<DownloadableContent> contents;
+public class HelpItemList extends UpdatableList  {
+    private List<HelpItem> items;
 }

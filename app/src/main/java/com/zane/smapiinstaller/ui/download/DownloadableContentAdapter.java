@@ -39,7 +39,12 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class DownloadableContentAdapter extends RecyclerView.Adapter<DownloadableContentAdapter.ViewHolder> {
 
-    private final List<DownloadableContent> downloadableContentList;
+    private List<DownloadableContent> downloadableContentList;
+
+    public void setDownloadableContentList(List<DownloadableContent> downloadableContentList) {
+        this.downloadableContentList = downloadableContentList;
+        notifyDataSetChanged();
+    }
 
     public DownloadableContentAdapter(List<DownloadableContent> items) {
         downloadableContentList = items;
@@ -62,7 +67,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
         return downloadableContentList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.text_item_type)
         TextView typeTextView;
         @BindView(R.id.text_item_name)

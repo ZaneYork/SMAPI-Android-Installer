@@ -1,0 +1,14 @@
+{
+  "version": 0,
+  "items": [
+    {
+      "title": "Mod安装一般流程",
+      "author": "ZaneYork",
+      "content": "1.前往<a href=\"https://smapi.io/mods\">兼容性查询</a>网站确认目标Mod的兼容性以及最新版本下载地址<br>2.下载Mod到手机<br>3.通过压缩文件管理器解压Mod文件包到手机内置存储的StardewValley/Mods目录下<br>4.点击安装器提供的启动按钮确认新增Mod之后的环境是否正常并启动游戏"
+    },{
+      "title": "部分常用框架包下载链接",
+      "author": "ZaneYork",
+      "content": "<a href=\"https://www.nexusmods.com/stardewvalley/mods/1915?tab=files\">Content Patcher</a>: CP前置，大部分美化包(非xnb替换类)需要的前置Mod<br><a href=\"https://www.nexusmods.com/stardewvalley/mods/1348?tab=files\">Space Core</a>: SC前置，被Json Assets等Mod依赖的框架<br><a href=\"https://www.nexusmods.com/stardewvalley/mods/1720?tab=files\">Json Assets</a>: JA前置，大部分新增物品类Mod需要的前置Mod<br><a href=\"https://www.nexusmods.com/stardewvalley/mods/4970?tab=files\">Producer Framework Mod</a>: PFM前置，大部分新增制作配方类Mod需要的前置Mod"
+    }
+  ]
+}
