@@ -33,11 +33,12 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/view_help_list"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginTop="10dp"
         app:layout_constraintStart_toEndOf="@id/guideline_v1"
         app:layout_constraintEnd_toStartOf="@id/guideline_v2"
-        app:layout_constraintTop_toBottomOf="@id/button_compat"/>
+        app:layout_constraintTop_toBottomOf="@id/button_compat"
+        app:layout_constraintBottom_toTopOf="@id/guideline_h2"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_h1"
