@@ -1,10 +1,12 @@
 package com.zane.smapiinstaller.ui.about;
 
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.didikee.donate.AlipayDonate;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -35,6 +37,26 @@ public class AboutFragment extends Fragment {
     @OnClick(R.id.button_release) void release() {
         CommonLogic.openUrl(this.getContext(), "https://github.com/ZaneYork/SMAPI-Android-Installer/releases");
     }
+    @OnClick(R.id.button_gplay) void gplay() {
+        try
+        {
+            this.OpenPlayStore("market://details?id=" + this.getActivity().getPackageName());
+        }
+        catch (ActivityNotFoundException ex)
+        {
+            this.OpenPlayStore("https://play.google.com/store/apps/details?id=" + this.getActivity().getPackageName());
+        }
+
+    }
+    private void OpenPlayStore(String url)
+    {
+        Intent intent = new Intent("android.intent.action.VIEW");
+        intent.setData(Uri.parse(url));
+        intent.setPackage("com.android.vending");
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        this.getActivity().startActivity(intent);
+    }
+
     @OnClick({R.id.button_qq_group_1, R.id.button_qq_group_2}) void joinQQ(Button which) {
         String baseUrl = "mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26k%3D";
         if(which.getId() == R.id.button_qq_group_1) {

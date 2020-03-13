@@ -54,4 +54,5 @@
     <string name="button_donation_text">捐赠</string>
     <string name="button_qq_group_2_text">QQ群②: 1078428449</string>
     <string name="error_depends_on_mod_version">%1$s依赖%2$s %3$s版本，请先更新它</string>
+    <string name="button_gplay">谷歌商店详情</string>
 </resources>

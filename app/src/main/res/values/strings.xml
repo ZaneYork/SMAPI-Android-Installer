@@ -58,4 +58,5 @@
     <string name="icon_desc" translatable="false">icon</string>
     <string name="button_donation_text">Donation</string>
     <string name="toast_redpacket_message" translatable="false">红包码已复制\n支付宝首页搜索“9188262” 立即领红包</string>
+    <string name="button_gplay">View in Play Store</string>
 </resources>

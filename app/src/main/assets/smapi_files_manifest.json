@@ -145,6 +145,16 @@
     "origin": 0
   },
   {
+    "targetPath": "smapi-internal/i18n/hu.json",
+    "assetPath": "smapi/i18n/hu.json",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/i18n/it.json",
+    "assetPath": "smapi/i18n/it.json",
+    "origin": 0
+  },
+  {
     "targetPath": "smapi-internal/i18n/ja.json",
     "assetPath": "smapi/i18n/ja.json",
     "origin": 0
