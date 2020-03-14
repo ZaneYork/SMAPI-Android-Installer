@@ -1,6 +1,7 @@
 package com.zane.smapiinstaller.logic;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -107,10 +108,14 @@ public class CommonLogic {
     }
 
     public static void openUrl(Context context, String url) {
-        Intent intent = new Intent();
-        intent.setData(Uri.parse(url));
-        intent.setAction(Intent.ACTION_VIEW);
-        context.startActivity(intent);
+        try {
+            Intent intent = new Intent();
+            intent.setData(Uri.parse(url));
+            intent.setAction(Intent.ACTION_VIEW);
+            context.startActivity(intent);
+        }
+        catch (ActivityNotFoundException ignored){
+        }
     }
 
     public static boolean copyToClipboard(Context context, String copyStr) {
