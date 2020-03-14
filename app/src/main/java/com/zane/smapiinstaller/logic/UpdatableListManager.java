@@ -13,6 +13,10 @@ import com.zane.smapiinstaller.utils.JSONUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 在线列表更新管理器
+ * @param <T> 列表类型
+ */
 public class UpdatableListManager<T extends UpdatableList> {
     private static boolean updateChecked = false;
 
@@ -20,6 +24,12 @@ public class UpdatableListManager<T extends UpdatableList> {
 
     private List<Predicate<T>> onChangedListener = new ArrayList<>();
 
+    /**
+     * @param root      context容器
+     * @param filename  本地文件名
+     * @param tClass    目标类型
+     * @param updateUrl 更新地址
+     */
     public UpdatableListManager(View root, String filename, Class<T> tClass, String updateUrl) {
         updatableList = FileUtils.getAssetJson(root.getContext(), filename, tClass);
         if(!updateChecked) {
@@ -40,10 +50,17 @@ public class UpdatableListManager<T extends UpdatableList> {
         }
     }
 
+    /**
+     * @return 列表
+     */
     public T getList() {
         return (T) updatableList;
     }
 
+    /**
+     * 注册列表变化监听器
+     * @param onChanged 回调
+     */
     public void registerListChangeListener(Predicate<T> onChanged) {
         this.onChangedListener.add(onChanged);
     }

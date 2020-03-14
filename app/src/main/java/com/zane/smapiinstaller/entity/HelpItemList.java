@@ -5,8 +5,14 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * 帮助内容列表
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class HelpItemList extends UpdatableList  {
+    /**
+     * 列表
+     */
     private List<HelpItem> items;
 }

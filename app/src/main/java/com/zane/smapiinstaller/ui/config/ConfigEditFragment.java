@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.logic.CommonLogic;
+import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
 import com.zane.smapiinstaller.utils.JSONUtil;
 
@@ -62,7 +62,7 @@ public class ConfigEditFragment extends Fragment {
             }
         }
         catch (Exception e) {
-            CommonLogic.showAlertDialog(getView(), R.string.error, e.getLocalizedMessage());
+            DialogUtils.showAlertDialog(getView(), R.string.error, e.getLocalizedMessage());
         }
     }
 

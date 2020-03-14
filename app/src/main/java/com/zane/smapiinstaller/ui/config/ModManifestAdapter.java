@@ -9,7 +9,7 @@ import android.widget.TextView;
 import com.afollestad.materialdialogs.DialogAction;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
-import com.zane.smapiinstaller.logic.CommonLogic;
+import com.zane.smapiinstaller.utils.DialogUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.commons.FileUtils;
@@ -76,7 +76,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             ButterKnife.bind(this, itemView);
         }
         @OnClick(R.id.button_remove_mod) void removeMod() {
-            CommonLogic.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which)->{
+            DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which)->{
                 if (which == DialogAction.POSITIVE) {
                     File file = new File(modPath);
                     if (file.exists()) {
@@ -87,7 +87,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
                                 notifyItemRemoved(idx);
                             }
                         } catch (IOException e) {
-                            CommonLogic.showAlertDialog(itemView, R.string.error, e.getMessage());
+                            DialogUtils.showAlertDialog(itemView, R.string.error, e.getMessage());
                         }
                     }
                 }

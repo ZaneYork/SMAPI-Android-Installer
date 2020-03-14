@@ -10,12 +10,12 @@ import android.view.ViewGroup;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
+import com.zane.smapiinstaller.utils.DialogUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,7 +43,7 @@ public class InstallFragment extends Fragment {
     @OnClick(R.id.button_install)
     void Install() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            CommonLogic.showConfirmDialog(root, R.string.confirm, R.string.android_version_confirm, ((dialog, which) -> {
+            DialogUtils.showConfirmDialog(root, R.string.confirm, R.string.android_version_confirm, ((dialog, which) -> {
                 if (which == DialogAction.POSITIVE) {
                     installLogic();
                 }
@@ -53,6 +53,9 @@ public class InstallFragment extends Fragment {
         }
     }
 
+    /**
+     * 安装逻辑
+     */
     private void installLogic() {
         new MaterialDialog.Builder(context).title(R.string.install_progress_title).content(R.string.extracting_package).contentGravity(GravityEnum.CENTER)
                 .progress(false, 100, true).cancelable(false).cancelListener(dialog -> {
@@ -67,39 +70,39 @@ public class InstallFragment extends Fragment {
             task = new Thread(() -> {
                 try {
                     ApkPatcher patcher = new ApkPatcher(context);
-                    CommonLogic.setProgressDialogState(root, dialog, R.string.extracting_package, 0);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, 0);
                     String path = patcher.extract();
                     if (path == null) {
-                        CommonLogic.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
+                        DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
                         return;
                     }
-                    CommonLogic.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 10);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 10);
                     if (!CommonLogic.unpackSmapiFiles(context, path, false)) {
-                        CommonLogic.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
+                        DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
                         return;
                     }
                     ModAssetsManager modAssetsManager = new ModAssetsManager(root);
-                    CommonLogic.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 15);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 15);
                     modAssetsManager.installDefaultMods();
-                    CommonLogic.setProgressDialogState(root, dialog, R.string.patching_package, 25);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 25);
                     if (!patcher.patch(path)) {
-                        CommonLogic.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
+                        DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
                         return;
                     }
-                    CommonLogic.setProgressDialogState(root, dialog, R.string.signing_package, 55);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.signing_package, 55);
                     String signPath = patcher.sign(path);
                     if (signPath == null) {
-                        CommonLogic.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
+                        DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
                         return;
                     }
-                    CommonLogic.setProgressDialogState(root, dialog, R.string.installing_package, 99);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.installing_package, 99);
                     patcher.install(signPath);
                     dialog.incrementProgress(1);
 
                 }
                 catch (Exception e) {
                     Crashes.trackError(e);
-                    CommonLogic.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
+                    DialogUtils.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
                 }
                 finally {
                     if (!dialog.isCancelled()) {

@@ -8,22 +8,48 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * JSON工具类
+ */
 public class JSONUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
     static {
+        // 允许未定义的属性
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+        // 允许尾部额外的逗号
         mapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
+        // 允许数组设置空值
         mapper.configure(JsonReadFeature.ALLOW_MISSING_VALUES.mappedFeature(), true);
+        // 允许Java注释
         mapper.configure(JsonReadFeature.ALLOW_JAVA_COMMENTS.mappedFeature(), true);
     }
+
+    /**
+     * 转JSON
+     * @param object 数据
+     * @return JSON字符串
+     * @throws Exception 异常
+     */
     public static String toJson(Object object) throws Exception {
         return mapper.writeValueAsString(object);
     }
 
+    /**
+     * 校验JSON
+     * @param jsonString JSON字符串
+     * @throws JsonProcessingException 异常
+     */
     public static void checkJson(String jsonString) throws JsonProcessingException {
         mapper.readValue(jsonString, Object.class);
     }
 
+    /**
+     * JSON反序列化
+     * @param jsonString JSON
+     * @param cls        目标类型
+     * @param <T>        泛型参数
+     * @return 数据
+     */
     public static <T> T fromJson(String jsonString, Class<T> cls) {
         try {
             return mapper.readValue(jsonString, cls);
@@ -33,6 +59,13 @@ public class JSONUtil {
         return null;
     }
 
+    /**
+     * JSON反序列化
+     * @param jsonString JSON
+     * @param type       目标类型
+     * @param <T>        泛型参数
+     * @return 数据
+     */
     public static <T> T fromJson(String jsonString, TypeReference<T> type) {
         try {
             return mapper.readValue(jsonString, type);

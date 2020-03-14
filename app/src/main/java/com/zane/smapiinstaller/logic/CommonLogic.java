@@ -37,18 +37,15 @@ import pxb.android.axml.AxmlVisitor;
 import pxb.android.axml.AxmlWriter;
 import pxb.android.axml.NodeVisitor;
 
+/**
+ * 通用逻辑
+ */
 public class CommonLogic {
-
-    public static void setProgressDialogState(View view, MaterialDialog dialog, int message, int progress) {
-        Activity activity = getActivityFromView(view);
-        if (activity != null && !activity.isFinishing() && !dialog.isCancelled()) {
-            activity.runOnUiThread(() -> {
-                dialog.incrementProgress(progress - dialog.getCurrentProgress());
-                dialog.setContent(message);
-            });
-        }
-    }
-
+    /**
+     * 从View获取所属Activity
+     * @param view context容器
+     * @return Activity
+     */
     public static Activity getActivityFromView(View view) {
         if (null != view) {
             Context context = view.getContext();
@@ -62,51 +59,12 @@ public class CommonLogic {
         return null;
     }
 
-    public static void showAlertDialog(View view, int title, String message) {
-        Activity activity = getActivityFromView(view);
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
-        }
-    }
 
-    public static void showAlertDialog(View view, int title, int message) {
-        Activity activity = getActivityFromView(view);
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
-        }
-    }
-
-    public static void showConfirmDialog(View view, int title, int message, MaterialDialog.SingleButtonCallback callback) {
-        Activity activity = getActivityFromView(view);
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
-        }
-    }
-
-    public static void showConfirmDialog(View view, int title, String message, MaterialDialog.SingleButtonCallback callback) {
-        Activity activity = getActivityFromView(view);
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
-        }
-    }
-
-    public static AtomicReference<MaterialDialog> showProgressDialog(View view, int title, String message) {
-        Activity activity = getActivityFromView(view);
-        AtomicReference<MaterialDialog> reference = new AtomicReference<>();
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> {
-                MaterialDialog dialog = new MaterialDialog.Builder(activity)
-                        .title(title)
-                        .content(message)
-                        .progress(false, 100, true)
-                        .cancelable(false)
-                        .show();
-                reference.set(dialog);
-            });
-        }
-        return reference;
-    }
-
+    /**
+     * 打开指定URL
+     * @param context context
+     * @param url     目标URL
+     */
     public static void openUrl(Context context, String url) {
         try {
             Intent intent = new Intent();
@@ -118,6 +76,12 @@ public class CommonLogic {
         }
     }
 
+    /**
+     * 复制文本到剪贴板
+     * @param context 上下文
+     * @param copyStr 文本
+     * @return 是否复制成功
+     */
     public static boolean copyToClipboard(Context context, String copyStr) {
         try {
             ClipboardManager cm = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -129,6 +93,11 @@ public class CommonLogic {
         }
     }
 
+    /**
+     * 扫描全部兼容包
+     * @param context context
+     * @return 兼容包列表
+     */
     public static List<ApkFilesManifest> findAllApkFileManifest(Context context) {
         ApkFilesManifest apkFilesManifest = com.zane.smapiinstaller.utils.FileUtils.getAssetJson(context, "apk_files_manifest.json", ApkFilesManifest.class);
         ArrayList<ApkFilesManifest> apkFilesManifests = Lists.newArrayList(apkFilesManifest);
@@ -148,7 +117,14 @@ public class CommonLogic {
         return apkFilesManifests;
     }
 
-    public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMod) {
+    /**
+     * 提取SMAPI环境文件到内部存储对应位置
+     * @param context  context
+     * @param apkPath  安装包路径
+     * @param checkMode 是否为校验模式
+     * @return 操作是否成功
+     */
+    public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode) {
         List<ManifestEntry> manifestEntries = com.zane.smapiinstaller.utils.FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeReference<List<ManifestEntry>>() { });
         if (manifestEntries == null)
             return false;
@@ -169,7 +145,7 @@ public class CommonLogic {
             File targetFile = new File(basePath, entry.getTargetPath());
             switch (entry.getOrigin()) {
                 case 0:
-                    if (!checkMod || !targetFile.exists()) {
+                    if (!checkMode || !targetFile.exists()) {
                         try (InputStream inputStream = context.getAssets().open(entry.getAssetPath())) {
                             if (!targetFile.getParentFile().exists()) {
                                 if (!targetFile.getParentFile().mkdirs()) {
@@ -185,7 +161,7 @@ public class CommonLogic {
                     }
                     break;
                 case 1:
-                    if (!checkMod || !targetFile.exists()) {
+                    if (!checkMode || !targetFile.exists()) {
                         ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath(), targetFile);
                     }
                     break;
@@ -194,6 +170,13 @@ public class CommonLogic {
         return true;
     }
 
+    /**
+     * 修改AndroidManifest.xml文件
+     * @param bytes        AndroidManifest.xml文件字符数组
+     * @param processLogic 处理逻辑
+     * @return 修改后的AndroidManifest.xml文件字符数组
+     * @throws IOException 异常
+     */
     public static byte[] modifyManifest(byte[] bytes, Predicate<ManifestTagVisitor.AttrArgs> processLogic) throws IOException {
         AxmlReader reader = new AxmlReader(bytes);
         AxmlWriter writer = new AxmlWriter();

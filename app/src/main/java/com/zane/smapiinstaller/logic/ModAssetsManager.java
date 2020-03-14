@@ -18,6 +18,7 @@ import com.google.common.collect.Queues;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
+import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
 import com.zane.smapiinstaller.utils.VersionUtil;
 
@@ -32,6 +33,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import androidx.core.util.Consumer;
 
+/**
+ * Mod资源管理器
+ */
 public class ModAssetsManager {
 
     private final View root;
@@ -42,6 +46,11 @@ public class ModAssetsManager {
         this.root = root;
     }
 
+    /**
+     * 查找第一个匹配的Mod
+     * @param filter 过滤规则
+     * @return Mod信息
+     */
     public static ModManifestEntry findFirstModIf(Predicate<ModManifestEntry> filter) {
         ConcurrentLinkedQueue<File> files = Queues.newConcurrentLinkedQueue();
         files.add(new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH));
@@ -70,6 +79,10 @@ public class ModAssetsManager {
         return null;
     }
 
+    /**
+     * 查找全部已识别Mod
+     * @return Mod信息列表
+     */
     public static List<ModManifestEntry> findAllInstalledMods() {
         ConcurrentLinkedQueue<File> files = Queues.newConcurrentLinkedQueue();
         files.add(new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH));
@@ -103,6 +116,10 @@ public class ModAssetsManager {
         return mods;
     }
 
+    /**
+     * 安装默认Mod
+     * @return 是否安装成功
+     */
     public boolean installDefaultMods() {
         Activity context = CommonLogic.getActivityFromView(root);
         List<ModManifestEntry> modManifestEntries = FileUtils.getAssetJson(context, "mods_manifest.json", new TypeReference<List<ModManifestEntry>>() { });
@@ -114,7 +131,7 @@ public class ModAssetsManager {
             if (installedModMap.containsKey(mod.getUniqueID()) || installedModMap.containsKey(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"))) {
                 ImmutableList<ModManifestEntry> installedMods = installedModMap.get(mod.getUniqueID());
                 if (installedMods.size() > 1) {
-                    CommonLogic.showAlertDialog(root, R.string.error,
+                    DialogUtils.showAlertDialog(root, R.string.error,
                             String.format(context.getString(R.string.duplicate_mod_found),
                                     Joiner.on(",").join(Lists.transform(installedMods, item -> FileUtils.toPrettyPath(item.getAssetPath())))));
                     return false;
@@ -139,6 +156,10 @@ public class ModAssetsManager {
         return true;
     }
 
+    /**
+     * 检查Mod环境
+     * @param returnCallback 回调函数
+     */
     public void checkModEnvironment(Consumer<Boolean> returnCallback) {
         ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(), ModManifestEntry::getUniqueID);
         checkDuplicateMod(installedModMap, (isConfirm) -> {
@@ -154,6 +175,11 @@ public class ModAssetsManager {
         });
     }
 
+    /**
+     * 检查是否有重复Mod
+     * @param installedModMap 已安装Mod集合
+     * @param returnCallback  回调函数
+     */
     private void checkDuplicateMod(ImmutableListMultimap<String, ModManifestEntry> installedModMap, Consumer<Boolean> returnCallback) {
         // Duplicate mod check
         ArrayList<String> list = Lists.newArrayList();
@@ -164,7 +190,7 @@ public class ModAssetsManager {
             }
         }
         if (list.size() > 0) {
-            CommonLogic.showConfirmDialog(root, R.string.error,
+            DialogUtils.showConfirmDialog(root, R.string.error,
                     root.getContext().getString(R.string.duplicate_mod_found, Joiner.on(";").join(list)),
                     ((dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {
@@ -178,6 +204,11 @@ public class ModAssetsManager {
             returnCallback.accept(true);
     }
 
+    /**
+     * 检查是否有依赖关系缺失
+     * @param installedModMap 已安装Mod集合
+     * @param returnCallback  回调函数
+     */
     private void checkUnsatisfiedDependencies(ImmutableListMultimap<String, ModManifestEntry> installedModMap, Consumer<Boolean> returnCallback) {
         Iterable<String> dependencyErrors = Iterables.filter(Iterables.transform(installedModMap.values(), mod -> {
             if (mod.getDependencies() != null) {
@@ -216,7 +247,7 @@ public class ModAssetsManager {
             return null;
         }), item -> item != null);
         if (dependencyErrors.iterator().hasNext()) {
-            CommonLogic.showConfirmDialog(root, R.string.error,
+            DialogUtils.showConfirmDialog(root, R.string.error,
                     Joiner.on(";").join(dependencyErrors),
                     ((dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {
@@ -230,6 +261,11 @@ public class ModAssetsManager {
             returnCallback.accept(true);
     }
 
+    /**
+     * 检查是否有资源包依赖Mod没有安装
+     * @param installedModMap 已安装Mod集合
+     * @param returnCallback  回调函数
+     */
     private void checkContentpacks(ImmutableListMultimap<String, ModManifestEntry> installedModMap, Consumer<Boolean> returnCallback) {
         Iterable<String> dependencyErrors = Iterables.filter(Iterables.transform(installedModMap.values(), mod -> {
             ModManifestEntry dependency = mod.getContentPackFor();
@@ -263,7 +299,7 @@ public class ModAssetsManager {
             return null;
         }), item -> item != null);
         if (dependencyErrors.iterator().hasNext()) {
-            CommonLogic.showConfirmDialog(root, R.string.error,
+            DialogUtils.showConfirmDialog(root, R.string.error,
                     Joiner.on(";").join(dependencyErrors),
                     ((dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {

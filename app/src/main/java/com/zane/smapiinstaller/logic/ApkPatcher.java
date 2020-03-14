@@ -57,6 +57,10 @@ public class ApkPatcher {
         this.context = context;
     }
 
+    /**
+     * 依次扫描package_names.json文件对应的包名，抽取找到的第一个游戏APK到SMAPI Installer路径
+     * @return 抽取后的APK文件路径，如果抽取失败返回null
+     */
     public String extract() {
         PackageManager packageManager = context.getPackageManager();
         List<String> packageNames = FileUtils.getAssetJson(context, "package_names.json", new TypeReference<List<String>>() { });
@@ -91,6 +95,11 @@ public class ApkPatcher {
         return null;
     }
 
+    /**
+     * 将指定APK文件重新打包，添加SMAPI，修改AndroidManifest.xml，同时验证版本是否正确
+     * @param apkPath APK文件路径
+     * @return 是否成功打包
+     */
     public boolean patch(String apkPath) {
         if (apkPath == null)
             return false;
@@ -130,6 +139,12 @@ public class ApkPatcher {
         return false;
     }
 
+    /**
+     * 扫描全部兼容包，寻找匹配的版本，修改AndroidManifest.xml文件
+     * @param bytes AndroidManifest.xml的字节数组
+     * @param manifests 兼容包列表
+     * @return 修改后的AndroidManifest.xml的字节数组
+     */
     private byte[] modifyManifest(byte[] bytes, List<ApkFilesManifest> manifests) {
         AtomicReference<String> packageName = new AtomicReference<>();
         Predicate<ManifestTagVisitor.AttrArgs> processLogic = (attr) -> {
@@ -184,6 +199,11 @@ public class ApkPatcher {
         }
     }
 
+    /**
+     * 重新签名安装包
+     * @param apkPath APK文件路径
+     * @return 签名后的安装包路径
+     */
     public String sign(String apkPath) {
         try {
             File externalFilesDir = Environment.getExternalStorageDirectory();
@@ -207,6 +227,10 @@ public class ApkPatcher {
         return null;
     }
 
+    /**
+     * 对指定安装包发起安装
+     * @param apkPath 安装包路径
+     */
     public void install(String apkPath) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(fromFile(new File(apkPath)), "application/vnd.android.package-archive");
@@ -234,6 +258,10 @@ public class ApkPatcher {
             return Uri.fromFile(file);
     }
 
+    /**
+     * 获取报错内容
+     * @return 报错内容
+     */
     public AtomicReference<String> getErrorMessage() {
         return errorMessage;
     }

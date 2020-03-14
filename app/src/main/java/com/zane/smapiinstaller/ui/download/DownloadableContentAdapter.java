@@ -21,8 +21,8 @@ import com.lzy.okgo.model.Response;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.DownloadableContent;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
-import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
+import com.zane.smapiinstaller.utils.DialogUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
@@ -109,12 +109,12 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
             if (StringUtils.isNoneBlank(downloadableContent.getAssetPath())) {
                 File contentFile = new File(itemView.getContext().getFilesDir(), downloadableContent.getAssetPath());
                 if (contentFile.exists()) {
-                    CommonLogic.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which) -> {
+                    DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {
                             try {
                                 FileUtils.forceDelete(contentFile);
                             } catch (IOException e) {
-                                CommonLogic.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
+                                DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
                             }
                         }
                     });
@@ -129,7 +129,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
             if (StringUtils.equals(downloadableContent.getType(), "LOCALE")) {
                 modManifestEntry = ModAssetsManager.findFirstModIf(mod -> StringUtils.equals(mod.getUniqueID(), "ZaneYork.CustomLocalization") || StringUtils.equals(mod.getUniqueID(), "SMAPI.CustomLocalization"));
                 if (modManifestEntry == null) {
-                    CommonLogic.showAlertDialog(itemView, R.string.error, String.format(context.getString(R.string.error_depends_on_mod), context.getString(R.string.locale_pack), "ZaneYork.CustomLocalization"));
+                    DialogUtils.showAlertDialog(itemView, R.string.error, String.format(context.getString(R.string.error_depends_on_mod), context.getString(R.string.locale_pack), "ZaneYork.CustomLocalization"));
                     return;
                 }
             }
@@ -146,7 +146,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                 return;
             downloading.set(true);
             ModManifestEntry finalModManifestEntry = modManifestEntry;
-            AtomicReference<MaterialDialog> dialogRef = CommonLogic.showProgressDialog(itemView, R.string.progress, "");
+            AtomicReference<MaterialDialog> dialogRef = DialogUtils.showProgressDialog(itemView, R.string.progress, "");
             OkGo.<File>get(downloadableContent.getUrl()).execute(new FileCallback(file.getParentFile().getAbsolutePath(), file.getName()) {
                 @Override
                 public void onError(Response<File> response) {
@@ -156,7 +156,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                         dialog.dismiss();
                     }
                     downloading.set(false);
-                    CommonLogic.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
+                    DialogUtils.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
                 }
 
                 @Override
@@ -179,7 +179,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                     File downloadedFile = response.body();
                     String hash = com.zane.smapiinstaller.utils.FileUtils.getFileHash(downloadedFile);
                     if (!StringUtils.equalsIgnoreCase(hash, downloadableContent.getHash())) {
-                        CommonLogic.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
+                        DialogUtils.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
                         return;
                     }
                     unpackLogic(context, downloadedFile, finalModManifestEntry);
@@ -195,7 +195,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
             } else {
                 ZipUtil.unpack(downloadedFile, new File(context.getFilesDir(), downloadableContent.getAssetPath()));
             }
-            CommonLogic.showAlertDialog(itemView, R.string.info, R.string.download_unpack_success);
+            DialogUtils.showAlertDialog(itemView, R.string.info, R.string.download_unpack_success);
         }
     }
 }

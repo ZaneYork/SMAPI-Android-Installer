@@ -22,7 +22,15 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * 文件工具类
+ */
 public class FileUtils {
+    /**
+     * 读取文本文件
+     * @param file 文件
+     * @return 文本
+     */
     public static String getFileText(File file) {
         try {
             InputStream inputStream = new FileInputStream(file);
@@ -34,6 +42,13 @@ public class FileUtils {
         return null;
     }
 
+    /**
+     * 读取本地资源或Asset资源
+     * @param context  context
+     * @param filename 文件名
+     * @return 输入流
+     * @throws IOException 异常
+     */
     public static InputStream getLocalAsset(Context context, String filename) throws IOException {
         File file = new File(context.getFilesDir(), filename);
         if (file.exists()) {
@@ -42,6 +57,13 @@ public class FileUtils {
         return context.getAssets().open(filename);
     }
 
+    /**
+     * 读取JSON文件
+     * @param file 文件
+     * @param type 数据类型
+     * @param <T>  泛型类型
+     * @return 数据
+     */
     public static <T> T getFileJson(File file, TypeReference<T> type) {
         try {
             InputStream inputStream = new FileInputStream(file);
@@ -53,6 +75,13 @@ public class FileUtils {
         return null;
     }
 
+    /**
+     * 读取JSON文件
+     * @param file   文件
+     * @param tClass 数据类型
+     * @param <T>    泛型类型
+     * @return 数据
+     */
     public static <T> T getFileJson(File file, Class<T> tClass) {
         try {
             InputStream inputStream = new FileInputStream(file);
@@ -64,6 +93,12 @@ public class FileUtils {
         return null;
     }
 
+    /**
+     * 写入JSON文件到本地
+     * @param context  context
+     * @param filename 文件名
+     * @param content  内容
+     */
     public static void writeAssetJson(Context context, String filename, Object content) {
         try {
             String tmpFilename = filename + ".tmp";
@@ -78,6 +113,14 @@ public class FileUtils {
         }
     }
 
+    /**
+     * 读取JSON资源
+     * @param context  context
+     * @param filename 资源名
+     * @param tClass   数据类型
+     * @param <T>      泛型类型
+     * @return 数据
+     */
     public static <T> T getAssetJson(Context context, String filename, Class<T> tClass) {
         try {
             InputStream inputStream = getLocalAsset(context, filename);
@@ -89,6 +132,14 @@ public class FileUtils {
         return null;
     }
 
+    /**
+     * 读取JSON资源
+     * @param context  context
+     * @param filename 资源名
+     * @param type     数据类型
+     * @param <T>      泛型类型
+     * @return 数据
+     */
     public static <T> T getAssetJson(Context context, String filename, TypeReference<T> type) {
         try {
             InputStream inputStream = getLocalAsset(context, filename);
@@ -100,6 +151,12 @@ public class FileUtils {
         return null;
     }
 
+    /**
+     * 读取资源为字节数组
+     * @param context  context
+     * @param filename 文件名
+     * @return 字节数组
+     */
     public static byte[] getAssetBytes(Context context, String filename) {
         try {
             try (InputStream inputStream = getLocalAsset(context, filename)) {
@@ -110,10 +167,21 @@ public class FileUtils {
         return new byte[0];
     }
 
+    /**
+     * 简化路径前缀
+     * @param path 文件路径
+     * @return 移除前缀后的路径
+     */
     public static String toPrettyPath(String path) {
         return StringUtils.removeStart(path, Environment.getExternalStorageDirectory().getAbsolutePath());
     }
 
+    /**
+     * 计算资源文件SHA3-256
+     * @param context  context
+     * @param filename 资源名
+     * @return SHA3-256值
+     */
     public static String getFileHash(Context context, String filename) {
         try (InputStream inputStream = getLocalAsset(context, filename)) {
             return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
@@ -122,6 +190,11 @@ public class FileUtils {
         return null;
     }
 
+    /**
+     * 计算文件SHA3-256
+     * @param file 文件
+     * @return SHA3-256值
+     */
     public static String getFileHash(File file) {
         try (InputStream inputStream = new FileInputStream(file)) {
             return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();

@@ -4,6 +4,9 @@ import com.google.common.base.Predicate;
 
 import pxb.android.axml.NodeVisitor;
 
+/**
+ * AndroidManifest文件节点访问器
+ */
 class ManifestTagVisitor extends NodeVisitor {
 
     private final Predicate<AttrArgs> attrProcessLogic;

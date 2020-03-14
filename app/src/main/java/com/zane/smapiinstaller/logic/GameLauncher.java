@@ -9,7 +9,11 @@ import android.view.View;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.utils.DialogUtils;
 
+/**
+ * 游戏启动器
+ */
 public class GameLauncher {
 
     private final View root;
@@ -18,13 +22,16 @@ public class GameLauncher {
         this.root = root;
     }
 
+    /**
+     * 启动逻辑
+     */
     public void launch() {
         Activity context = CommonLogic.getActivityFromView(root);
         PackageManager packageManager = context.getPackageManager();
         try {
             PackageInfo packageInfo = packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME, 0);
             if(!CommonLogic.unpackSmapiFiles(context, packageInfo.applicationInfo.publicSourceDir, true)) {
-                CommonLogic.showAlertDialog(root, R.string.error, R.string.error_failed_to_repair);
+                DialogUtils.showAlertDialog(root, R.string.error, R.string.error_failed_to_repair);
                 return;
             }
             ModAssetsManager modAssetsManager = new ModAssetsManager(root);
@@ -35,10 +42,10 @@ public class GameLauncher {
                 }
             });
         } catch (PackageManager.NameNotFoundException ignored) {
-            CommonLogic.showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed);
+            DialogUtils.showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed);
         } catch (Exception e) {
             Crashes.trackError(e);
-            CommonLogic.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
+            DialogUtils.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
         }
     }
 }

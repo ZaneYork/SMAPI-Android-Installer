@@ -1,15 +1,22 @@
 package com.zane.smapiinstaller.utils;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * 版本比较工具
+ */
 public class VersionUtil {
+    /**
+     * 比较单个版本段
+     * @param sectionA sectionA
+     * @param sectionB sectionB
+     * @return 比较结果
+     */
     private static int compareVersionSection(String sectionA, String sectionB) {
         try {
             return Integer.compare(Integer.parseInt(sectionA), Integer.parseInt(sectionB));
@@ -40,6 +47,12 @@ public class VersionUtil {
         }
         return Integer.compare(listA.size(), listB.size());
     }
+
+    /**
+     * 判断是否为空版本段
+     * @param versionSections 版本段列表
+     * @return 是否为空版本段
+     */
     private static boolean isZero(List<String> versionSections) {
         return !Iterables.filter(versionSections, version -> {
             try {
@@ -53,6 +66,12 @@ public class VersionUtil {
         }).iterator().hasNext();
     }
 
+    /**
+     * 比较两个版本
+     * @param versionA versionA
+     * @param versionB versionB
+     * @return 比较结果
+     */
     public static int compareVersion(String versionA, String versionB) {
         List<String> versionSectionsA = Splitter.on(".").splitToList(versionA);
         List<String> versionSectionsB = Splitter.on(".").splitToList(versionB);
