@@ -12,6 +12,11 @@ public class Constants {
      * 日志路径
      */
     public static final String LOG_PATH = "StardewValley/ErrorLogs/SMAPI-latest.txt";
+
+    /**
+     * 配置文件路径
+     */
+    public static final String CONFIG_PATH = "StardewValley/smapi-internal/config.user.json";
     /**
      * 安装包目标包名
      */

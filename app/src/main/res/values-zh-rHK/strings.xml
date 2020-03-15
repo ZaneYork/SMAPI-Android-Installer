@@ -34,7 +34,6 @@
     <string name="button_compat">兼容性</string>
     <string name="button_nexus">N網</string>
     <string name="button_release">官網</string>
-    <string name="test_message">暫處於內測階段, Q群：860453392</string>
     <string name="button_logs">日誌</string>
     <string name="smapi_game_name">SMAPI星露穀物語</string>
     <string name="error_failed_to_create_file">無法創建以下文件: %s</string>
@@ -55,4 +54,8 @@
     <string name="button_donation_text">捐贈</string>
     <string name="button_qq_group_2_text">QQ群②: 1078428449</string>
     <string name="button_gplay" >谷歌商店详情</string>
+    <string name="smapi_version">SMAPI版本: 3.3.2.2</string>
+    <string name="settings_verbose_logging">詳細日誌</string>
+    <string name="settings_check_for_updates">檢查更新</string>
+    <string name="settings_developer_mode">開發者模式</string>
 </resources>

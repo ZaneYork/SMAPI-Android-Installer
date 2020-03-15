@@ -4,12 +4,15 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.entity.FrameworkConfig;
+import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
 
 import androidx.annotation.NonNull;
@@ -40,25 +43,20 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.nav_view)
     NavigationView navigationView;
 
-    private void requestPermissions()
-    {
+    private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        }
-        else
-        {
+        } else {
             initView();
         }
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-        {
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             initView();
-        }
-        else {
+        } else {
             requestPermissions();
         }
     }
@@ -85,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
     }
 
-    @OnClick(R.id.launch) void launchButtonClick() {
+    @OnClick(R.id.launch)
+    void launchButtonClick() {
         new GameLauncher(navigationView).launch();
     }
 
@@ -93,6 +92,43 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        ConfigManager manager = new ConfigManager();
+        FrameworkConfig config = manager.getConfig();
+        menu.findItem(R.id.settings_verbose_logging).setChecked(config.isVerboseLogging());
+        menu.findItem(R.id.settings_check_for_updates).setChecked(config.isCheckForUpdates());
+        menu.findItem(R.id.settings_developer_mode).setChecked(config.isDeveloperMode());
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.isCheckable()) {
+            if (item.isChecked())
+                item.setChecked(false);
+            else
+                item.setChecked(true);
+        }
+        ConfigManager manager = new ConfigManager();
+        FrameworkConfig config = manager.getConfig();
+        switch (item.getItemId()) {
+            case R.id.settings_verbose_logging:
+                config.setVerboseLogging(item.isChecked());
+                break;
+            case R.id.settings_check_for_updates:
+                config.setCheckForUpdates(item.isChecked());
+                break;
+            case R.id.settings_developer_mode:
+                config.setDeveloperMode(item.isChecked());
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        manager.flushConfig();
         return true;
     }
 

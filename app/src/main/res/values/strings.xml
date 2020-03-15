@@ -34,7 +34,6 @@
     <string name="button_compat">Compat</string>
     <string name="button_nexus">Nexus</string>
     <string name="button_release">Release</string>
-    <string name="test_message">Still at test stage now.</string>
     <string name="button_logs">Logs</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
     <string name="error_failed_to_create_file">Failed to create target file : %s</string>
@@ -59,4 +58,8 @@
     <string name="button_donation_text">Donation</string>
     <string name="toast_redpacket_message" translatable="false">红包码已复制\n支付宝首页搜索“9188262” 立即领红包</string>
     <string name="button_gplay">View in Play Store</string>
+    <string name="smapi_version">SMAPI Version: 3.3.2.2</string>
+    <string name="settings_verbose_logging">Verbose Logging</string>
+    <string name="settings_check_for_updates">Check For Updates</string>
+    <string name="settings_developer_mode">Developer Mode</string>
 </resources>

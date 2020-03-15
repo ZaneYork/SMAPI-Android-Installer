@@ -107,7 +107,37 @@ public class FileUtils {
             try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
                 writer.write(JSONUtil.toJson(content));
             } finally {
-                org.zeroturnaround.zip.commons.FileUtils.moveFile(file, new File(context.getFilesDir(), filename));
+                File distFile = new File(context.getFilesDir(), filename);
+                if(file.exists()) {
+                    org.zeroturnaround.zip.commons.FileUtils.forceDelete(distFile);
+                }
+                org.zeroturnaround.zip.commons.FileUtils.moveFile(file, distFile);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * 写入JSON文件到本地
+     * @param file 文件
+     * @param content  内容
+     */
+    public static void writeFileJson(File file, Object content) {
+        try {
+            if(!file.getParentFile().exists()) {
+                org.zeroturnaround.zip.commons.FileUtils.forceMkdir(file.getParentFile());
+            }
+            String filename = file.getName();
+            String tmpFilename = filename + ".tmp";
+            File fileTmp = new File(file.getParent(), tmpFilename);
+            FileOutputStream outputStream = new FileOutputStream(fileTmp);
+            try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+                writer.write(JSONUtil.toJson(content));
+            } finally {
+                if(file.exists()) {
+                    org.zeroturnaround.zip.commons.FileUtils.forceDelete(file);
+                }
+                org.zeroturnaround.zip.commons.FileUtils.moveFile(fileTmp, file);
             }
         } catch (Exception ignored) {
         }
