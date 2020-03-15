@@ -108,7 +108,7 @@ public class FileUtils {
                 writer.write(JSONUtil.toJson(content));
             } finally {
                 File distFile = new File(context.getFilesDir(), filename);
-                if(file.exists()) {
+                if(distFile.exists()) {
                     org.zeroturnaround.zip.commons.FileUtils.forceDelete(distFile);
                 }
                 org.zeroturnaround.zip.commons.FileUtils.moveFile(file, distFile);
