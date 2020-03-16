@@ -84,6 +84,15 @@ public class ModAssetsManager {
      * @return Mod信息列表
      */
     public static List<ModManifestEntry> findAllInstalledMods() {
+        return findAllInstalledMods(false);
+    }
+
+    /**
+     * 查找全部已识别Mod
+     * @param ignoreDisabledMod 是否忽略禁用的mod
+     * @return Mod信息列表
+     */
+    public static List<ModManifestEntry> findAllInstalledMods(boolean ignoreDisabledMod) {
         ConcurrentLinkedQueue<File> files = Queues.newConcurrentLinkedQueue();
         files.add(new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH));
         List<ModManifestEntry> mods = new ArrayList<>(30);
@@ -98,6 +107,9 @@ public class ModAssetsManager {
                             ModManifestEntry manifest = FileUtils.getFileJson(file, ModManifestEntry.class);
                             foundManifest = true;
                             if (manifest != null && StringUtils.isNoneBlank(manifest.getUniqueID())) {
+                                if(ignoreDisabledMod && StringUtils.startsWith(file.getParentFile().getName(), ".")) {
+                                    break;
+                                }
                                 manifest.setAssetPath(file.getParentFile().getAbsolutePath());
                                 mods.add(manifest);
                             }
@@ -161,7 +173,7 @@ public class ModAssetsManager {
      * @param returnCallback 回调函数
      */
     public void checkModEnvironment(Consumer<Boolean> returnCallback) {
-        ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(), ModManifestEntry::getUniqueID);
+        ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(true), ModManifestEntry::getUniqueID);
         checkDuplicateMod(installedModMap, (isConfirm) -> {
             if (isConfirm)
                 checkUnsatisfiedDependencies(installedModMap, (isConfirm2) -> {

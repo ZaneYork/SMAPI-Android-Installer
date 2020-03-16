@@ -3,6 +3,7 @@ package com.zane.smapiinstaller;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -14,6 +15,11 @@ import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.FrameworkConfig;
 import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
+import com.zane.smapiinstaller.utils.DialogUtils;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.File;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -57,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             initView();
         } else {
-            requestPermissions();
+            this.finish();
         }
     }
 
@@ -102,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.settings_verbose_logging).setChecked(config.isVerboseLogging());
         menu.findItem(R.id.settings_check_for_updates).setChecked(config.isCheckForUpdates());
         menu.findItem(R.id.settings_developer_mode).setChecked(config.isDeveloperMode());
+        Constants.MOD_PATH = config.getModsPath();
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -125,6 +132,22 @@ public class MainActivity extends AppCompatActivity {
             case R.id.settings_developer_mode:
                 config.setDeveloperMode(item.isChecked());
                 break;
+            case R.id.settings_set_mod_path:
+                DialogUtils.showInputDialog(this, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {
+                    if(StringUtils.isNoneBlank(input)) {
+                        String pathString = input.toString();
+                        File file = new File(Environment.getExternalStorageDirectory(), pathString);
+                        if(file.exists() && file.isDirectory()) {
+                            Constants.MOD_PATH = pathString;
+                            config.setModsPath(pathString);
+                            manager.flushConfig();
+                        }
+                        else {
+                            DialogUtils.showAlertDialog(drawer, R.string.error, R.string.error_illegal_path);
+                        }
+                    }
+                });
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -54,8 +54,13 @@
     <string name="button_qq_group_2_text">QQ群②: 1078428449</string>
     <string name="error_depends_on_mod_version">%1$s依赖%2$s %3$s版本，请先更新它</string>
     <string name="button_gplay">谷歌商店详情</string>
-    <string name="smapi_version">SMAPI版本: 3.3.2.2</string>
+    <string name="smapi_version">SMAPI版本: 3.3.2.3</string>
     <string name="settings_verbose_logging">详细日志</string>
     <string name="settings_developer_mode">开发者模式</string>
     <string name="settings_check_for_updates">检查更新</string>
+    <string name="confirm_disable_mod">确定禁用该内容?</string>
+    <string name="settings_set_mod_path">设置Mods位置</string>
+    <string name="input">输入</string>
+    <string name="input_mods_path">请输入Mods路径</string>
+    <string name="error_illegal_path">请输入一个有效的路径</string>
 </resources>

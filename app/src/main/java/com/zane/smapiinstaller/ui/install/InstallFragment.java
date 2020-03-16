@@ -105,9 +105,7 @@ public class InstallFragment extends Fragment {
                     DialogUtils.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
                 }
                 finally {
-                    if (!dialog.isCancelled()) {
-                        dialog.dismiss();
-                    }
+                    DialogUtils.dismissDialog(root, dialog);
                 }
             });
             task.start();

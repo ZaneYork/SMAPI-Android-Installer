@@ -1,6 +1,8 @@
 package com.zane.smapiinstaller.utils;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.text.InputType;
 import android.view.View;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -9,12 +11,15 @@ import com.zane.smapiinstaller.logic.CommonLogic;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import androidx.drawerlayout.widget.DrawerLayout;
+
 /**
  * 对话框相关工具类
  */
 public class DialogUtils {
     /**
      * 设置进度条状态
+     *
      * @param view     context容器
      * @param dialog   对话框
      * @param message  消息
@@ -32,6 +37,7 @@ public class DialogUtils {
 
     /**
      * 显示警告对话框
+     *
      * @param view    context容器
      * @param title   标题
      * @param message 消息
@@ -45,8 +51,9 @@ public class DialogUtils {
 
     /**
      * 显示警告对话框
-     * @param view context容器
-     * @param title 标题
+     *
+     * @param view    context容器
+     * @param title   标题
      * @param message 消息
      */
     public static void showAlertDialog(View view, int title, int message) {
@@ -58,6 +65,7 @@ public class DialogUtils {
 
     /**
      * 显示确认对话框
+     *
      * @param view     context容器
      * @param title    标题
      * @param message  消息
@@ -72,6 +80,7 @@ public class DialogUtils {
 
     /**
      * 显示确认对话框
+     *
      * @param view     context容器
      * @param title    标题
      * @param message  消息
@@ -86,6 +95,7 @@ public class DialogUtils {
 
     /**
      * 显示进度条
+     *
      * @param view    context容器
      * @param title   标题
      * @param message 消息
@@ -106,5 +116,26 @@ public class DialogUtils {
             });
         }
         return reference;
+    }
+
+    public static void dismissDialog(View view, MaterialDialog dialog) {
+        Activity activity = CommonLogic.getActivityFromView(view);
+        if (activity != null && !activity.isFinishing()) {
+            if (dialog != null && !dialog.isCancelled()) {
+                dialog.dismiss();
+            }
+        }
+    }
+
+    public static void showInputDialog(Activity activity, int title, int content, String hint, String prefill, MaterialDialog.InputCallback callback) {
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity)
+                    .title(title)
+                    .content(content)
+                    .inputType(InputType.TYPE_CLASS_TEXT)
+                    .input(hint, prefill, callback)
+                    .show()
+            );
+        }
     }
 }

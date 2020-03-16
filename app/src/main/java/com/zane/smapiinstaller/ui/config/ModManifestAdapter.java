@@ -1,5 +1,6 @@
 package com.zane.smapiinstaller.ui.config;
 
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +11,9 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.FileUtils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.zeroturnaround.zip.commons.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +65,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             else {
                 configModButton.setVisibility(View.VISIBLE);
             }
+            setStrike();
         }
         @BindView(R.id.button_config_mod)
         Button configModButton;
@@ -75,6 +77,17 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
+
+        private void setStrike() {
+            File file = new File(modPath);
+            if(StringUtils.startsWith(file.getName(), ".")) {
+                modName.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+            }
+            else {
+                modName.getPaint().setFlags(modName.getPaint().getFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            }
+        }
+
         @OnClick(R.id.button_remove_mod) void removeMod() {
             DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which)->{
                 if (which == DialogAction.POSITIVE) {
@@ -93,6 +106,37 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
                 }
             });
         }
+        @OnClick(R.id.button_disable_mod) void disableMod() {
+            File file = new File(modPath);
+            if(file.exists() && file.isDirectory()) {
+                if(StringUtils.startsWith(file.getName(), ".")) {
+                    File newFile = new File(file.getParent(), StringUtils.stripStart(file.getName(), "."));
+                    moveMod(file, newFile);
+                }
+                else {
+                    DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_disable_mod, (dialog, which)-> {
+                        if(which == DialogAction.POSITIVE) {
+                            File newFile = new File(file.getParent(), "." + file.getName());
+                            moveMod(file, newFile);
+                        }
+                    });
+                }
+            }
+        }
+
+        private void moveMod(File file, File newFile) {
+            try {
+                FileUtils.moveDirectory(file, newFile);
+                Integer idx = model.findFirst(mod -> StringUtils.equalsIgnoreCase(mod.getAssetPath(), modPath));
+                if (idx != null) {
+                    model.getModList().get(idx).setAssetPath(newFile.getAbsolutePath());
+                    notifyItemChanged(idx);
+                }
+            } catch (IOException e) {
+                DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
+            }
+        }
+
         @OnClick(R.id.button_config_mod) void configMod() {
             File file = new File(modPath, "config.json");
             if(file.exists()) {

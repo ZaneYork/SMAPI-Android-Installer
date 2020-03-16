@@ -19,4 +19,9 @@
             android:title="@string/settings_developer_mode"
             app:showAsAction="never" />
     </group>
+    <item
+        android:id="@+id/settings_set_mod_path"
+        android:orderInCategory="103"
+        android:title="@string/settings_set_mod_path"
+        app:showAsAction="never" />
 </menu>

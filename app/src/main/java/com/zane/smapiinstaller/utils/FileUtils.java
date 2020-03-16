@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * 文件工具类
  */
-public class FileUtils {
+public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
     /**
      * 读取文本文件
      * @param file 文件

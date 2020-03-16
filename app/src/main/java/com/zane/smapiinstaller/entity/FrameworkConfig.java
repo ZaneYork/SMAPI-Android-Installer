@@ -27,4 +27,10 @@ public class FrameworkConfig {
      */
     @JsonProperty("DeveloperMode")
     private boolean DeveloperMode = false;
+
+    /**
+     * Mod存放位置
+     */
+    @JsonProperty("ModsPath")
+    private String ModsPath = "StardewValley/Mods";
 }

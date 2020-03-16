@@ -23,10 +23,10 @@ import com.zane.smapiinstaller.entity.DownloadableContent;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.FileUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ZipUtil;
-import org.zeroturnaround.zip.commons.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -152,9 +152,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                 public void onError(Response<File> response) {
                     super.onError(response);
                     MaterialDialog dialog = dialogRef.get();
-                    if (dialog != null && !dialog.isCancelled()) {
-                        dialog.dismiss();
-                    }
+                    DialogUtils.dismissDialog(itemView, dialog);
                     downloading.set(false);
                     DialogUtils.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
                 }
@@ -172,9 +170,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                 @Override
                 public void onSuccess(Response<File> response) {
                     MaterialDialog dialog = dialogRef.get();
-                    if (dialog != null && !dialog.isCancelled()) {
-                        dialog.dismiss();
-                    }
+                    DialogUtils.dismissDialog(itemView, dialog);
                     downloading.set(false);
                     File downloadedFile = response.body();
                     String hash = com.zane.smapiinstaller.utils.FileUtils.getFileHash(downloadedFile);

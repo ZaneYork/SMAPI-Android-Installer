@@ -7,7 +7,7 @@ public class Constants {
     /**
      * Mod安装路径
      */
-    public static final String MOD_PATH = "StardewValley/Mods";
+    public static String MOD_PATH = "StardewValley/Mods";
     /**
      * 日志路径
      */
