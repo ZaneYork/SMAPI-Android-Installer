@@ -142,3 +142,4 @@
 -dontwarn org.spongycastle.jce.provider.X509LDAPCertStoreSpi
 -dontwarn org.spongycastle.x509.util.LDAPStoreHelper
 -keep class org.slf4j.**
+-keep class com.hjq.language.** {*;}

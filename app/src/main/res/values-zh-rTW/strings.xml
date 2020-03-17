@@ -63,4 +63,5 @@
     <string name="input">輸入</string>
     <string name="input_mods_path">請輸入Mods路徑</string>
     <string name="error_illegal_path">請輸入一個有效的路徑</string>
+    <string name="settings_set_language">語言</string>
 </resources>

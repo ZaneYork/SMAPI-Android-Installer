@@ -12,14 +12,13 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
+import com.zane.smapiinstaller.utils.FileUtils;
 
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -30,7 +29,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
@@ -106,7 +104,7 @@ public class CommonLogic {
             for (File directory : compatFolder.listFiles(File::isDirectory)) {
                 File manifestFile = new File(directory, "apk_files_manifest.json");
                 if (manifestFile.exists()) {
-                    ApkFilesManifest manifest = com.zane.smapiinstaller.utils.FileUtils.getFileJson(manifestFile, ApkFilesManifest.class);
+                    ApkFilesManifest manifest = FileUtils.getFileJson(manifestFile, ApkFilesManifest.class);
                     if (manifest != null) {
                         apkFilesManifests.add(manifest);
                     }
@@ -125,7 +123,7 @@ public class CommonLogic {
      * @return 操作是否成功
      */
     public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode) {
-        List<ManifestEntry> manifestEntries = com.zane.smapiinstaller.utils.FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeReference<List<ManifestEntry>>() { });
+        List<ManifestEntry> manifestEntries = FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeReference<List<ManifestEntry>>() { });
         if (manifestEntries == null)
             return false;
         File basePath = new File(Environment.getExternalStorageDirectory() + "/StardewValley/");

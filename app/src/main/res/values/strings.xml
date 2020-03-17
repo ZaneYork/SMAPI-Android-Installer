@@ -67,4 +67,5 @@
     <string name="input">Input</string>
     <string name="input_mods_path">Please input mods path</string>
     <string name="error_illegal_path">Please input a valid path</string>
+    <string name="settings_set_language">Language</string>
 </resources>

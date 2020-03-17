@@ -24,4 +24,9 @@
         android:orderInCategory="103"
         android:title="@string/settings_set_mod_path"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/settings_language"
+        android:orderInCategory="104"
+        android:title="@string/settings_set_language"
+        app:showAsAction="never" />
 </menu>

@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.logic.CommonLogic;
+import com.zane.smapiinstaller.utils.DialogUtils;
 
 import java.time.Duration;
 
@@ -69,7 +70,7 @@ public class AboutFragment extends Fragment {
 
     @OnClick(R.id.button_donation) void donation() {
         Context context = this.getContext();
-        new MaterialDialog.Builder(context).title(R.string.button_donation_text).items(R.array.donation_methods).itemsCallback((dialog, itemView, position, text) -> {
+        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(context).title(R.string.button_donation_text).items(R.array.donation_methods).itemsCallback((dialog, itemView, position, text) -> {
             switch (position){
                 case 0:
                     boolean hasInstalledAlipayClient = AlipayDonate.hasInstalledAlipayClient(context);
@@ -99,6 +100,6 @@ public class AboutFragment extends Fragment {
                     }
                     break;
             }
-        }).show();
+        }).show());
     }
 }

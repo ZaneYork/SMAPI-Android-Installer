@@ -64,6 +64,7 @@ public class InstallFragment extends Fragment {
             }
         }).showListener(dialogInterface -> {
             final MaterialDialog dialog = (MaterialDialog) dialogInterface;
+            DialogUtils.setCurrentDialog(dialog);
             if (task != null) {
                 task.interrupt();
             }

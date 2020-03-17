@@ -5,14 +5,14 @@
       "type": "COMPAT",
       "name": "SMAPI for 1.4.5.137",
       "assetPath": "compat/137/",
-      "description": "SMAPI compat package for game 1.4.4.128 - 1.4.5.137, SMAPI 3.3.2.0",
+      "description": "SMAPI兼容包, 适用版本1.4.4.128 - 1.4.5.137, SMAPI 3.3.2.0",
       "url": "http://zaneyork.cn/download/compat/smapi_137.zip",
       "hash": "bd16e8e4cb52d636e24c6a2d2309b66a60e492d2b97c1b8f6a519c04ac42ebdc"
     },
     {
       "type": "LOCALE",
-      "name": "Chinese Locale v2.5.1",
-      "description": "Chinese simplified locale pack, thanks Wabi-Sabi",
+      "name": "中文汉化v2.5.1",
+      "description": "简体中文语言包，感谢Wabi-Sabi提供",
       "url": "http://zaneyork.cn/download/locale/locale_pack_zh_2.5.1.zip",
       "hash": "4924ba7022c5604e7bc46ee2aad27d4f285c299a3939f3d2817afc10e2e73d77"
     }

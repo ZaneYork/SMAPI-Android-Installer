@@ -1,13 +1,17 @@
 package com.zane.smapiinstaller;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.material.navigation.NavigationView;
+import com.hjq.language.LanguagesManager;
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.Crashes;
@@ -20,6 +24,7 @@ import com.zane.smapiinstaller.utils.DialogUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -148,6 +153,33 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 return true;
+            case R.id.settings_language:
+                DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_set_language).items(R.array.languages).itemsCallback((dialog, itemView, position, text) -> {
+                    boolean restart;
+                    switch (position) {
+                        case 0:
+                            restart = LanguagesManager.setSystemLanguage(this);
+                            break;
+                        case 1:
+                            restart = LanguagesManager.setAppLanguage(this, Locale.ENGLISH);
+                            break;
+                        case 2:
+                            restart = LanguagesManager.setAppLanguage(this, Locale.SIMPLIFIED_CHINESE);
+                            break;
+                        case 3:
+                            restart = LanguagesManager.setAppLanguage(this, Locale.TRADITIONAL_CHINESE);
+                            break;
+                        default:
+                            return;
+                    }
+                    if (restart) {
+                        // 我们可以充分运用 Activity 跳转动画，在跳转的时候设置一个渐变的效果
+                        startActivity(new Intent(this, MainActivity.class));
+                        overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                        finish();
+                    }
+                }).show());
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -161,4 +193,17 @@ public class MainActivity extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        // 国际化适配（绑定语种）
+        super.attachBaseContext(LanguagesManager.attach(newBase));
+    }
+
+    @Override
+    protected void onDestroy() {
+        DialogUtils.dismissDialog();
+        super.onDestroy();
+    }
 }
+

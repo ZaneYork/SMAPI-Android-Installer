@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "title": "Mod安装一般流程",
+      "author": "ZaneYork",
+      "content": "1.前往<a href=\"https://smapi.io/mods\">兼容性查询</a>网站确认目标Mod的兼容性以及最新版本下载地址<br>2.下载Mod到手机<br>3.通过压缩文件管理器解压Mod文件包到手机内置存储的StardewValley/Mods目录下<br>4.点击安装器提供的启动按钮确认新增Mod之后的环境是否正常并启动游戏"
+    },
+    {
+      "title": "Mod兼容网的一些相关信息",
+      "author": "凪白みと的小狐狸",
+      "content": "<a href=\"https://smapi.io/mods\">这里</a>有很多mod，但是不提供下载，只是告诉你他能不能用了，有绿，黄，灰，红四种颜色：<br>绿色部分mod说明当前最新版smapi和最新版游戏可以用（这是电脑的，手机基本一致，但有例外），并有n网链接提供下载（第二个格子）。<br>黄色部分说明这个mod有问题，作者也已经弃坑了，但是他是开源的，有其他大佬为他更新，n网链接不能用了，倒数第二个格子（倒数第一是符号#）提供了非官方的下载（需要注册，注册不了的挂梯子试试）。<br>灰色部分的mod是凉了，但后继有人，一般在倒数第二个格子里会有类似功能的mod（也有没有的），可以选择使用那个差不多的。<br>红色是彻底凉凉了，作者弃坑，还不开源，除了原作者没人能拉他一把，所以没有链接，还是放弃换别的吧。"
+    },
+    {
+      "title": "Mod不兼容反馈",
+      "author": "ZaneYork",
+      "content": "1.前往<a href=\"https://smapi.io/mods\">兼容性查询</a>网站确认目标Mod的兼容性<br>2.查阅<a href=\"https://docs.qq.com/sheet/DWmhYWVdIQ3RncFNB?c=C83A0BJ0\">安卓端兼容性报告表</a>确认Mod兼容状态<br>3.如果问题未提交，填写<a href=\"https://docs.qq.com/form/edit/DWlJZc0paV2xxR2JL\">数据收集表</a>反馈问题"
+    },
+    {
+      "title": "部分常用框架包下载链接",
+      "author": "ZaneYork",
+      "content": "<a href=\"https://www.nexusmods.com/stardewvalley/mods/1915?tab=files\">Content Patcher</a>: CP前置，大部分美化包(非xnb替换类)需要的前置Mod<br><a href=\"https://www.nexusmods.com/stardewvalley/mods/1348?tab=files\">Space Core</a>: SC前置，被Json Assets等Mod依赖的框架<br><a href=\"https://www.nexusmods.com/stardewvalley/mods/1720?tab=files\">Json Assets</a>: JA前置，大部分新增物品类Mod需要的前置Mod<br><a href=\"https://www.nexusmods.com/stardewvalley/mods/4970?tab=files\">Producer Framework Mod</a>: PFM前置，大部分新增制作配方类Mod需要的前置Mod"
+    },
+    {
+      "title": "CustomLocalization（简称为CL）的作用",
+      "author": "alone06101",
+      "content": "①加载Content里面的xnb文件进入到游戏中。<br>注意：Content里面的xnb文件位置必须与游戏安装包里的文件位置相一致才可以(不存在的位置可以自行新建)。<br>②可以通过加载Content里面的语言包增加游戏语言。"
+    }
+  ]
+}

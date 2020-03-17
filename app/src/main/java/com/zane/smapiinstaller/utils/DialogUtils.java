@@ -6,17 +6,20 @@ import android.text.InputType;
 import android.view.View;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.logic.CommonLogic;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import androidx.drawerlayout.widget.DrawerLayout;
-
 /**
  * 对话框相关工具类
  */
 public class DialogUtils {
+    private static Dialog currentDialog = null;
+    public static void setCurrentDialog(Dialog currentDialog) {
+        DialogUtils.currentDialog = currentDialog;
+    }
     /**
      * 设置进度条状态
      *
@@ -45,7 +48,7 @@ public class DialogUtils {
     public static void showAlertDialog(View view, int title, String message) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
+            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show()));
         }
     }
 
@@ -59,7 +62,7 @@ public class DialogUtils {
     public static void showAlertDialog(View view, int title, int message) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show());
+            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show()));
         }
     }
 
@@ -74,7 +77,7 @@ public class DialogUtils {
     public static void showConfirmDialog(View view, int title, int message, MaterialDialog.SingleButtonCallback callback) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
+            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show()));
         }
     }
 
@@ -89,7 +92,7 @@ public class DialogUtils {
     public static void showConfirmDialog(View view, int title, String message, MaterialDialog.SingleButtonCallback callback) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show());
+            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show()));
         }
     }
 
@@ -112,6 +115,7 @@ public class DialogUtils {
                         .progress(false, 100, true)
                         .cancelable(false)
                         .show();
+                currentDialog = dialog;
                 reference.set(dialog);
             });
         }
@@ -122,19 +126,35 @@ public class DialogUtils {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
             if (dialog != null && !dialog.isCancelled()) {
-                dialog.dismiss();
+                try {
+                    dialog.dismiss();
+                }
+                catch (Exception e) {
+                    Crashes.trackError(e);
+                }
+            }
+        }
+    }
+
+    public static void dismissDialog() {
+        if (currentDialog != null && currentDialog.isShowing()) {
+            try {
+                currentDialog.dismiss();
+            }
+            catch (Exception e) {
+                Crashes.trackError(e);
             }
         }
     }
 
     public static void showInputDialog(Activity activity, int title, int content, String hint, String prefill, MaterialDialog.InputCallback callback) {
         if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> new MaterialDialog.Builder(activity)
+            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity)
                     .title(title)
                     .content(content)
                     .inputType(InputType.TYPE_CLASS_TEXT)
                     .input(hint, prefill, callback)
-                    .show()
+                    .show())
             );
         }
     }
