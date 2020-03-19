@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.hjq.language.LanguagesManager;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.constant.AppConfigKey;
@@ -52,7 +53,7 @@ class ConfigViewModel extends ViewModel {
                 ).build();
                 List<TranslationResult> translationResults = query.list();
                 ImmutableMap<String, TranslationResult> translateMap = Maps.uniqueIndex(translationResults, TranslationResult::getOrigin);
-                List<String> untranslatedText = Lists.newArrayList(Iterables.filter(Iterables.transform(modList, mod -> {
+                List<String> untranslatedText = Lists.newArrayList(Sets.newHashSet(Iterables.filter(Iterables.transform(modList, mod -> {
                     assert mod != null;
                     if (translateMap.containsKey(mod.getDescription())) {
                         mod.setTranslatedDescription(translateMap.get(mod.getDescription()).getTranslation());
@@ -60,7 +61,7 @@ class ConfigViewModel extends ViewModel {
                     } else {
                         return mod.getDescription();
                     }
-                }), item -> item != null));
+                }), item -> item != null)));
                 if (untranslatedText.size() > 0) {
                     TranslateUtil.translateText(untranslatedText, translator, language, (results) -> {
                         daoSession.getTranslationResultDao().insertOrReplaceInTx(results);
