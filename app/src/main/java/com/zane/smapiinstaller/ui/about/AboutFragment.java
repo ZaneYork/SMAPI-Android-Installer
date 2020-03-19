@@ -45,7 +45,7 @@ public class AboutFragment extends Fragment {
         }
         catch (ActivityNotFoundException ex)
         {
-            this.OpenPlayStore("https://play.google.com/store/apps/details?id=" + this.getActivity().getPackageName());
+            CommonLogic.openUrl(this.getContext(), "https://play.google.com/store/apps/details?id=" + this.getActivity().getPackageName());
         }
 
     }

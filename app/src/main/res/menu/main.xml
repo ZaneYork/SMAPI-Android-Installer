@@ -29,4 +29,9 @@
         android:orderInCategory="104"
         android:title="@string/settings_set_language"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/settings_translation_service"
+        android:orderInCategory="105"
+        android:title="@string/settings_translation_service"
+        app:showAsAction="never" />
 </menu>

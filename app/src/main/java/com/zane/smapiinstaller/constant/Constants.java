@@ -33,4 +33,14 @@ public class Constants {
      * AppCenter秘钥
      */
     public static final String APP_CENTER_SECRET = "cb44e94a-7b2f-431e-9ad9-48013ec8c208";
+
+    /**
+     * 有道翻译服务
+     */
+    public static final String TRANSLATE_SERVICE_URL_YOUDAO = "http://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=%s";
+
+    /**
+     * Google翻译服务
+     */
+    public static final String TRANSLATE_SERVICE_URL_GOOGLE = "http://translate.google.cn/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto&tl=%s&q=%s";
 }

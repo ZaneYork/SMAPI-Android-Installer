@@ -90,9 +90,23 @@ public class DialogUtils {
      * @param callback 回调
      */
     public static void showConfirmDialog(View view, int title, String message, MaterialDialog.SingleButtonCallback callback) {
+        showConfirmDialog(view, title, message, R.string.confirm, R.string.cancel, callback);
+    }
+
+    /**
+     * 显示确认对话框
+     *
+     * @param view         context容器
+     * @param title        标题
+     * @param message      消息
+     * @param positiveText 确认文本
+     * @param negativeText 取消文本
+     * @param callback     回调
+     */
+    public static void showConfirmDialog(View view, int title, String message, int positiveText, int negativeText, MaterialDialog.SingleButtonCallback callback) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show()));
+            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(positiveText).negativeText(negativeText).onAny(callback).show()));
         }
     }
 

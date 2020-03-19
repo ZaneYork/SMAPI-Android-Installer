@@ -49,11 +49,11 @@
             android:id="@+id/button_remove_content"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="@android:drawable/ic_menu_delete" />
+            android:background="@drawable/trash" />
         <Button
             android:id="@+id/button_download_content"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="@android:drawable/ic_menu_add" />
+            android:background="@drawable/add" />
     </LinearLayout>
 </RelativeLayout>

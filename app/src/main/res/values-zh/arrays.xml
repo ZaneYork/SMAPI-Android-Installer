@@ -11,5 +11,15 @@
         <item>English</item>
         <item>简体中文</item>
         <item>繁體中文</item>
+        <item>한국어</item>
+        <item>ไทย</item>
+        <item>Español</item>
+        <item>Français</item>
+        <item>Português</item>
+    </string-array>
+    <string-array name="translators">
+        <item>关闭</item>
+        <item>谷歌</item>
+        <item>有道</item>
     </string-array>
 </resources>

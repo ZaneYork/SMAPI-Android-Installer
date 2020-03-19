@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_menu_send" />
+        app:srcCompat="@drawable/plane" />
 
     <include layout="@layout/content_main" />
 

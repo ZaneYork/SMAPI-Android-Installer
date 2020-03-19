@@ -15,11 +15,17 @@ import com.hjq.language.LanguagesManager;
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.Crashes;
+import com.zane.smapiinstaller.constant.AppConfigKey;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.entity.AppConfig;
+import com.zane.smapiinstaller.entity.AppConfigDao;
+import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.entity.FrameworkConfig;
+import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
 import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.TranslateUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -169,6 +175,21 @@ public class MainActivity extends AppCompatActivity {
                         case 3:
                             restart = LanguagesManager.setAppLanguage(this, Locale.TRADITIONAL_CHINESE);
                             break;
+                        case 4:
+                            restart = LanguagesManager.setAppLanguage(this, Locale.KOREA);
+                            break;
+                        case 5:
+                            restart = LanguagesManager.setAppLanguage(this, new Locale("th", ""));
+                            break;
+                        case 6:
+                            restart = LanguagesManager.setAppLanguage(this, new Locale("es", ""));
+                            break;
+                        case 7:
+                            restart = LanguagesManager.setAppLanguage(this, Locale.FRENCH);
+                            break;
+                        case 8:
+                            restart = LanguagesManager.setAppLanguage(this, new Locale("pt", ""));
+                            break;
                         default:
                             return;
                     }
@@ -177,6 +198,33 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(new Intent(this, MainActivity.class));
                         overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
                         finish();
+                    }
+                }).show());
+                return true;
+            case R.id.settings_translation_service:
+                DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_translation_service).items(R.array.translators).itemsCallback((dialog, itemView, position, text) -> {
+                    DaoSession daoSession = ((MainApplication)this.getApplication()).getDaoSession();
+                    AppConfigDao appConfigDao = daoSession.getAppConfigDao();
+                    AppConfig activeTranslator = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
+                    switch (position) {
+                        case 0:
+                            if(activeTranslator != null)
+                                appConfigDao.delete(activeTranslator);
+                            break;
+                        case 1:
+                            if(activeTranslator == null)
+                                activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.GOOGLE);
+                            else
+                                activeTranslator.setValue(TranslateUtil.GOOGLE);
+                            appConfigDao.insertOrReplace(activeTranslator);
+                            break;
+                        case 2:
+                            if(activeTranslator == null)
+                                activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.YOU_DAO);
+                            else
+                                activeTranslator.setValue(TranslateUtil.YOU_DAO);
+                            appConfigDao.insertOrReplace(activeTranslator);
+                            break;
                     }
                 }).show());
                 return true;

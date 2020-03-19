@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.FileUtils;
@@ -57,6 +58,18 @@ public class CommonLogic {
         return null;
     }
 
+    /**
+     * 从一个View获取Application
+     * @param view 控件
+     * @return Application
+     */
+    public static MainApplication getApplicationFromView(View view) {
+        Activity activity = getActivityFromView(view);
+        if(null != activity) {
+            return (MainApplication) activity.getApplication();
+        }
+        return null;
+    }
 
     /**
      * 打开指定URL
@@ -97,7 +110,7 @@ public class CommonLogic {
      * @return 兼容包列表
      */
     public static List<ApkFilesManifest> findAllApkFileManifest(Context context) {
-        ApkFilesManifest apkFilesManifest = com.zane.smapiinstaller.utils.FileUtils.getAssetJson(context, "apk_files_manifest.json", ApkFilesManifest.class);
+        ApkFilesManifest apkFilesManifest = FileUtils.getAssetJson(context, "apk_files_manifest.json", ApkFilesManifest.class);
         ArrayList<ApkFilesManifest> apkFilesManifests = Lists.newArrayList(apkFilesManifest);
         File compatFolder = new File(context.getFilesDir(), "compat");
         if (compatFolder.exists()) {

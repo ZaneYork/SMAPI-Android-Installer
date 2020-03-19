@@ -29,6 +29,10 @@ public class ConfigFragment extends Fragment {
         ConfigViewModel configViewModel = new ConfigViewModel(root);
         ModManifestAdapter modManifestAdapter = new ModManifestAdapter(configViewModel);
         recyclerView.setAdapter(modManifestAdapter);
+        configViewModel.registerListChangeListener((list) -> {
+            modManifestAdapter.setList(list);
+            return true;
+        });
         recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         return root;
     }

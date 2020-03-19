@@ -6,23 +6,23 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_install"
-            android:icon="@android:drawable/ic_menu_add"
+            android:icon="@drawable/add"
             android:title="@string/menu_install" />
         <item
             android:id="@+id/nav_config"
-            android:icon="@android:drawable/ic_menu_edit"
+            android:icon="@drawable/edit"
             android:title="@string/menu_config" />
         <item
             android:id="@+id/nav_download"
-            android:icon="@android:drawable/ic_dialog_dialer"
+            android:icon="@drawable/download"
             android:title="@string/menu_download" />
         <item
             android:id="@+id/nav_help"
-            android:icon="@android:drawable/ic_menu_help"
+            android:icon="@drawable/help"
             android:title="@string/menu_help" />
         <item
             android:id="@+id/nav_about"
-            android:icon="@android:drawable/ic_dialog_info"
+            android:icon="@drawable/about"
             android:title="@string/menu_about" />
     </group>
 </menu>

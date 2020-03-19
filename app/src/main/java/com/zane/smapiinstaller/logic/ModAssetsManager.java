@@ -204,6 +204,7 @@ public class ModAssetsManager {
         if (list.size() > 0) {
             DialogUtils.showConfirmDialog(root, R.string.error,
                     root.getContext().getString(R.string.duplicate_mod_found, Joiner.on(";").join(list)),
+                    R.string.continue_text, R.string.abort,
                     ((dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {
                             returnCallback.accept(true);
@@ -261,6 +262,7 @@ public class ModAssetsManager {
         if (dependencyErrors.iterator().hasNext()) {
             DialogUtils.showConfirmDialog(root, R.string.error,
                     Joiner.on(";").join(dependencyErrors),
+                    R.string.continue_text, R.string.abort,
                     ((dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {
                             returnCallback.accept(true);
@@ -313,6 +315,7 @@ public class ModAssetsManager {
         if (dependencyErrors.iterator().hasNext()) {
             DialogUtils.showConfirmDialog(root, R.string.error,
                     Joiner.on(";").join(dependencyErrors),
+                    R.string.continue_text, R.string.abort,
                     ((dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {
                             returnCallback.accept(true);

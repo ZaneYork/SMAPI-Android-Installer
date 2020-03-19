@@ -45,13 +45,17 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ModManifestEntry mod = model.getModList().get(position);
         holder.modName.setText(mod.getName());
-        holder.modDescription.setText(mod.getDescription());
+        holder.modDescription.setText(StringUtils.firstNonBlank(mod.getTranslatedDescription(), mod.getDescription()));
         holder.setModPath(mod.getAssetPath());
     }
 
     @Override
     public int getItemCount() {
         return model.getModList().size();
+    }
+
+    public void setList(List<ModManifestEntry> list) {
+        notifyDataSetChanged();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder{

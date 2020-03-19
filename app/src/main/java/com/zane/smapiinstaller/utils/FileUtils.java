@@ -9,6 +9,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.hjq.language.LanguagesManager;
+import com.zane.smapiinstaller.MainApplication;
 
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;

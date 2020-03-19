@@ -72,7 +72,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/ic_menu_share"
+            app:srcCompat="@drawable/global"
             android:contentDescription="@string/icon_desc" />
         <Button
             android:id="@+id/button_release"
@@ -98,7 +98,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/ic_menu_share"
+            app:srcCompat="@drawable/global"
             android:contentDescription="@string/icon_desc" />
         <Button
             android:id="@+id/button_gplay"

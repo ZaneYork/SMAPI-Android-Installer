@@ -89,9 +89,9 @@ public class ApkPatcher {
                 }
             } catch (PackageManager.NameNotFoundException | IOException e) {
                 Log.e(TAG, "Extract error", e);
-                errorMessage.set(e.getLocalizedMessage());
             }
         }
+        errorMessage.set(context.getString(R.string.error_game_not_found));
         return null;
     }
 
@@ -210,7 +210,7 @@ public class ApkPatcher {
             if (externalFilesDir != null) {
                 String signApkPath = externalFilesDir.getAbsolutePath() + "/SMAPI Installer/base_signed.apk";
                 KeyStore ks = new KeyStoreFileManager.JksKeyStore();
-                try (InputStream fis = context.getAssets().open("debug.keystore")) {
+                try (InputStream fis = context.getAssets().open("debug.keystore.dat")) {
                     ks.load(fis, PASSWORD.toCharArray());
                 }
                 String alias = ks.aliases().nextElement();

@@ -34,7 +34,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:background="@android:drawable/ic_menu_view" />
+                android:background="@drawable/disable" />
         </androidx.constraintlayout.widget.ConstraintLayout>
         <TextView
             android:id="@+id/text_view_mod_description"
@@ -53,11 +53,11 @@
             android:id="@+id/button_remove_mod"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="@android:drawable/ic_menu_delete" />
+            android:background="@drawable/trash" />
         <Button
             android:id="@+id/button_config_mod"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:background="@android:drawable/ic_menu_edit" />
+            android:background="@drawable/edit" />
     </LinearLayout>
 </RelativeLayout>

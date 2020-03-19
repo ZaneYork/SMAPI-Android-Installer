@@ -46,4 +46,9 @@ public class ModManifestEntry {
      * 是否必须依赖
      */
     private Boolean IsRequired;
+
+    /*
+     * 翻译后的Description
+     */
+    private transient String translatedDescription;
 }
