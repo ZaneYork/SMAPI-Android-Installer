@@ -7,7 +7,6 @@ import lombok.Data;
 /**
  * Mod信息
  */
-@SuppressWarnings("ALL")
 @Data
 public class ModManifestEntry {
     /**

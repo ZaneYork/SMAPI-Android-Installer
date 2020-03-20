@@ -63,7 +63,11 @@ public class HelpItemAdapter extends RecyclerView.Adapter<HelpItemAdapter.ViewHo
         void setHelpItem(HelpItem item) {
             textTitle.setText(item.getTitle());
             textAuthor.setText(item.getAuthor());
-            textContent.setText(Html.fromHtml(item.getContent()));
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                textContent.setText(Html.fromHtml(item.getContent(), Html.FROM_HTML_MODE_COMPACT));
+            } else {
+                textContent.setText(Html.fromHtml(item.getContent()));
+            }
             textContent.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }

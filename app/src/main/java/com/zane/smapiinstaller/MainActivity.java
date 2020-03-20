@@ -162,87 +162,95 @@ public class MainActivity extends AppCompatActivity {
                 });
                 return true;
             case R.id.settings_language:
-                DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_set_language).items(R.array.languages).itemsCallback((dialog, itemView, position, text) -> {
-                    boolean restart;
-                    switch (position) {
-                        case 0:
-                            restart = LanguagesManager.setSystemLanguage(this);
-                            break;
-                        case 1:
-                            restart = LanguagesManager.setAppLanguage(this, Locale.ENGLISH);
-                            break;
-                        case 2:
-                            restart = LanguagesManager.setAppLanguage(this, Locale.SIMPLIFIED_CHINESE);
-                            break;
-                        case 3:
-                            restart = LanguagesManager.setAppLanguage(this, Locale.TRADITIONAL_CHINESE);
-                            break;
-                        case 4:
-                            restart = LanguagesManager.setAppLanguage(this, Locale.KOREA);
-                            break;
-                        case 5:
-                            restart = LanguagesManager.setAppLanguage(this, new Locale("th", ""));
-                            break;
-                        case 6:
-                            restart = LanguagesManager.setAppLanguage(this, new Locale("es", ""));
-                            break;
-                        case 7:
-                            restart = LanguagesManager.setAppLanguage(this, Locale.FRENCH);
-                            break;
-                        case 8:
-                            restart = LanguagesManager.setAppLanguage(this, new Locale("pt", ""));
-                            break;
-                        case 9:
-                            restart = LanguagesManager.setAppLanguage(this, new Locale("in", ""));
-                            break;
-                        default:
-                            return;
-                    }
-                    if (restart) {
-                        // 我们可以充分运用 Activity 跳转动画，在跳转的时候设置一个渐变的效果
-                        startActivity(new Intent(this, MainActivity.class));
-                        overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
-                        finish();
-                    }
-                }).show());
+                selectLanguageLogic();
                 return true;
             case R.id.settings_translation_service:
-                DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_translation_service).items(R.array.translators).itemsCallback((dialog, itemView, position, text) -> {
-                    DaoSession daoSession = ((MainApplication)this.getApplication()).getDaoSession();
-                    AppConfigDao appConfigDao = daoSession.getAppConfigDao();
-                    AppConfig activeTranslator = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
-                    switch (position) {
-                        case 0:
-                            if(activeTranslator != null) {
-                                appConfigDao.delete(activeTranslator);
-                            }
-                            break;
-                        case 1:
-                            if(activeTranslator == null) {
-                                activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.GOOGLE);
-                            } else {
-                                activeTranslator.setValue(TranslateUtil.GOOGLE);
-                            }
-                            appConfigDao.insertOrReplace(activeTranslator);
-                            break;
-                        case 2:
-                            if(activeTranslator == null) {
-                                activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.YOU_DAO);
-                            } else {
-                                activeTranslator.setValue(TranslateUtil.YOU_DAO);
-                            }
-                            appConfigDao.insertOrReplace(activeTranslator);
-                            break;
-                        default:
-                            break;
-                    }
-                }).show());
+                selectTranslateServiceLogic();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
         manager.flushConfig();
         return true;
+    }
+
+    private void selectTranslateServiceLogic() {
+        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_translation_service).items(R.array.translators).itemsCallback((dialog, itemView, position, text) -> {
+            DaoSession daoSession = ((MainApplication)this.getApplication()).getDaoSession();
+            AppConfigDao appConfigDao = daoSession.getAppConfigDao();
+            AppConfig activeTranslator = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
+            switch (position) {
+                case 0:
+                    if(activeTranslator != null) {
+                        appConfigDao.delete(activeTranslator);
+                    }
+                    break;
+                case 1:
+                    if(activeTranslator == null) {
+                        activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.GOOGLE);
+                    } else {
+                        activeTranslator.setValue(TranslateUtil.GOOGLE);
+                    }
+                    appConfigDao.insertOrReplace(activeTranslator);
+                    break;
+                case 2:
+                    if(activeTranslator == null) {
+                        activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.YOU_DAO);
+                    } else {
+                        activeTranslator.setValue(TranslateUtil.YOU_DAO);
+                    }
+                    appConfigDao.insertOrReplace(activeTranslator);
+                    break;
+                default:
+                    break;
+            }
+        }).show());
+    }
+
+    private void selectLanguageLogic() {
+        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_set_language).items(R.array.languages).itemsCallback((dialog, itemView, position, text) -> {
+            boolean restart;
+            switch (position) {
+                case 0:
+                    restart = LanguagesManager.setSystemLanguage(this);
+                    break;
+                case 1:
+                    restart = LanguagesManager.setAppLanguage(this, Locale.ENGLISH);
+                    break;
+                case 2:
+                    restart = LanguagesManager.setAppLanguage(this, Locale.SIMPLIFIED_CHINESE);
+                    break;
+                case 3:
+                    restart = LanguagesManager.setAppLanguage(this, Locale.TRADITIONAL_CHINESE);
+                    break;
+                case 4:
+                    restart = LanguagesManager.setAppLanguage(this, Locale.KOREA);
+                    break;
+                case 5:
+                    restart = LanguagesManager.setAppLanguage(this, new Locale("th", ""));
+                    break;
+                case 6:
+                    restart = LanguagesManager.setAppLanguage(this, new Locale("es", ""));
+                    break;
+                case 7:
+                    restart = LanguagesManager.setAppLanguage(this, Locale.FRENCH);
+                    break;
+                case 8:
+                    restart = LanguagesManager.setAppLanguage(this, new Locale("pt", ""));
+                    break;
+                case 9:
+                    restart = LanguagesManager.setAppLanguage(this, new Locale("in", ""));
+                    break;
+                default:
+                    return;
+            }
+            if (restart) {
+                // 我们可以充分运用 Activity 跳转动画，在跳转的时候设置一个渐变的效果
+                startActivity(new Intent(this, MainActivity.class));
+                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                finish();
+            }
+        }).show());
     }
 
     @Override
