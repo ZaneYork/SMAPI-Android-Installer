@@ -22,7 +22,8 @@ public class MainApplication extends Application {
     public void onCreate() {
         super.onCreate();
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .addInterceptor(new GzipRequestInterceptor())//开启Gzip压缩
+                //开启Gzip压缩
+                .addInterceptor(new GzipRequestInterceptor())
                 .build();
         OkGo.getInstance().setOkHttpClient(okHttpClient).init(this);
         LanguagesManager.init(this);

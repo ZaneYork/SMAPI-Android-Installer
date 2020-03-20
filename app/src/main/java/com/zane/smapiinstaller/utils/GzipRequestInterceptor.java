@@ -1,5 +1,7 @@
 package com.zane.smapiinstaller.utils;
 
+import com.lzy.okgo.model.HttpHeaders;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -15,12 +17,12 @@ public class GzipRequestInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request originalRequest = chain.request();
-        if (originalRequest.body() == null || originalRequest.header("Content-Encoding") != null) {
+        if (originalRequest.body() == null || originalRequest.header(HttpHeaders.HEAD_KEY_CONTENT_ENCODING) != null) {
             return chain.proceed(originalRequest);
         }
 
         Request compressedRequest = originalRequest.newBuilder()
-                .header("Content-Encoding", "gzip")
+                .header(HttpHeaders.HEAD_KEY_CONTENT_ENCODING, "gzip")
                 .method(originalRequest.method(), gzip(originalRequest.body()))
                 .build();
         return chain.proceed(compressedRequest);

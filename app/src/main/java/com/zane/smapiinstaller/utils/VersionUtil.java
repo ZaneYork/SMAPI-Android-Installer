@@ -37,12 +37,14 @@ public class VersionUtil {
                 } catch (Exception ignored2) {
                 }
             }
-            if(StringUtils.equals(listA.get(i), listB.get(i)))
+            if(StringUtils.equals(listA.get(i), listB.get(i))) {
                 continue;
-            if(intA != null && intB == null)
+            }
+            if(intA != null && intB == null) {
                 return 1;
-            else if(intA == null)
+            } else if(intA == null) {
                 return -1;
+            }
             return listA.get(i).compareTo(listB.get(i));
         }
         return Integer.compare(listA.size(), listB.size());
@@ -83,8 +85,9 @@ public class VersionUtil {
                 return 1;
             }
             int compare = compareVersionSection(versionSectionsA.get(i), versionSectionsB.get(i));
-            if(compare != 0)
+            if(compare != 0) {
                 return compare;
+            }
         }
         if(versionSectionsA.size() < versionSectionsB.size()) {
             if(isZero(versionSectionsB.subList(versionSectionsA.size(), versionSectionsB.size()))) {

@@ -12,16 +12,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * JSON工具类
  */
 public class JSONUtil {
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     static {
         // 允许未定义的属性
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
         // 允许尾部额外的逗号
-        mapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
+        MAPPER.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
         // 允许数组设置空值
-        mapper.configure(JsonReadFeature.ALLOW_MISSING_VALUES.mappedFeature(), true);
+        MAPPER.configure(JsonReadFeature.ALLOW_MISSING_VALUES.mappedFeature(), true);
         // 允许Java注释
-        mapper.configure(JsonReadFeature.ALLOW_JAVA_COMMENTS.mappedFeature(), true);
+        MAPPER.configure(JsonReadFeature.ALLOW_JAVA_COMMENTS.mappedFeature(), true);
     }
 
     /**
@@ -31,7 +31,7 @@ public class JSONUtil {
      * @throws Exception 异常
      */
     public static String toJson(Object object) throws Exception {
-        return mapper.writeValueAsString(object);
+        return MAPPER.writeValueAsString(object);
     }
 
     /**
@@ -40,7 +40,7 @@ public class JSONUtil {
      * @throws JsonProcessingException 异常
      */
     public static void checkJson(String jsonString) throws JsonProcessingException {
-        mapper.readValue(jsonString, Object.class);
+        MAPPER.readValue(jsonString, Object.class);
     }
 
     /**
@@ -52,7 +52,7 @@ public class JSONUtil {
      */
     public static <T> T fromJson(String jsonString, Class<T> cls) {
         try {
-            return mapper.readValue(jsonString, cls);
+            return MAPPER.readValue(jsonString, cls);
         } catch (JsonProcessingException e) {
             Log.e("JSON", "Deserialize error", e);
         }
@@ -68,7 +68,7 @@ public class JSONUtil {
      */
     public static <T> T fromJson(String jsonString, TypeReference<T> type) {
         try {
-            return mapper.readValue(jsonString, type);
+            return MAPPER.readValue(jsonString, type);
         } catch (JsonProcessingException e) {
             Log.e("JSON", "Deserialize error", e);
         }

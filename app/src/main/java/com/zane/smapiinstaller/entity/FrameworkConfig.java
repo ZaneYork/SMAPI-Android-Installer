@@ -9,6 +9,7 @@ import lombok.Data;
 /**
  * SMAPI的配置
  */
+@SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
 @Data
 @JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY, getterVisibility= JsonAutoDetect.Visibility.NONE)
 public class FrameworkConfig {

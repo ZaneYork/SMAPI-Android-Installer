@@ -30,6 +30,7 @@ public class HelpFragment extends Fragment {
     @BindView(R.id.view_help_list)
     RecyclerView recyclerView;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_help, container, false);

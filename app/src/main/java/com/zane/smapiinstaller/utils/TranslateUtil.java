@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class TranslateUtil {
 
@@ -26,23 +27,25 @@ public class TranslateUtil {
     public static final String YOU_DAO = "YouDao";
 
     public static void translateText(List<String> textList, String translator, String locale, Predicate<List<TranslationResult>> resultCallback) {
-        if(textList == null || textList.size() == 0)
+        if(textList == null || textList.size() == 0) {
             return;
+        }
         textList = Lists.newArrayList(Iterables.filter(textList, item -> StringUtils.isNoneBlank(item) && !item.contains("\n")));
         if(textList.size() == 0) {
             return;
         }
         String queryText = Joiner.on("%0A").join(textList);
-        if(queryText.length() > 4096) {
-            if(textList.size() == 1)
+        if(queryText.length() > Constants.URL_LENGTH_LIMIT) {
+            if(textList.size() == 1) {
                 return;
+            }
             List<String> subListA = textList.subList(0, textList.size() / 2);
             translateText(subListA, translator, locale, resultCallback);
             List<String> subListB = textList.subList(textList.size() / 2, textList.size());
             translateText(subListB, translator, locale, resultCallback);
         }
         if(StringUtils.equalsIgnoreCase(translator, YOU_DAO)) {
-            if (!StringUtils.equalsAnyIgnoreCase(locale, "zh")) {
+            if (!StringUtils.equalsAnyIgnoreCase(locale, Locale.CHINA.getLanguage())) {
                 return;
             }
             OkGo.<String>get(String.format(Constants.TRANSLATE_SERVICE_URL_YOUDAO, queryText)).execute(new StringCallback() {
@@ -60,8 +63,9 @@ public class TranslateUtil {
                             result.setTranslator(translator);
                             result.setCreateTime(System.currentTimeMillis());
                             for (YouDaoTranslationDto.Entry entry : list) {
-                                if (entry == null)
+                                if (entry == null) {
                                     continue;
+                                }
                                 result.setOrigin(result.getOrigin() + entry.getSrc());
                                 result.setTranslation(result.getTranslation() + entry.getTgt());
                             }

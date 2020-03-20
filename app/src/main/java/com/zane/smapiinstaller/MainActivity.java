@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             initView();
@@ -126,10 +127,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.isCheckable()) {
-            if (item.isChecked())
+            if (item.isChecked()) {
                 item.setChecked(false);
-            else
+            } else {
                 item.setChecked(true);
+            }
         }
         ConfigManager manager = new ConfigManager();
         FrameworkConfig config = manager.getConfig();
@@ -190,6 +192,9 @@ public class MainActivity extends AppCompatActivity {
                         case 8:
                             restart = LanguagesManager.setAppLanguage(this, new Locale("pt", ""));
                             break;
+                        case 9:
+                            restart = LanguagesManager.setAppLanguage(this, new Locale("in", ""));
+                            break;
                         default:
                             return;
                     }
@@ -208,22 +213,27 @@ public class MainActivity extends AppCompatActivity {
                     AppConfig activeTranslator = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
                     switch (position) {
                         case 0:
-                            if(activeTranslator != null)
+                            if(activeTranslator != null) {
                                 appConfigDao.delete(activeTranslator);
+                            }
                             break;
                         case 1:
-                            if(activeTranslator == null)
+                            if(activeTranslator == null) {
                                 activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.GOOGLE);
-                            else
+                            } else {
                                 activeTranslator.setValue(TranslateUtil.GOOGLE);
+                            }
                             appConfigDao.insertOrReplace(activeTranslator);
                             break;
                         case 2:
-                            if(activeTranslator == null)
+                            if(activeTranslator == null) {
                                 activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.YOU_DAO);
-                            else
+                            } else {
                                 activeTranslator.setValue(TranslateUtil.YOU_DAO);
+                            }
                             appConfigDao.insertOrReplace(activeTranslator);
+                            break;
+                        default:
                             break;
                     }
                 }).show());

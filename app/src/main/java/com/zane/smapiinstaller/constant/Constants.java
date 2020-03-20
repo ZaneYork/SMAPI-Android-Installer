@@ -34,6 +34,12 @@ public class Constants {
      */
     public static final String APP_CENTER_SECRET = "cb44e94a-7b2f-431e-9ad9-48013ec8c208";
 
+    public static final String RED_PACKET_CODE = "9188262";
+
+    public static final String HIDDEN_FILE_PREFIX = ".";
+
+    public static final int URL_LENGTH_LIMIT = 4096;
+
     /**
      * 有道翻译服务
      */

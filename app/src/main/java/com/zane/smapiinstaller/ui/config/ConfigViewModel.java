@@ -21,6 +21,7 @@ import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.TranslateUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.greendao.query.Query;
 
 import java.util.ArrayList;
@@ -34,10 +35,24 @@ class ConfigViewModel extends ViewModel {
 
     @NonNull
     private List<ModManifestEntry> modList;
+    private List<ModManifestEntry> filteredModList;
+
     private List<Predicate<List<ModManifestEntry>>> onChangedListener = new ArrayList<>();
 
     ConfigViewModel(View root) {
         this.modList = ModAssetsManager.findAllInstalledMods();
+        translateLogic(root);
+        Collections.sort(this.modList, (a, b) -> {
+            if (a.getContentPackFor() != null && b.getContentPackFor() == null) {
+                return 1;
+            } else if (b.getContentPackFor() != null) {
+                return -1;
+            }
+            return a.getName().compareTo(b.getName());
+        });
+    }
+
+    private void translateLogic(View root) {
         MainApplication app = CommonLogic.getApplicationFromView(root);
         if (null != app) {
             DaoSession daoSession = app.getDaoSession();
@@ -79,14 +94,6 @@ class ConfigViewModel extends ViewModel {
                 }
             }
         }
-        Collections.sort(this.modList, (a, b) -> {
-            if (a.getContentPackFor() != null && b.getContentPackFor() == null) {
-                return 1;
-            } else if (b.getContentPackFor() != null) {
-                return -1;
-            }
-            return a.getName().compareTo(b.getName());
-        });
     }
 
     @NonNull
@@ -94,24 +101,12 @@ class ConfigViewModel extends ViewModel {
         return modList;
     }
 
-    public Integer findFirst(Predicate<ModManifestEntry> predicate) {
-        for (int i = 0; i < modList.size(); i++) {
-            if (predicate.apply(modList.get(i))) {
-                return i;
-            }
-        }
-        return null;
-    }
-
-    public List<Integer> removeAll(Predicate<ModManifestEntry> predicate) {
-        List<Integer> deletedId = new ArrayList<>();
+    public void removeAll(Predicate<ModManifestEntry> predicate) {
         for (int i = modList.size() - 1; i >= 0; i--) {
             if (predicate.apply(modList.get(i))) {
                 modList.remove(i);
-                deletedId.add(i);
             }
         }
-        return deletedId;
     }
 
     /**
@@ -121,5 +116,27 @@ class ConfigViewModel extends ViewModel {
      */
     public void registerListChangeListener(Predicate<List<ModManifestEntry>> onChanged) {
         this.onChangedListener.add(onChanged);
+    }
+
+    public void filter(CharSequence text) {
+        if(StringUtils.isBlank(text)) {
+            filteredModList = modList;
+        }
+        else {
+            filteredModList = Lists.newArrayList(Iterables.filter(modList, mod -> {
+                if(StringUtils.containsIgnoreCase(mod.getName(), text)) {
+                    return true;
+                }
+                if(StringUtils.isNoneBlank(mod.getTranslatedDescription())){
+                    return StringUtils.containsIgnoreCase(mod.getTranslatedDescription(), text);
+                }
+                else {
+                    return StringUtils.containsIgnoreCase(mod.getDescription(), text);
+                }
+            }));
+        }
+        for (Predicate<List<ModManifestEntry>> listener : onChangedListener) {
+            listener.apply(filteredModList);
+        }
     }
 }

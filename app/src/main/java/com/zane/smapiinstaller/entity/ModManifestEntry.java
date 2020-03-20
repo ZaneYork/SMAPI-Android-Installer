@@ -7,6 +7,7 @@ import lombok.Data;
 /**
  * Mod信息
  */
+@SuppressWarnings("ALL")
 @Data
 public class ModManifestEntry {
     /**
@@ -47,7 +48,7 @@ public class ModManifestEntry {
      */
     private Boolean IsRequired;
 
-    /*
+    /**
      * 翻译后的Description
      */
     private transient String translatedDescription;

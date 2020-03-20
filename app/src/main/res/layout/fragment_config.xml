@@ -6,10 +6,52 @@
     android:layout_height="match_parent"
     tools:context=".ui.config.ConfigFragment">
 
+    <EditText
+        android:id="@+id/button_search"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toEndOf="@id/guideline_v1"
+        app:layout_constraintEnd_toStartOf="@id/guideline_v2"
+        app:layout_constraintTop_toBottomOf="@id/guideline_h1"
+        android:hint="@android:string/search_go"
+        android:inputType="text"
+        android:importantForAutofill="no"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/view_mod_list"
         app:layoutManager="LinearLayoutManager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </androidx.recyclerview.widget.RecyclerView>
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toEndOf="@id/guideline_v1"
+        app:layout_constraintEnd_toStartOf="@id/guideline_v2"
+        app:layout_constraintTop_toBottomOf="@id/button_search"
+        app:layout_constraintBottom_toTopOf="@id/guideline_h2"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_h1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="10dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_h2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_end="60dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_v1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="10dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_v2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="10dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

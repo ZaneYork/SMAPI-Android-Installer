@@ -19,6 +19,8 @@ import com.lzy.okgo.callback.FileCallback;
 import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.model.Response;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.constant.DownloadableContentTypes;
 import com.zane.smapiinstaller.entity.DownloadableContent;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
@@ -126,7 +128,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
         void downloadContent() {
             Context context = itemView.getContext();
             ModManifestEntry modManifestEntry = null;
-            if (StringUtils.equals(downloadableContent.getType(), "LOCALE")) {
+            if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypes.LOCALE)) {
                 modManifestEntry = ModAssetsManager.findFirstModIf(mod -> StringUtils.equals(mod.getUniqueID(), "ZaneYork.CustomLocalization") || StringUtils.equals(mod.getUniqueID(), "SMAPI.CustomLocalization"));
                 if (modManifestEntry == null) {
                     DialogUtils.showAlertDialog(itemView, R.string.error, String.format(context.getString(R.string.error_depends_on_mod), context.getString(R.string.locale_pack), "ZaneYork.CustomLocalization"));
@@ -142,8 +144,9 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                     return;
                 }
             }
-            if (downloading.get())
+            if (downloading.get()) {
                 return;
+            }
             downloading.set(true);
             ModManifestEntry finalModManifestEntry = modManifestEntry;
             AtomicReference<MaterialDialog> dialogRef = DialogUtils.showProgressDialog(itemView, R.string.progress, "");
@@ -184,7 +187,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
         }
 
         private void unpackLogic(Context context, File downloadedFile, ModManifestEntry finalModManifestEntry) {
-            if (StringUtils.equals(downloadableContent.getType(), "LOCALE")) {
+            if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypes.LOCALE)) {
                 if (finalModManifestEntry != null) {
                     ZipUtil.unpack(downloadedFile, new File(finalModManifestEntry.getAssetPath()));
                 }

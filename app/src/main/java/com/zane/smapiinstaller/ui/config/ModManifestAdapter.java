@@ -8,7 +8,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
+import com.google.common.base.Predicate;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
@@ -17,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -29,9 +32,11 @@ import butterknife.OnClick;
 
 public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.ViewHolder> {
     private ConfigViewModel model;
+    private List<ModManifestEntry> modList;
 
-    public ModManifestAdapter(ConfigViewModel model){
+    public ModManifestAdapter(ConfigViewModel model, List<ModManifestEntry> modList){
         this.model=model;
+        this.modList = modList;
     }
 
     @NonNull
@@ -43,7 +48,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ModManifestEntry mod = model.getModList().get(position);
+        ModManifestEntry mod = modList.get(position);
         holder.modName.setText(mod.getName());
         holder.modDescription.setText(StringUtils.firstNonBlank(mod.getTranslatedDescription(), mod.getDescription()));
         holder.setModPath(mod.getAssetPath());
@@ -51,10 +56,11 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
 
     @Override
     public int getItemCount() {
-        return model.getModList().size();
+        return modList.size();
     }
 
     public void setList(List<ModManifestEntry> list) {
+        this.modList = list;
         notifyDataSetChanged();
     }
 
@@ -84,12 +90,23 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
 
         private void setStrike() {
             File file = new File(modPath);
-            if(StringUtils.startsWith(file.getName(), ".")) {
+            if(StringUtils.startsWith(file.getName(), Constants.HIDDEN_FILE_PREFIX)) {
                 modName.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
             }
             else {
                 modName.getPaint().setFlags(modName.getPaint().getFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
             }
+        }
+
+        public List<Integer> removeAll(Predicate<ModManifestEntry> predicate) {
+            List<Integer> deletedId = new ArrayList<>();
+            for (int i = modList.size() - 1; i >= 0; i--) {
+                if (predicate.apply(modList.get(i))) {
+                    modList.remove(i);
+                    deletedId.add(i);
+                }
+            }
+            return deletedId;
         }
 
         @OnClick(R.id.button_remove_mod) void removeMod() {
@@ -99,7 +116,8 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
                     if (file.exists()) {
                         try {
                             FileUtils.forceDelete(file);
-                            List<Integer> removed = model.removeAll(entry -> StringUtils.equals(entry.getAssetPath(), modPath));
+                            model.removeAll(entry -> StringUtils.equals(entry.getAssetPath(), modPath));
+                            List<Integer> removed = removeAll(entry -> StringUtils.equals(entry.getAssetPath(), modPath));
                             for (int idx : removed) {
                                 notifyItemRemoved(idx);
                             }
@@ -113,7 +131,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         @OnClick(R.id.button_disable_mod) void disableMod() {
             File file = new File(modPath);
             if(file.exists() && file.isDirectory()) {
-                if(StringUtils.startsWith(file.getName(), ".")) {
+                if(StringUtils.startsWith(file.getName(), Constants.HIDDEN_FILE_PREFIX)) {
                     File newFile = new File(file.getParent(), StringUtils.stripStart(file.getName(), "."));
                     moveMod(file, newFile);
                 }
@@ -128,12 +146,21 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             }
         }
 
+        public Integer findFirst(Predicate<ModManifestEntry> predicate) {
+            for (int i = 0; i < modList.size(); i++) {
+                if (predicate.apply(modList.get(i))) {
+                    return i;
+                }
+            }
+            return null;
+        }
+
         private void moveMod(File file, File newFile) {
             try {
                 FileUtils.moveDirectory(file, newFile);
-                Integer idx = model.findFirst(mod -> StringUtils.equalsIgnoreCase(mod.getAssetPath(), modPath));
+                Integer idx = findFirst(mod -> StringUtils.equalsIgnoreCase(mod.getAssetPath(), modPath));
                 if (idx != null) {
-                    model.getModList().get(idx).setAssetPath(newFile.getAbsolutePath());
+                    modList.get(idx).setAssetPath(newFile.getAbsolutePath());
                     notifyItemChanged(idx);
                 }
             } catch (IOException e) {

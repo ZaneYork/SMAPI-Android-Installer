@@ -32,7 +32,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/view_help_list"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
         app:layout_constraintStart_toEndOf="@id/guideline_v1"

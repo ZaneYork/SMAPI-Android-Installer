@@ -135,8 +135,9 @@ public class ModAssetsManager {
     public boolean installDefaultMods() {
         Activity context = CommonLogic.getActivityFromView(root);
         List<ModManifestEntry> modManifestEntries = FileUtils.getAssetJson(context, "mods_manifest.json", new TypeReference<List<ModManifestEntry>>() { });
-        if (modManifestEntries == null)
+        if (modManifestEntries == null) {
             return false;
+        }
         File modFolder = new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH);
         ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(), ModManifestEntry::getUniqueID);
         for (ModManifestEntry mod : modManifestEntries) {
@@ -175,15 +176,17 @@ public class ModAssetsManager {
     public void checkModEnvironment(Consumer<Boolean> returnCallback) {
         ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(true), ModManifestEntry::getUniqueID);
         checkDuplicateMod(installedModMap, (isConfirm) -> {
-            if (isConfirm)
+            if (isConfirm) {
                 checkUnsatisfiedDependencies(installedModMap, (isConfirm2) -> {
-                    if (isConfirm2)
+                    if (isConfirm2) {
                         checkContentpacks(installedModMap, returnCallback);
-                    else
+                    } else {
                         returnCallback.accept(false);
+                    }
                 });
-            else
+            } else {
                 returnCallback.accept(false);
+            }
         });
     }
 
@@ -213,8 +216,9 @@ public class ModAssetsManager {
                         }
                     }));
         }
-        else
+        else {
             returnCallback.accept(true);
+        }
     }
 
     /**
@@ -239,8 +243,9 @@ public class ModAssetsManager {
                             }
                         }
                     }
-                    if (entries.size() != 1)
+                    if (entries.size() != 1) {
                         return true;
+                    }
                     String version = entries.get(0).getVersion();
                     if (StringUtils.isBlank(version)) {
                         return true;
@@ -271,8 +276,9 @@ public class ModAssetsManager {
                         }
                     }));
         }
-        else
+        else {
             returnCallback.accept(true);
+        }
     }
 
     /**
@@ -297,8 +303,9 @@ public class ModAssetsManager {
                         }
                     }
                 }
-                if (entries.size() != 1)
+                if (entries.size() != 1) {
                     return root.getContext().getString(R.string.error_depends_on_mod, mod.getUniqueID(), dependency.getUniqueID());
+                }
                 String version = entries.get(0).getVersion();
                 if (!StringUtils.isBlank(version)) {
                     if (StringUtils.isBlank(dependency.getMinimumVersion())) {
@@ -324,7 +331,8 @@ public class ModAssetsManager {
                         }
                     }));
         }
-        else
+        else {
             returnCallback.accept(true);
+        }
     }
 }

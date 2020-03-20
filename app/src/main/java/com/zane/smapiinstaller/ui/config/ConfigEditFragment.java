@@ -33,6 +33,7 @@ public class ConfigEditFragment extends Fragment {
     @BindView(R.id.button_config_cancel)
     Button buttonConfigCancel;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_config_edit, container, false);

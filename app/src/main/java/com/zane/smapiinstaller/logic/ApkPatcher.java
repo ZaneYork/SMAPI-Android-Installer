@@ -17,6 +17,7 @@ import com.google.common.io.Files;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.constant.ManifestPatchConstants;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.FileUtils;
@@ -101,11 +102,13 @@ public class ApkPatcher {
      * @return 是否成功打包
      */
     public boolean patch(String apkPath) {
-        if (apkPath == null)
+        if (apkPath == null) {
             return false;
+        }
         File file = new File(apkPath);
-        if (!file.exists())
+        if (!file.exists()) {
             return false;
+        }
         try {
             List<ZipEntrySource> zipEntrySourceList = new ArrayList<>();
             byte[] manifest = ZipUtil.unpackEntry(file, "AndroidManifest.xml");
@@ -158,7 +161,7 @@ public class ApkPatcher {
                         }
                         break;
                     case "label":
-                        if (strObj.contains("Stardew Valley")) {
+                        if (strObj.contains(ManifestPatchConstants.APP_NAME)) {
                             attr.obj = context.getString(R.string.smapi_game_name);
                         }
                         break;
@@ -167,14 +170,16 @@ public class ApkPatcher {
                             attr.obj = strObj.replace(packageName.get(), Constants.TARGET_PACKAGE_NAME);
                         }
                     case "name":
-                        if (strObj.contains(".MainActivity")) {
+                        if (strObj.contains(ManifestPatchConstants.PATTERN_MAIN_ACTIVITY)) {
                             attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity");
                         }
+                        break;
+                    default:
                         break;
                 }
             }
             else if(attr.type == NodeVisitor.TYPE_FIRST_INT) {
-                if(StringUtils.equals(attr.name, "versionCode")){
+                if(StringUtils.equals(attr.name, ManifestPatchConstants.PATTERN_VERSION_CODE)){
                     long versionCode = (int) attr.obj;
                     Iterables.removeIf(manifests, manifest -> {
                         if (versionCode < manifest.getMinBuildCode()) {
@@ -252,10 +257,11 @@ public class ApkPatcher {
      */
     private Uri fromFile(File file) {
         //Android versions greater than Nougat use FileProvider, others use the URI.fromFile.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file);
-        else
+        } else {
             return Uri.fromFile(file);
+        }
     }
 
     /**

@@ -137,8 +137,9 @@ public class CommonLogic {
      */
     public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode) {
         List<ManifestEntry> manifestEntries = FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeReference<List<ManifestEntry>>() { });
-        if (manifestEntries == null)
+        if (manifestEntries == null) {
             return false;
+        }
         File basePath = new File(Environment.getExternalStorageDirectory() + "/StardewValley/");
         if (!basePath.exists()) {
             if (!basePath.mkdir()) {
@@ -175,6 +176,8 @@ public class CommonLogic {
                     if (!checkMode || !targetFile.exists()) {
                         ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath(), targetFile);
                     }
+                    break;
+                default:
                     break;
             }
         }

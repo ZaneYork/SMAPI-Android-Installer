@@ -1,7 +1,6 @@
 package com.zane.smapiinstaller.ui.about;
 
 import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -21,10 +20,9 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
-
-import java.time.Duration;
 
 public class AboutFragment extends Fragment {
 
@@ -41,7 +39,7 @@ public class AboutFragment extends Fragment {
     @OnClick(R.id.button_gplay) void gplay() {
         try
         {
-            this.OpenPlayStore("market://details?id=" + this.getActivity().getPackageName());
+            this.openPlayStore("market://details?id=" + this.getActivity().getPackageName());
         }
         catch (ActivityNotFoundException ex)
         {
@@ -49,7 +47,7 @@ public class AboutFragment extends Fragment {
         }
 
     }
-    private void OpenPlayStore(String url)
+    private void openPlayStore(String url)
     {
         Intent intent = new Intent("android.intent.action.VIEW");
         intent.setData(Uri.parse(url));
@@ -90,7 +88,7 @@ public class AboutFragment extends Fragment {
                 case 3:
                     hasInstalledAlipayClient = AlipayDonate.hasInstalledAlipayClient(context);
                     if (hasInstalledAlipayClient) {
-                        if (CommonLogic.copyToClipboard(context, "9188262")) {
+                        if (CommonLogic.copyToClipboard(context, Constants.RED_PACKET_CODE)) {
                             PackageManager packageManager = context.getPackageManager();
                             Intent intent = packageManager.getLaunchIntentForPackage("com.eg.android.AlipayGphone");
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -98,6 +96,8 @@ public class AboutFragment extends Fragment {
                             Toast.makeText(context, R.string.toast_redpacket_message, Toast.LENGTH_LONG).show();
                         }
                     }
+                    break;
+                default:
                     break;
             }
         }).show());

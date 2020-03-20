@@ -32,6 +32,7 @@ public class InstallFragment extends Fragment {
 
     private View root;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_install, container, false);
@@ -41,7 +42,7 @@ public class InstallFragment extends Fragment {
     }
 
     @OnClick(R.id.button_install)
-    void Install() {
+    void install() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             DialogUtils.showConfirmDialog(root, R.string.confirm, R.string.android_version_confirm, ((dialog, which) -> {
                 if (which == DialogAction.POSITIVE) {
