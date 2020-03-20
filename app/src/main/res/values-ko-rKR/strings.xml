@@ -19,7 +19,7 @@
     <string name="continue_text">계속</string>
     <string name="download_unpack_success">다운로드 및 설치 완료</string>
     <string name="downloading">다운로드 중: %1$d KB / %2$d KB</string>
-    <string name="duplicate_mod_found">이 모드의 사본이 여러 개 발견되었습니다 : % s에서 중복 된 모드를 삭제하십시오.</string>
+    <string name="duplicate_mod_found">이 모드의 사본이 여러 개 발견되었습니다 : %s에서 중복 된 모드를 삭제하십시오.</string>
     <string name="error">잘못</string>
     <string name="error_depends_on_mod">%1$s 는%2$s 프론트 엔드에 따라 다릅니다. 먼저 설치하십시오</string>
     <string name="error_depends_on_mod_version">%1$s는 %2$s %3$s 버전에 따라 다릅니다. 먼저 업데이트하십시오</string>
