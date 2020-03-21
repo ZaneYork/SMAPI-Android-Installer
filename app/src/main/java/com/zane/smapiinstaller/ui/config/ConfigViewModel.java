@@ -37,19 +37,79 @@ class ConfigViewModel extends ViewModel {
     private List<ModManifestEntry> modList;
     private List<ModManifestEntry> filteredModList;
 
+    private String sortBy = "Name asc";
+    public String getSortBy() {
+        return sortBy;
+    }
+    private View root;
+
     private List<Predicate<List<ModManifestEntry>>> onChangedListener = new ArrayList<>();
 
     ConfigViewModel(View root) {
+        this.root = root;
         this.modList = ModAssetsManager.findAllInstalledMods();
         translateLogic(root);
-        Collections.sort(this.modList, (a, b) -> {
-            if (a.getContentPackFor() != null && b.getContentPackFor() == null) {
-                return 1;
-            } else if (b.getContentPackFor() != null) {
-                return -1;
+        MainApplication app = CommonLogic.getApplicationFromView(root);
+        if (null != app) {
+            AppConfigDao appConfigDao = app.getDaoSession().getAppConfigDao();
+            Query<AppConfig> query = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.MOD_LIST_SORT_BY)).build();
+            AppConfig appConfig = query.unique();
+            if(null != appConfig) {
+                sortBy = appConfig.getValue();
             }
-            return a.getName().compareTo(b.getName());
-        });
+        }
+        sortLogic(sortBy);
+    }
+
+    public void switchSortBy(String sortBy) {
+        MainApplication app = CommonLogic.getApplicationFromView(root);
+        if(null == app) {
+            return;
+        }
+        this.sortBy = sortBy;
+        AppConfigDao appConfigDao = app.getDaoSession().getAppConfigDao();
+        AppConfig appConfig = new AppConfig(null, AppConfigKey.MOD_LIST_SORT_BY, sortBy);
+        appConfigDao.insertOrReplace(appConfig);
+        sortLogic(appConfig.getValue());
+    }
+
+    private void sortLogic(String sortBy) {
+        switch (sortBy) {
+            case "Name asc":
+                Collections.sort(modList, (a, b) -> a.getName().compareTo(b.getName()));
+                if(filteredModList != null && filteredModList != modList) {
+                    Collections.sort(filteredModList, (a, b) -> a.getName().compareTo(b.getName()));
+                }
+                break;
+            case "Name desc":
+                Collections.sort(modList, (a, b) -> b.getName().compareTo(a.getName()));
+                if(filteredModList != null && filteredModList != modList) {
+                    Collections.sort(filteredModList, (a, b) -> b.getName().compareTo(a.getName()));
+                }
+                break;
+            case "Date asc":
+                Collections.sort(modList, (a, b) -> a.getLastModified().compareTo(b.getLastModified()));
+                if(filteredModList != null && filteredModList != modList) {
+                    Collections.sort(filteredModList, (a, b) -> a.getLastModified().compareTo(b.getLastModified()));
+                }
+                break;
+            case "Date desc":
+                Collections.sort(modList, (a, b) -> b.getLastModified().compareTo(a.getLastModified()));
+                if(filteredModList != null && filteredModList != modList) {
+                    Collections.sort(filteredModList, (a, b) -> b.getLastModified().compareTo(a.getLastModified()));
+                }
+                break;
+            default:
+                return;
+        }
+        for (Predicate<List<ModManifestEntry>> listener : onChangedListener) {
+            if(filteredModList != null){
+                listener.apply(filteredModList);
+            }
+            else {
+                listener.apply(modList);
+            }
+        }
     }
 
     private void translateLogic(View root) {
@@ -57,7 +117,7 @@ class ConfigViewModel extends ViewModel {
         if (null != app) {
             DaoSession daoSession = app.getDaoSession();
             AppConfig activeTranslator = daoSession.getAppConfigDao().queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
-            if(activeTranslator != null) {
+            if (activeTranslator != null) {
                 String translator = activeTranslator.getValue();
                 ArrayList<String> descriptions = Lists.newArrayList(Iterables.filter(Iterables.transform(this.modList, ModManifestEntry::getDescription), item -> item != null));
                 String language = LanguagesManager.getAppLanguage(app).getLanguage();
@@ -119,18 +179,16 @@ class ConfigViewModel extends ViewModel {
     }
 
     public void filter(CharSequence text) {
-        if(StringUtils.isBlank(text)) {
+        if (StringUtils.isBlank(text)) {
             filteredModList = modList;
-        }
-        else {
+        } else {
             filteredModList = Lists.newArrayList(Iterables.filter(modList, mod -> {
-                if(StringUtils.containsIgnoreCase(mod.getName(), text)) {
+                if (StringUtils.containsIgnoreCase(mod.getName(), text)) {
                     return true;
                 }
-                if(StringUtils.isNoneBlank(mod.getTranslatedDescription())){
+                if (StringUtils.isNoneBlank(mod.getTranslatedDescription())) {
                     return StringUtils.containsIgnoreCase(mod.getTranslatedDescription(), text);
-                }
-                else {
+                } else {
                     return StringUtils.containsIgnoreCase(mod.getDescription(), text);
                 }
             }));

@@ -11,11 +11,20 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toEndOf="@id/guideline_v1"
-        app:layout_constraintEnd_toStartOf="@id/guideline_v2"
+        app:layout_constraintEnd_toStartOf="@id/guideline_v3"
         app:layout_constraintTop_toBottomOf="@id/guideline_h1"
         android:hint="@android:string/search_go"
         android:inputType="text"
         android:importantForAutofill="no"/>
+    <Button
+        android:id="@+id/button_sort_by"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/sort_by"
+        app:layout_constraintStart_toEndOf="@id/button_search"
+        app:layout_constraintEnd_toStartOf="@id/guideline_v2"
+        app:layout_constraintTop_toTopOf="@id/button_search"
+        app:layout_constraintBottom_toBottomOf="@id/button_search" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/view_mod_list"
@@ -54,4 +63,11 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_end="10dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_v3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="42dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

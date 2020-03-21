@@ -64,4 +64,5 @@
     <string name="text_install_tip1">注意：需要不低於1.4.5.138版本的遊戲本體</string>
     <string name="text_install_tip2">更新或安裝期間需要安裝遊戲本體</string>
     <string name="unpacking_smapi_files">正在解包</string>
+    <string name="sort_by">排序方式</string>
 </resources>

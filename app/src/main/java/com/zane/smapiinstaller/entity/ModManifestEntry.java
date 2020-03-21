@@ -1,5 +1,6 @@
 package com.zane.smapiinstaller.entity;
 
+import java.util.Date;
 import java.util.Set;
 
 import lombok.Data;
@@ -51,4 +52,8 @@ public class ModManifestEntry {
      * 翻译后的Description
      */
     private transient String translatedDescription;
+    /**
+     * 文件修改日期
+     */
+    private transient Long lastModified;
 }

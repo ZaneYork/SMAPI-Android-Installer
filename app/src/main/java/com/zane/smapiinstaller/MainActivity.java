@@ -174,10 +174,25 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private int getTranslateServiceIndex(AppConfig selectedTranslator) {
+        if(selectedTranslator == null) {
+            return 0;
+        }
+        switch (selectedTranslator.getValue()){
+            case "OFF":
+                return 0;
+            case "Google":
+                return 1;
+            default:
+                return 2;
+        }
+    }
+
     private void selectTranslateServiceLogic() {
-        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_translation_service).items(R.array.translators).itemsCallback((dialog, itemView, position, text) -> {
-            DaoSession daoSession = ((MainApplication)this.getApplication()).getDaoSession();
-            AppConfigDao appConfigDao = daoSession.getAppConfigDao();
+        DaoSession daoSession = ((MainApplication)this.getApplication()).getDaoSession();
+        AppConfigDao appConfigDao = daoSession.getAppConfigDao();
+        int index = getTranslateServiceIndex(appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique());
+        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_translation_service).items(R.array.translators).itemsCallbackSingleChoice(index, (dialog, itemView, position, text) -> {
             AppConfig activeTranslator = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
             switch (position) {
                 case 0:
@@ -202,8 +217,9 @@ public class MainActivity extends AppCompatActivity {
                     appConfigDao.insertOrReplace(activeTranslator);
                     break;
                 default:
-                    break;
+                    return false;
             }
+            return true;
         }).show());
     }
 

@@ -23,4 +23,10 @@
         <item>谷歌</item>
         <item>有道</item>
     </string-array>
+    <string-array name="mod_list_sort_by">
+        <item>名称(正序)</item>
+        <item>名称(倒序)</item>
+        <item>日期(正序)</item>
+        <item>日期(倒序)</item>
+    </string-array>
 </resources>

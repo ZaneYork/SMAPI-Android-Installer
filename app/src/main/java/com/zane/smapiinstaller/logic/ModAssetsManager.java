@@ -111,6 +111,7 @@ public class ModAssetsManager {
                                     break;
                                 }
                                 manifest.setAssetPath(file.getParentFile().getAbsolutePath());
+                                manifest.setLastModified(file.lastModified());
                                 mods.add(manifest);
                             }
                             break;
