@@ -169,6 +169,9 @@ public class ApkPatcher {
                         if (strObj.contains(packageName.get())) {
                             attr.obj = strObj.replace(packageName.get(), Constants.TARGET_PACKAGE_NAME);
                         }
+                        else if(strObj.contains(ManifestPatchConstants.APP_PACKAGE_NAME)){
+                            attr.obj = strObj.replace(ManifestPatchConstants.APP_PACKAGE_NAME, Constants.TARGET_PACKAGE_NAME);
+                        }
                     case "name":
                         if (strObj.contains(ManifestPatchConstants.PATTERN_MAIN_ACTIVITY)) {
                             attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity");

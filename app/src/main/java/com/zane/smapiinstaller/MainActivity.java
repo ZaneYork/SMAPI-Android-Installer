@@ -21,7 +21,6 @@ import com.zane.smapiinstaller.entity.AppConfig;
 import com.zane.smapiinstaller.entity.AppConfigDao;
 import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.entity.FrameworkConfig;
-import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
 import com.zane.smapiinstaller.utils.DialogUtils;
@@ -33,16 +32,15 @@ import java.io.File;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
