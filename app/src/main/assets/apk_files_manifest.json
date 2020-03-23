@@ -2,6 +2,11 @@
   "minBuildCode": 138,
   "maxBuildCode": null,
   "basePath": "",
+  "targetPackageName": [
+    "com.chucklefish.stardewvalley",
+    "com.zane.stardewvalley",
+    "com.martyrpher.stardewvalley"
+  ],
   "manifestEntries": [
     {
       "targetPath": "classes.dex",

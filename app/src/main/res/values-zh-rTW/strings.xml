@@ -60,7 +60,7 @@
     <string name="settings_verbose_logging">詳細日誌</string>
     <string name="signing_package">正在簽名安裝包</string>
     <string name="smapi_game_name">SMAPI星露穀物語</string>
-    <string name="smapi_version">SMAPI版本: 3.3.2.4</string>
+    <string name="smapi_version">SMAPI版本: 3.4.0</string>
     <string name="text_install_tip1">注意：需要不低於1.4.5.138版本的遊戲本體</string>
     <string name="text_install_tip2">更新或安裝期間需要安裝遊戲本體</string>
     <string name="unpacking_smapi_files">正在解包</string>

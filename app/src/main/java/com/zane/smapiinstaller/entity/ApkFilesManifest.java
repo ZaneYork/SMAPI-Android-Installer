@@ -1,6 +1,7 @@
 package com.zane.smapiinstaller.entity;
 
 import java.util.List;
+import java.util.Set;
 
 import lombok.Data;
 
@@ -21,6 +22,8 @@ public class ApkFilesManifest {
      * 兼容包基础文件路径
      */
     private String basePath;
+
+    private Set<String> targetPackageName;
     /**
      * 文件清单
      */

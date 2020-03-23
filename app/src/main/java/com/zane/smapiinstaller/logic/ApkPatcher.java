@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
+import com.android.apksig.ApkSigner;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -23,7 +24,7 @@ import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.FileUtils;
 
 import net.fornwall.apksigner.KeyStoreFileManager;
-import net.fornwall.apksigner.ZipSigner;
+import net.fornwall.apksigner.ZipAligner;
 
 import org.apache.commons.lang3.StringUtils;
 import org.zeroturnaround.zip.ByteSource;
@@ -37,7 +38,9 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.Deflater;
 
@@ -150,6 +153,7 @@ public class ApkPatcher {
      */
     private byte[] modifyManifest(byte[] bytes, List<ApkFilesManifest> manifests) {
         AtomicReference<String> packageName = new AtomicReference<>();
+        AtomicLong versionCode = new AtomicLong();
         Predicate<ManifestTagVisitor.AttrArgs> processLogic = (attr) -> {
             if (attr.type == NodeVisitor.TYPE_STRING) {
                 String strObj = (String) attr.obj;
@@ -183,24 +187,28 @@ public class ApkPatcher {
             }
             else if(attr.type == NodeVisitor.TYPE_FIRST_INT) {
                 if(StringUtils.equals(attr.name, ManifestPatchConstants.PATTERN_VERSION_CODE)){
-                    long versionCode = (int) attr.obj;
-                    Iterables.removeIf(manifests, manifest -> {
-                        if (versionCode < manifest.getMinBuildCode()) {
-                            return true;
-                        }
-                        if (manifest.getMaxBuildCode() != null) {
-                            if (versionCode > manifest.getMaxBuildCode()) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    });
+                    versionCode.set((int) attr.obj);
                 }
             }
             return true;
         };
         try {
-            return CommonLogic.modifyManifest(bytes, processLogic);
+            byte[] modifyManifest = CommonLogic.modifyManifest(bytes, processLogic);
+            Iterables.removeIf(manifests, manifest -> {
+                if (versionCode.get() < manifest.getMinBuildCode()) {
+                    return true;
+                }
+                if (manifest.getMaxBuildCode() != null) {
+                    if (versionCode.get() > manifest.getMaxBuildCode()) {
+                        return true;
+                    }
+                }
+                if(manifest.getTargetPackageName() != null && packageName.get() != null && !manifest.getTargetPackageName().contains(packageName.get())) {
+                    return true;
+                }
+                return false;
+            });
+            return modifyManifest;
         }catch (Exception e) {
             errorMessage.set(e.getLocalizedMessage());
             return null;
@@ -224,7 +232,16 @@ public class ApkPatcher {
                 String alias = ks.aliases().nextElement();
                 X509Certificate publicKey = (X509Certificate) ks.getCertificate(alias);
                 PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "android".toCharArray());
-                ZipSigner.signZip(publicKey, privateKey, "SHA1withRSA", apkPath, signApkPath);
+                ApkSigner.SignerConfig signerConfig = new ApkSigner.SignerConfig.Builder("debug", privateKey, Collections.singletonList(publicKey)).build();
+                ZipAligner.alignZip(apkPath, signApkPath);
+                new File(apkPath).delete();
+                FileUtils.moveFile(new File(signApkPath), new File(apkPath));
+                ApkSigner signer = new ApkSigner.Builder(Collections.singletonList(signerConfig))
+                        .setInputApk(new File(apkPath))
+                        .setOutputApk(new File(signApkPath))
+                        .setV1SigningEnabled(true)
+                        .setV2SigningEnabled(true).build();
+                signer.sign();
                 new File(apkPath).delete();
                 return signApkPath;
             }

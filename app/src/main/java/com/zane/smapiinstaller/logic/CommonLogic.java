@@ -124,7 +124,15 @@ public class CommonLogic {
                 }
             }
         }
-        Collections.sort(apkFilesManifests, (a, b) -> Long.compare(b.getMinBuildCode(), a.getMinBuildCode()));
+        Collections.sort(apkFilesManifests, (a, b) -> {
+            if(a.getTargetPackageName() != null && b.getTargetPackageName() == null) {
+                return -1;
+            }
+            else if(b.getTargetPackageName() != null){
+                return Long.compare(b.getMinBuildCode(), a.getMinBuildCode());
+            }
+            return 1;
+        });
         return apkFilesManifests;
     }
 

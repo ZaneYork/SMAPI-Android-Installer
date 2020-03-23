@@ -1,13 +1,21 @@
 {
-  "version": 5,
+  "version": 6,
   "contents": [
     {
       "type": "COMPAT",
-      "name": "SMAPI for 1.4.5.137",
+      "name": "SMAPI兼容包 1.4.5.137",
       "assetPath": "compat/137/",
       "description": "SMAPI兼容包, 适用版本1.4.4.128 - 1.4.5.137, SMAPI 3.3.2.0",
       "url": "http://zaneyork.cn/download/compat/smapi_137.zip",
       "hash": "bd16e8e4cb52d636e24c6a2d2309b66a60e492d2b97c1b8f6a519c04ac42ebdc"
+    },
+    {
+      "type": "COMPAT",
+      "name": "SMAPI三星商店兼容包",
+      "assetPath": "compat/samsung_138/",
+      "description": "SMAPI三星商店兼容包， 适用版本1.4.4.138至今, SMAPI 3.4.0",
+      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138.zip",
+      "hash": "4028512fb1ae048557b63495de6f76cc454510d488a76d35eb1330ef021ec4ec"
     },
     {
       "type": "LOCALE",

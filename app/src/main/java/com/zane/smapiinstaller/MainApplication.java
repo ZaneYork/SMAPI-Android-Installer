@@ -12,6 +12,7 @@ import com.zane.smapiinstaller.utils.GzipRequestInterceptor;
 
 import org.greenrobot.greendao.database.Database;
 
+import androidx.multidex.MultiDex;
 import lombok.Getter;
 import okhttp3.OkHttpClient;
 
@@ -37,5 +38,6 @@ public class MainApplication extends Application {
     protected void attachBaseContext(Context base) {
         // 国际化适配（绑定语种）
         super.attachBaseContext(LanguagesManager.attach(base));
+        MultiDex.install(this);
     }
 }

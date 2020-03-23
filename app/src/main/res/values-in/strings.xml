@@ -61,7 +61,7 @@
     <string name="settings_verbose_logging">Catatan Terperinci</string>
     <string name="signing_package">Menandatangani</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
-    <string name="smapi_version">Versi SMAPI: 3.3.2.4</string>
+    <string name="smapi_version">Versi SMAPI: 3.4.0</string>
     <string name="text_install_tip1">Catatan: Dibutuhkan Stardew Valley versi 1.4.5.138 atau yang lebih baru.</string>
     <string name="text_install_tip2">Permainan dasar diperlukan saat memperbarui/menginstal.</string>
     <string name="unpacking_smapi_files">Membongkar</string>
