@@ -32,6 +32,9 @@ import com.android.apksig.internal.pkcs7.SignedData;
 import com.android.apksig.internal.pkcs7.SignerIdentifier;
 import com.android.apksig.internal.pkcs7.SignerInfo;
 import com.android.apksig.internal.util.Pair;
+
+import net.fornwall.apksigner.Base64;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,7 +49,6 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -375,7 +377,7 @@ public abstract class V1SchemeSigner {
             Attributes entryAttrs = new Attributes();
             entryAttrs.putValue(
                     entryDigestAttributeName,
-                    Base64.getEncoder().encodeToString(entryDigest));
+                    Base64.encode(entryDigest));
             ByteArrayOutputStream sectionOut = new ByteArrayOutputStream();
             byte[] sectionBytes;
             try {
@@ -448,7 +450,7 @@ public abstract class V1SchemeSigner {
         MessageDigest md = getMessageDigestInstance(manifestDigestAlgorithm);
         mainAttrs.putValue(
                 getManifestDigestAttributeName(manifestDigestAlgorithm),
-                Base64.getEncoder().encodeToString(md.digest(manifest.contents)));
+                Base64.encode(md.digest(manifest.contents)));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             SignatureFileWriter.writeMainSection(out, mainAttrs);
@@ -464,7 +466,7 @@ public abstract class V1SchemeSigner {
             Attributes attrs = new Attributes();
             attrs.putValue(
                     entryDigestAttributeName,
-                    Base64.getEncoder().encodeToString(sectionDigest));
+                    Base64.encode(sectionDigest));
 
             try {
                 SignatureFileWriter.writeIndividualSection(out, sectionName, attrs);

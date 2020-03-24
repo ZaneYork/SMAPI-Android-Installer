@@ -22,6 +22,8 @@ import com.android.apksig.internal.asn1.ber.BerDataValueReader;
 import com.android.apksig.internal.asn1.ber.BerEncoding;
 import com.android.apksig.internal.asn1.ber.ByteBufferBerDataValueReader;
 import com.android.apksig.internal.util.ByteBufferUtils;
+import com.zane.smapiinstaller.utils.MathUtils;
+import com.zane.smapiinstaller.utils.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -311,7 +313,7 @@ public final class Asn1BerParser {
 
     private static Asn1Type getContainerAsn1Type(Class<?> containerClass)
             throws Asn1DecodingException {
-        Asn1Class containerAnnotation = containerClass.getDeclaredAnnotation(Asn1Class.class);
+        Asn1Class containerAnnotation = ReflectionUtils.getDeclaredAnnotation(containerClass, Asn1Class.class);
         if (containerAnnotation == null) {
             throw new Asn1DecodingException(
                     containerClass.getName() + " is not annotated with "
@@ -332,7 +334,13 @@ public final class Asn1BerParser {
 
     private static Class<?> getElementType(Field field)
             throws Asn1DecodingException, ClassNotFoundException {
-        String type = field.getGenericType().getTypeName();
+        String type;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            type = field.getGenericType().getTypeName();
+        }
+        else {
+            type = field.getGenericType().toString();
+        }
         int delimiterIndex =  type.indexOf('<');
         if (delimiterIndex == -1) {
             throw new Asn1DecodingException("Not a container type: " + field.getGenericType());
@@ -508,7 +516,7 @@ public final class Asn1BerParser {
     private static int integerToInt(ByteBuffer encoded) throws Asn1DecodingException {
         BigInteger value = integerToBigInteger(encoded);
         try {
-            return value.intValue();
+            return MathUtils.intValueExact(value);
         } catch (ArithmeticException e) {
             throw new Asn1DecodingException(
                     String.format("INTEGER cannot be represented as int: %1$d (0x%1$x)", value), e);
@@ -518,7 +526,7 @@ public final class Asn1BerParser {
     private static long integerToLong(ByteBuffer encoded) throws Asn1DecodingException {
         BigInteger value = integerToBigInteger(encoded);
         try {
-            return value.longValue();
+            return MathUtils.longValueExact(value);
         } catch (ArithmeticException e) {
             throw new Asn1DecodingException(
                     String.format("INTEGER cannot be represented as long: %1$d (0x%1$x)", value),
@@ -531,7 +539,7 @@ public final class Asn1BerParser {
         Field[] declaredFields = containerClass.getDeclaredFields();
         List<AnnotatedField> result = new ArrayList<>(declaredFields.length);
         for (Field field : declaredFields) {
-            Asn1Field annotation = field.getDeclaredAnnotation(Asn1Field.class);
+            Asn1Field annotation = ReflectionUtils.getDeclaredAnnotation(field, Asn1Field.class);
             if (annotation == null) {
                 continue;
             }
@@ -646,7 +654,7 @@ public final class Asn1BerParser {
                 case SEQUENCE:
                 {
                     Asn1Class containerAnnotation =
-                            targetType.getDeclaredAnnotation(Asn1Class.class);
+                            ReflectionUtils.getDeclaredAnnotation(targetType, Asn1Class.class);
                     if ((containerAnnotation != null)
                             && (containerAnnotation.type() == Asn1Type.SEQUENCE)) {
                         return parseSequence(dataValue, targetType);
@@ -656,7 +664,7 @@ public final class Asn1BerParser {
                 case CHOICE:
                 {
                     Asn1Class containerAnnotation =
-                            targetType.getDeclaredAnnotation(Asn1Class.class);
+                            ReflectionUtils.getDeclaredAnnotation(targetType, Asn1Class.class);
                     if ((containerAnnotation != null)
                             && (containerAnnotation.type() == Asn1Type.CHOICE)) {
                         return parseChoice(dataValue, targetType);

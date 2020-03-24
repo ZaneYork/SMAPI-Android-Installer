@@ -161,7 +161,7 @@ public class ApkPatcher {
                     case "package":
                         if (packageName.get() == null) {
                             packageName.set(strObj);
-                            attr.obj = Constants.TARGET_PACKAGE_NAME;
+                            attr.obj = strObj.replace(ManifestPatchConstants.APP_PACKAGE_NAME, Constants.TARGET_PACKAGE_NAME);
                         }
                         break;
                     case "label":

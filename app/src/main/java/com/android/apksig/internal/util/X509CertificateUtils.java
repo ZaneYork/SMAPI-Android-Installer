@@ -22,6 +22,8 @@ import com.android.apksig.internal.asn1.Asn1DerEncoder;
 import com.android.apksig.internal.asn1.Asn1EncodingException;
 import com.android.apksig.internal.x509.Certificate;
 
+import net.fornwall.apksigner.Base64;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +32,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 
 /**
@@ -261,7 +262,7 @@ public class X509CertificateUtils {
                                 + "valid certificate footer");
             }
         }
-        byte[] derEncoding = Base64.getDecoder().decode(pemEncoding.toString());
+        byte[] derEncoding = Base64.decode(pemEncoding.toString());
         // consume any trailing whitespace in the byte buffer
         int nextEncodedChar = certificateBuffer.position();
         while (certificateBuffer.hasRemaining()) {

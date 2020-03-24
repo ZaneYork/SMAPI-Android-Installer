@@ -29,15 +29,21 @@ public class GameLauncher {
         Activity context = CommonLogic.getActivityFromView(root);
         PackageManager packageManager = context.getPackageManager();
         try {
-            PackageInfo packageInfo = packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME, 0);
+            PackageInfo packageInfo;
+            try {
+                packageInfo = packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME, 0);
+            } catch (PackageManager.NameNotFoundException ignored) {
+                packageInfo = packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME_SAMSUNG, 0);
+            }
             if(!CommonLogic.unpackSmapiFiles(context, packageInfo.applicationInfo.publicSourceDir, true)) {
                 DialogUtils.showAlertDialog(root, R.string.error, R.string.error_failed_to_repair);
                 return;
             }
             ModAssetsManager modAssetsManager = new ModAssetsManager(root);
+            PackageInfo finalPackageInfo = packageInfo;
             modAssetsManager.checkModEnvironment((isConfirm) -> {
                 if(isConfirm) {
-                    Intent intent = packageManager.getLaunchIntentForPackage(Constants.TARGET_PACKAGE_NAME);
+                    Intent intent = packageManager.getLaunchIntentForPackage(finalPackageInfo.packageName);
                     context.startActivity(intent);
                 }
             });

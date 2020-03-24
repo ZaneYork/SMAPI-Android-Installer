@@ -20,6 +20,7 @@ import com.android.apksig.internal.zip.ZipUtils;
 import com.android.apksig.util.DataSink;
 import com.android.apksig.util.DataSource;
 import com.android.apksig.util.DataSources;
+import com.zane.smapiinstaller.utils.MathUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -155,7 +156,7 @@ public class VerityTreeBuilder {
         levelOffset[0] = 0;
         for (int i = 0; i < levelSize.size(); i++) {
             // We don't support verity tree if it is larger then Integer.MAX_VALUE.
-            levelOffset[i + 1] = levelOffset[i] + Math.toIntExact(
+            levelOffset[i + 1] = levelOffset[i] + MathUtils.toIntExact(
                     levelSize.get(levelSize.size() - i - 1));
         }
         return levelOffset;

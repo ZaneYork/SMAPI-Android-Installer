@@ -63,8 +63,10 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java9.util.function.Supplier;
+import java9.util.stream.Collectors;
+
+import java9.util.stream.StreamSupport;
 
 public class ApkSigningBlockUtils {
 
@@ -415,7 +417,7 @@ public class ApkSigningBlockUtils {
             DataSource centralDir,
             DataSource eocd) throws IOException, NoSuchAlgorithmException, DigestException {
         Map<ContentDigestAlgorithm, byte[]> contentDigests = new HashMap<>();
-        Set<ContentDigestAlgorithm> oneMbChunkBasedAlgorithm = digestAlgorithms.stream()
+        Set<ContentDigestAlgorithm> oneMbChunkBasedAlgorithm = StreamSupport.stream(digestAlgorithms)
                 .filter(a -> a == ContentDigestAlgorithm.CHUNKED_SHA256 ||
                              a == ContentDigestAlgorithm.CHUNKED_SHA512)
                 .collect(Collectors.toSet());
@@ -1100,7 +1102,7 @@ public class ApkSigningBlockUtils {
         if (bestSigAlgorithmOnSdkVersion.isEmpty()) {
             throw new NoSupportedSignaturesException("No supported signature");
         }
-        return bestSigAlgorithmOnSdkVersion.values().stream()
+        return StreamSupport.stream(bestSigAlgorithmOnSdkVersion.values())
                 .sorted((sig1, sig2) -> Integer.compare(
                         sig1.algorithm.getId(), sig2.algorithm.getId()))
                 .collect(Collectors.toList());

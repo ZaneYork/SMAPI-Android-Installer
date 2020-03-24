@@ -16,6 +16,8 @@
 
 package com.android.apksig.internal.util;
 
+import android.os.Build;
+
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -212,6 +214,8 @@ public class DelegatingX509Certificate extends X509Certificate {
     @Override
     public void verify(PublicKey key, Provider sigProvider) throws CertificateException,
             NoSuchAlgorithmException, InvalidKeyException, SignatureException {
-        mDelegate.verify(key, sigProvider);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            mDelegate.verify(key, sigProvider);
+        }
     }
 }

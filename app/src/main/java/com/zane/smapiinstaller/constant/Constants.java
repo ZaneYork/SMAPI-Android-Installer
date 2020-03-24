@@ -22,6 +22,10 @@ public class Constants {
      */
     public static final String TARGET_PACKAGE_NAME =  "com.zane.stardewvalley";
     /**
+     * 安装包目标包名
+     */
+    public static final String TARGET_PACKAGE_NAME_SAMSUNG =  "com.zane.stardewvalleysamsung";
+    /**
      * DLC下载路径
      */
     public static final String DLC_LIST_UPDATE_URL = "http://dl.zaneyork.cn/smapi/downloadable_content_list.json";
