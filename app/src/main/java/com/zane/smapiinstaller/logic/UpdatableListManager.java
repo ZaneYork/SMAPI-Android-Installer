@@ -3,6 +3,8 @@ package com.zane.smapiinstaller.logic;
 import android.view.View;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ClassToInstanceMap;
+import com.google.common.collect.MutableClassToInstanceMap;
 import com.hjq.language.LanguagesManager;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
@@ -15,13 +17,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 在线列表更新管理器
  * @param <T> 列表类型
  */
 public class UpdatableListManager<T extends UpdatableList> {
-    private static boolean updateChecked = false;
+    private static ConcurrentHashMap<Class<?>, Boolean> updateChecked = new ConcurrentHashMap<>();
 
     private static UpdatableList updatableList = null;
 
@@ -35,8 +38,9 @@ public class UpdatableListManager<T extends UpdatableList> {
      */
     public UpdatableListManager(View root, String filename, Class<T> tClass, String updateUrl) {
         updatableList = FileUtils.getLocaledAssetJson(root.getContext(), filename, tClass);
-        if(!updateChecked) {
-            updateChecked = true;
+        Boolean updated = updateChecked.get(tClass);
+        if(updated == null || !updated) {
+            updateChecked.put(tClass, true);
             String languageSuffix = '.' + LanguagesManager.getAppLanguage(root.getContext()).getLanguage();
             updateList(root, tClass, updateUrl, filename, languageSuffix);
         }

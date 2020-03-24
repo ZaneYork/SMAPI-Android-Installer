@@ -40,6 +40,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.Deflater;
@@ -56,6 +57,8 @@ public class ApkPatcher {
     private static final String TAG = "PATCHER";
 
     private AtomicReference<String> errorMessage = new AtomicReference<>();
+
+    private AtomicInteger switchAction = new AtomicInteger();
 
     public ApkPatcher(Context context) {
         this.context = context;
@@ -119,6 +122,7 @@ public class ApkPatcher {
             byte[] modifiedManifest = modifyManifest(manifest, apkFilesManifests);
             if(apkFilesManifests.size() == 0) {
                 errorMessage.set(context.getString(R.string.error_no_supported_game_version));
+                switchAction.set(R.string.menu_download);
                 return false;
             }
             if(modifiedManifest == null) {
@@ -290,5 +294,9 @@ public class ApkPatcher {
      */
     public AtomicReference<String> getErrorMessage() {
         return errorMessage;
+    }
+
+    public AtomicInteger getSwitchAction() {
+        return switchAction;
     }
 }

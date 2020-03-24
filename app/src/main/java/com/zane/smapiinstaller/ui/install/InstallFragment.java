@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -88,7 +90,18 @@ public class InstallFragment extends Fragment {
                     modAssetsManager.installDefaultMods();
                     DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 25);
                     if (!patcher.patch(path)) {
-                        DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
+                        int target = patcher.getSwitchAction().getAndSet(0);
+                        if(target == R.string.menu_download) {
+                            DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
+                                if(which == DialogAction.POSITIVE) {
+                                    NavController controller = Navigation.findNavController(root);
+                                    controller.navigate(InstallFragmentDirections.actionNavInstallToNavDownload());
+                                }
+                            });
+                        }
+                        else {
+                            DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
+                        }
                         return;
                     }
                     DialogUtils.setProgressDialogState(root, dialog, R.string.signing_package, 55);
@@ -100,7 +113,6 @@ public class InstallFragment extends Fragment {
                     DialogUtils.setProgressDialogState(root, dialog, R.string.installing_package, 99);
                     patcher.install(signPath);
                     dialog.incrementProgress(1);
-
                 }
                 catch (Exception e) {
                     Crashes.trackError(e);
