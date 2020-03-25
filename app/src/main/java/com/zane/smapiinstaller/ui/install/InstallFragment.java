@@ -19,6 +19,8 @@ import com.zane.smapiinstaller.utils.DialogUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -74,21 +76,24 @@ public class InstallFragment extends Fragment {
             task = new Thread(() -> {
                 try {
                     ApkPatcher patcher = new ApkPatcher(context);
-                    DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, 0);
+                    patcher.registerProgressListener((progress)->{
+                        DialogUtils.setProgressDialogState(root, dialog, null, progress);
+                    });
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
                     String path = patcher.extract();
                     if (path == null) {
                         DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
                         return;
                     }
-                    DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 10);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, null);
                     if (!CommonLogic.unpackSmapiFiles(context, path, false)) {
                         DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
                         return;
                     }
                     ModAssetsManager modAssetsManager = new ModAssetsManager(root);
-                    DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 15);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 6);
                     modAssetsManager.installDefaultMods();
-                    DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 25);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 8);
                     if (!patcher.patch(path)) {
                         int target = patcher.getSwitchAction().getAndSet(0);
                         if(target == R.string.menu_download) {
@@ -104,15 +109,14 @@ public class InstallFragment extends Fragment {
                         }
                         return;
                     }
-                    DialogUtils.setProgressDialogState(root, dialog, R.string.signing_package, 55);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.signing_package, null);
                     String signPath = patcher.sign(path);
                     if (signPath == null) {
                         DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
                         return;
                     }
-                    DialogUtils.setProgressDialogState(root, dialog, R.string.installing_package, 99);
+                    DialogUtils.setProgressDialogState(root, dialog, R.string.installing_package, null);
                     patcher.install(signPath);
-                    dialog.incrementProgress(1);
                 }
                 catch (Exception e) {
                     Crashes.trackError(e);

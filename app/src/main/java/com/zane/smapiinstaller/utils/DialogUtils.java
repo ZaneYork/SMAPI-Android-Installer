@@ -28,12 +28,16 @@ public class DialogUtils {
      * @param message  消息
      * @param progress 进度
      */
-    public static void setProgressDialogState(View view, MaterialDialog dialog, int message, int progress) {
+    public static void setProgressDialogState(View view, MaterialDialog dialog, Integer message, Integer progress) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing() && !dialog.isCancelled()) {
             activity.runOnUiThread(() -> {
-                dialog.setProgress(progress);
-                dialog.setContent(message);
+                if(progress != null) {
+                    dialog.setProgress(progress);
+                }
+                if(message != null) {
+                    dialog.setContent(message);
+                }
             });
         }
     }

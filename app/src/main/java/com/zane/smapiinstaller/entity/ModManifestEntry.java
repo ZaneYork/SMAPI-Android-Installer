@@ -1,6 +1,7 @@
 package com.zane.smapiinstaller.entity;
 
-import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+
 import java.util.Set;
 
 import lombok.Data;
@@ -9,6 +10,7 @@ import lombok.Data;
  * Mod信息
  */
 @Data
+@JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY, getterVisibility= JsonAutoDetect.Visibility.NONE)
 public class ModManifestEntry {
     /**
      * 存放位置
