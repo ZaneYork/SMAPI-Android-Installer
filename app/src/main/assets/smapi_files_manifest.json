@@ -110,6 +110,11 @@
     "origin": 1
   },
   {
+    "targetPath": "smapi-internal/Mono.Android.dll",
+    "assetPath": "assemblies/Mono.Android.dll",
+    "origin": 1
+  },
+  {
     "targetPath": "smapi-internal/System.Xml.Linq.dll",
     "assetPath": "smapi/System.Xml.Linq.dll",
     "origin": 0

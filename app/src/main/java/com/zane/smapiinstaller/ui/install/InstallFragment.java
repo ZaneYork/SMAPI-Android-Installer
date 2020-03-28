@@ -27,6 +27,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import lombok.SneakyThrows;
 
 public class InstallFragment extends Fragment {
 

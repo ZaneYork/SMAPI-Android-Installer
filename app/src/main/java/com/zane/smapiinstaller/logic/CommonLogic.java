@@ -11,12 +11,17 @@ import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.ImageView;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.zane.smapiinstaller.MainApplication;
+import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.FileUtils;
@@ -31,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import java9.util.function.Consumer;
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
 import pxb.android.axml.AxmlWriter;
@@ -212,4 +218,22 @@ public class CommonLogic {
         return writer.toByteArray();
     }
 
+    public static void showAnimation(ImageView view, int anim, Consumer<Animation> action) {
+        Animation animation = AnimationUtils.loadAnimation(getActivityFromView(view), anim);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                action.accept(animation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+        view.startAnimation(animation);
+    }
 }

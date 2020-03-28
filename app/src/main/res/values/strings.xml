@@ -60,7 +60,7 @@
     <string name="settings_verbose_logging">Verbose Logging</string>
     <string name="signing_package">Signing</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
-    <string name="smapi_version">SMAPI Version: 3.4.0</string>
+    <string name="smapi_version">SMAPI Version: 3.4.1.1</string>
     <string name="text_install_tip1">Notes: Game version 1.4.5.138 or later is required.</string>
     <string name="text_install_tip2">The base game is required when updating/installing.</string>
     <string name="unpacking_smapi_files">Unpacking</string>
@@ -68,4 +68,6 @@
     <string name="toast_redpacket_message" translatable="false">红包码已复制\n支付宝首页搜索“9188262” 立即领红包</string>
     <string name="icon_desc" translatable="false">icon</string>
     <string name="sort_by">Sort by</string>
+    <string name="text_too_large">Text file is too large for editor</string>
+    <string name="open_with">Open With</string>
 </resources>

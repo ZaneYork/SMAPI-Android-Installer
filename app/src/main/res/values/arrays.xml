@@ -5,6 +5,7 @@
         <item>WeChat</item>
         <item>QQ</item>
         <item>Red Packet Code</item>
+        <item>Donation List</item>
     </string-array>
     <string-array name="languages">
         <item>Auto</item>

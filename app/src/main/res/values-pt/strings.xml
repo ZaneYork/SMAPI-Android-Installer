@@ -61,7 +61,7 @@
     <string name="settings_verbose_logging">Log detalhado</string>
     <string name="signing_package">Assinatura</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
-    <string name="smapi_version">Versão SMAPI: 3.4.0</string>
+    <string name="smapi_version">Versão SMAPI: 3.4.1.1</string>
     <string name="text_install_tip1">Notas: É necessária a versão do jogo 1.4.5.138 ou posterior.</string>
     <string name="text_install_tip2">O jogo base é necessário ao atualizar / instalar.</string>
     <string name="unpacking_smapi_files">Desembalar</string>
