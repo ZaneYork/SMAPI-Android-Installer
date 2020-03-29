@@ -10,6 +10,7 @@ import java.io.File;
 
 /**
  * 配置管理器
+ * @author Zane
  */
 public class ConfigManager {
     private FrameworkConfig config;

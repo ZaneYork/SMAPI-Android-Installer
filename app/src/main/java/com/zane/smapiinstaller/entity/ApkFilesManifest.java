@@ -7,6 +7,7 @@ import lombok.Data;
 
 /**
  * SMAPI所需处理的文件清单
+ * @author Zane
  */
 @Data
 public class ApkFilesManifest {

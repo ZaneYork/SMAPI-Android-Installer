@@ -30,6 +30,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+/**
+ * @author Zane
+ */
 public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.ViewHolder> {
     private ConfigViewModel model;
     private List<ModManifestEntry> modList;

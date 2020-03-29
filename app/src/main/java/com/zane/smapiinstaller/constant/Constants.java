@@ -2,6 +2,7 @@ package com.zane.smapiinstaller.constant;
 
 /**
  * 常量
+ * @author Zane
  */
 public class Constants {
     /**
@@ -53,4 +54,19 @@ public class Constants {
      * Google翻译服务
      */
     public static final String TRANSLATE_SERVICE_URL_GOOGLE = "http://translate.google.cn/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto&tl=%s&q=%s";
+
+    /**
+     * 文本文件打开大小阈值
+     */
+    public static int TEXT_FILE_OPEN_SIZE_LIMIT = 16 * 1024 * 1024;
+
+    /**
+     * SMAPI版本
+     */
+    public static final String SMAPI_VERSION = "3.4.1.1";
+
+    /**
+     * 平台
+     */
+    public static final String PLATFORM = "Android";
 }

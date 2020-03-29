@@ -17,6 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * @author Zane
+ */
 public class HelpItemAdapter extends RecyclerView.Adapter<HelpItemAdapter.ViewHolder>  {
 
     public void setHelpItems(List<HelpItem> helpItems) {

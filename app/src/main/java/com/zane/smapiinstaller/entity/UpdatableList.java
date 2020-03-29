@@ -4,6 +4,7 @@ import lombok.Data;
 
 /**
  * 可更新列表
+ * @author Zane
  */
 @Data
 public class UpdatableList {

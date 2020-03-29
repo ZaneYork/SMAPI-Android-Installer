@@ -1,4 +1,4 @@
-package com.zane.smapiinstaller.entity;
+package com.zane.smapiinstaller.dto;
 
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
@@ -6,6 +6,9 @@ import org.greenrobot.greendao.annotation.Index;
 
 import org.greenrobot.greendao.annotation.Generated;
 
+/**
+ * @author Zane
+ */
 @Entity(indexes = {@Index(value = "origin, locale, translator asc", unique = true)})
 public class TranslationResult {
     @Id(autoincrement = true) private Long id;

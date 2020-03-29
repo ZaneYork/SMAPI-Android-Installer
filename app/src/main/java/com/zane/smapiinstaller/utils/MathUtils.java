@@ -1,9 +1,15 @@
 package com.zane.smapiinstaller.utils;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
+/**
+ * @author Zane
+ */
 public class MathUtils {
+
+    private static int INT_MAX_BIT_VALUE = 31;
+
+    private static int LONG_MAX_BIT_VALUE = 63;
 
     /**
      * Returns the value of the {@code long} argument;
@@ -34,7 +40,7 @@ public class MathUtils {
      * @since  1.8
      */
     public static int intValueExact(BigInteger value) {
-        if (value.bitLength() <= 31) {
+        if (value.bitLength() <= INT_MAX_BIT_VALUE) {
             return value.intValue();
         } else {
             throw new ArithmeticException("BigInteger out of int range");
@@ -54,7 +60,7 @@ public class MathUtils {
      * @since  1.8
      */
     public static long longValueExact(BigInteger value) {
-        if (value.bitLength() <= 63) {
+        if (value.bitLength() <= LONG_MAX_BIT_VALUE) {
             return value.longValue();
         } else {
             throw new ArithmeticException("BigInteger out of long range");

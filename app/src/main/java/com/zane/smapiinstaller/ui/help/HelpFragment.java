@@ -25,6 +25,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+/**
+ * @author Zane
+ */
 public class HelpFragment extends Fragment {
 
     @BindView(R.id.view_help_list)
@@ -39,9 +42,9 @@ public class HelpFragment extends Fragment {
         UpdatableListManager<HelpItemList> manager = new UpdatableListManager<>(root, "help_item_list.json", HelpItemList.class, Constants.HELP_LIST_UPDATE_URL);
         HelpItemAdapter adapter = new HelpItemAdapter(manager.getList().getItems());
         recyclerView.setAdapter(adapter);
-        manager.registerListChangeListener((list) -> {
+        manager.registerOnChangeListener((list) -> {
             adapter.setHelpItems(list.getItems());
-            return true;
+            return false;
         });
         recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         return root;

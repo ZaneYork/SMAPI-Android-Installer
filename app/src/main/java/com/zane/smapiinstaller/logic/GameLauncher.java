@@ -13,6 +13,7 @@ import com.zane.smapiinstaller.utils.DialogUtils;
 
 /**
  * 游戏启动器
+ * @author Zane
  */
 public class GameLauncher {
 

@@ -9,7 +9,6 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.hjq.language.LanguagesManager;
-import com.zane.smapiinstaller.MainApplication;
 
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -21,12 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 
 /**
  * 文件工具类
+ * @author Zane
  */
 public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
     /**

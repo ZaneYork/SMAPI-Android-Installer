@@ -16,6 +16,9 @@ import androidx.multidex.MultiDex;
 import lombok.Getter;
 import okhttp3.OkHttpClient;
 
+/**
+ * @author Zane
+ */
 @Getter
 public class MainApplication extends Application {
     private DaoSession daoSession;

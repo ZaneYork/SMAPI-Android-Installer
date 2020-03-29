@@ -1,14 +1,16 @@
 package com.zane.smapiinstaller.utils;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
+import java9.util.stream.StreamSupport;
+
 /**
  * 版本比较工具
+ * @author Zane
  */
 public class VersionUtil {
     /**
@@ -56,7 +58,7 @@ public class VersionUtil {
      * @return 是否为空版本段
      */
     private static boolean isZero(List<String> versionSections) {
-        return !Iterables.filter(versionSections, version -> {
+        return !StreamSupport.stream(versionSections).filter(version -> {
             try {
                 int i = Integer.parseInt(version);
                 if (i == 0) {
@@ -65,7 +67,7 @@ public class VersionUtil {
             } catch (Exception ignored) {
             }
             return true;
-        }).iterator().hasNext();
+        }).findAny().isPresent();
     }
 
     /**

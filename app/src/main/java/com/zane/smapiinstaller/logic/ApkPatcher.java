@@ -53,6 +53,9 @@ import androidx.core.content.FileProvider;
 import java9.util.stream.StreamSupport;
 import pxb.android.axml.NodeVisitor;
 
+/**
+ * @author Zane
+ */
 public class ApkPatcher {
 
     private static final String PASSWORD = "android";
@@ -61,13 +64,13 @@ public class ApkPatcher {
 
     private static final String TAG = "PATCHER";
 
-    private AtomicReference<String> errorMessage = new AtomicReference<>();
+    private final AtomicReference<String> errorMessage = new AtomicReference<>();
 
-    private AtomicInteger switchAction = new AtomicInteger();
+    private final AtomicInteger switchAction = new AtomicInteger();
 
-    private List<Consumer<Integer>> progressListener = new ArrayList<>();
+    private final List<Consumer<Integer>> progressListener = new ArrayList<>();
 
-    private Stopwatch stopwatch = Stopwatch.createUnstarted();
+    private final Stopwatch stopwatch = Stopwatch.createUnstarted();
 
     public ApkPatcher(Context context) {
         this.context = context;
@@ -160,9 +163,8 @@ public class ApkPatcher {
             int baseProgress = 10;
             stopwatch.reset();
             stopwatch.start();
-            ZipUtils.addOrReplaceEntries(apkPath, entries, patchedFilename, (progress)->{
-                emitProgress((int) (baseProgress + (progress / 100.0) * 35));
-            });
+            ZipUtils.addOrReplaceEntries(apkPath, entries, patchedFilename,
+                    (progress) -> emitProgress((int) (baseProgress + (progress / 100.0) * 35)));
             stopwatch.stop();
             emitProgress(45);
             FileUtils.forceDelete(file);
@@ -275,12 +277,12 @@ public class ApkPatcher {
                 stopwatch.reset();
                 Thread thread = new Thread(() -> {
                     stopwatch.start();
-                    while (true){
+                    while (true) {
                         try {
                             Thread.sleep(20);
                             long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
                             double progress = elapsed * 0.98 / zipOpElapsed;
-                            if(progress < 1.0) {
+                            if (progress < 1.0) {
                                 emitProgress((int) (49 + 40 * progress));
                             }
                         } catch (InterruptedException ignored) {
@@ -290,7 +292,7 @@ public class ApkPatcher {
                 });
                 thread.start();
                 signer.sign();
-                if(thread.isAlive() && !thread.isInterrupted()) {
+                if (thread.isAlive() && !thread.isInterrupted()) {
                     thread.interrupt();
                 }
                 FileUtils.forceDelete(new File(apkPath));

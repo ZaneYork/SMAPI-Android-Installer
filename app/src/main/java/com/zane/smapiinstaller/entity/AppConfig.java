@@ -5,6 +5,9 @@ import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Unique;
 import org.greenrobot.greendao.annotation.Generated;
 
+/**
+ * @author Zane
+ */
 @Entity
 public class AppConfig {
     @Id(autoincrement = true) private Long id;

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * A fragment representing a list of Items.
+ * @author Zane
  */
 public class DownloadableContentFragment extends Fragment {
 
@@ -41,7 +42,7 @@ public class DownloadableContentFragment extends Fragment {
             UpdatableListManager<DownloadableContentList> manager = new UpdatableListManager<>(view, "downloadable_content_list.json", DownloadableContentList.class, Constants.DLC_LIST_UPDATE_URL);
             DownloadableContentAdapter adapter = new DownloadableContentAdapter(manager.getList().getContents());
             recyclerView.setAdapter(adapter);
-            manager.registerListChangeListener((list) -> {
+            manager.registerOnChangeListener((list) -> {
                 adapter.setDownloadableContentList(list.getContents());
                 return true;
             });

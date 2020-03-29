@@ -4,6 +4,7 @@ import lombok.Data;
 
 /**
  * 可下载内容包
+ * @author Zane
  */
 @Data
 public class DownloadableContent {

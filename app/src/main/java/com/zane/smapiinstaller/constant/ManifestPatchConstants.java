@@ -1,5 +1,8 @@
 package com.zane.smapiinstaller.constant;
 
+/**
+ * @author Zane
+ */
 public class ManifestPatchConstants {
     public static final String APP_NAME = "Stardew Valley";
 

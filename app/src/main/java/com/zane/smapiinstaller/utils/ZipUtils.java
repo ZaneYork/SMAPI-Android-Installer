@@ -18,6 +18,9 @@ import java9.util.function.Consumer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * @author Zane
+ */
 public class ZipUtils {
 
     public static void addOrReplaceEntries(String inputZipFilename, List<ZipEntrySource> entrySources, String outputZipFilename, Consumer<Integer> progressCallback) throws IOException {

@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 对话框相关工具类
+ * @author Zane
  */
 public class DialogUtils {
     private static Dialog currentDialog = null;

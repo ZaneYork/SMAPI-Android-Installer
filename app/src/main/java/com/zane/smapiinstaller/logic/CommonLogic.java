@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,7 +20,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.zane.smapiinstaller.MainApplication;
-import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.FileUtils;
@@ -44,6 +42,7 @@ import pxb.android.axml.NodeVisitor;
 
 /**
  * 通用逻辑
+ * @author Zane
  */
 public class CommonLogic {
     /**

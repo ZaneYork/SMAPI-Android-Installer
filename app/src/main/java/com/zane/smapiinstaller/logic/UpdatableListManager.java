@@ -2,9 +2,6 @@ package com.zane.smapiinstaller.logic;
 
 import android.view.View;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
 import com.hjq.language.LanguagesManager;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
@@ -19,16 +16,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import java9.util.function.Predicate;
+
 /**
  * 在线列表更新管理器
+ * @author Zane
  * @param <T> 列表类型
  */
-public class UpdatableListManager<T extends UpdatableList> {
-    private static ConcurrentHashMap<Class<?>, Boolean> updateChecked = new ConcurrentHashMap<>();
+public class UpdatableListManager<T extends UpdatableList> implements ListenableObject<T> {
+    private static final ConcurrentHashMap<Class<?>, Boolean> updateChecked = new ConcurrentHashMap<>();
 
     private static UpdatableList updatableList = null;
 
-    private List<Predicate<T>> onChangedListener = new ArrayList<>();
+    private final List<Predicate<T>> onChangedListener = new ArrayList<>();
 
     /**
      * @param root      context容器
@@ -64,9 +64,7 @@ public class UpdatableListManager<T extends UpdatableList> {
                 if(content != null && updatableList.getVersion() < content.getVersion()) {
                     FileUtils.writeAssetJson(root.getContext(), finalFilename, content);
                     updatableList = content;
-                    for (Predicate<T> listener : onChangedListener) {
-                        listener.apply(getList());
-                    }
+                    emitDataChangeEvent(getList());
                 }
             }
         });
@@ -79,11 +77,8 @@ public class UpdatableListManager<T extends UpdatableList> {
         return (T) updatableList;
     }
 
-    /**
-     * 注册列表变化监听器
-     * @param onChanged 回调
-     */
-    public void registerListChangeListener(Predicate<T> onChanged) {
-        this.onChangedListener.add(onChanged);
+    @Override
+    public List<Predicate<T>> getOnChangedListenerList() {
+        return onChangedListener;
     }
 }

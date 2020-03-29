@@ -2,12 +2,14 @@ package com.zane.smapiinstaller.entity;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
+import java.util.List;
 import java.util.Set;
 
 import lombok.Data;
 
 /**
  * Mod信息
+ * @author Zane
  */
 @Data
 @JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY, getterVisibility= JsonAutoDetect.Visibility.NONE)
@@ -36,6 +38,10 @@ public class ModManifestEntry {
      * 依赖
      */
     private Set<ModManifestEntry> Dependencies;
+    /**
+     * MOD更新源
+     */
+    private List<String> UpdateKeys;
     /**
      * 资源包类型
      */

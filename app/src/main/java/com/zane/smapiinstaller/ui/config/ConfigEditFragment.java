@@ -13,13 +13,13 @@ import android.widget.EditText;
 import com.afollestad.materialdialogs.DialogAction;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
 import com.zane.smapiinstaller.utils.JSONUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 import androidx.annotation.NonNull;
@@ -30,6 +30,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+/**
+ * @author Zane
+ */
 public class ConfigEditFragment extends Fragment {
     @BindView(R.id.edit_text_config_edit)
     EditText editText;
@@ -54,7 +57,7 @@ public class ConfigEditFragment extends Fragment {
         configPath = this.getArguments().getString("configPath");
         if(configPath != null) {
             File file = new File(configPath);
-            if(file.exists() && file.length() < 16 * 1024 * 1024) {
+            if(file.exists() && file.length() < Constants.TEXT_FILE_OPEN_SIZE_LIMIT) {
                 String fileText = FileUtils.getFileText(file);
                 if (fileText != null) {
                     editText.setText(fileText);

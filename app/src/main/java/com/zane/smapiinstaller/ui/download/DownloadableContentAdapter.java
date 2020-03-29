@@ -1,5 +1,6 @@
 package com.zane.smapiinstaller.ui.download;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -18,8 +19,8 @@ import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.FileCallback;
 import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.model.Response;
+import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DownloadableContentTypes;
 import com.zane.smapiinstaller.entity.DownloadableContent;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
@@ -38,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DownloadableContent}
+ * @author Zane
  */
 public class DownloadableContentAdapter extends RecyclerView.Adapter<DownloadableContentAdapter.ViewHolder> {
 
@@ -52,6 +54,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
         downloadableContentList = items;
     }
 
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
@@ -80,7 +83,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
         Button buttonRemove;
         @BindView(R.id.button_download_content)
         Button buttonDownload;
-        private AtomicBoolean downloading = new AtomicBoolean(false);
+        private final AtomicBoolean downloading = new AtomicBoolean(false);
 
         public DownloadableContent downloadableContent;
 
@@ -137,8 +140,13 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
             }
             File file = new File(context.getCacheDir(), downloadableContent.getName() + ".zip");
             if (file.exists()) {
-                if (!StringUtils.equalsIgnoreCase(com.zane.smapiinstaller.utils.FileUtils.getFileHash(file), downloadableContent.getHash())) {
-                    file.delete();
+                if (!StringUtils.equalsIgnoreCase(FileUtils.getFileHash(file), downloadableContent.getHash())) {
+                    try {
+                        FileUtils.forceDelete(file);
+                    } catch (IOException e) {
+                        Crashes.trackError(e);
+                        return;
+                    }
                 } else {
                     unpackLogic(context, file, modManifestEntry);
                     return;

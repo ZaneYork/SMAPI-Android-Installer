@@ -1,5 +1,8 @@
 package com.zane.smapiinstaller.constant;
 
+/**
+ * @author Zane
+ */
 public class AppConfigKey {
     public static final String ACTIVE_TRANSLATOR = "ActiveTranslator";
 

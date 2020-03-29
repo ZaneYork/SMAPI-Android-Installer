@@ -5,6 +5,9 @@ import android.os.Build;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
+/**
+ * @author Zane
+ */
 public class ReflectionUtils {
     public static <T extends Annotation> T getDeclaredAnnotation(Field targetField, Class<T> targetAnnotation) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

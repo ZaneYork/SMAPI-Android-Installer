@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 可下载内容列表
+ * @author Zane
  */
 @Data
 @EqualsAndHashCode(callSuper = true)

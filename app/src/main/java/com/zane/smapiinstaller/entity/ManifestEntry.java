@@ -4,6 +4,7 @@ import lombok.Data;
 
 /**
  * 文件映射关系
+ * @author Zane
  */
 @Data
 public class ManifestEntry {

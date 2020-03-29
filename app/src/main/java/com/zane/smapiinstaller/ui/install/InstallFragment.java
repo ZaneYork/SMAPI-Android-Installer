@@ -19,16 +19,16 @@ import com.zane.smapiinstaller.utils.DialogUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import lombok.SneakyThrows;
 
+/**
+ * @author Zane
+ */
 public class InstallFragment extends Fragment {
 
     private Context context;
@@ -77,9 +77,7 @@ public class InstallFragment extends Fragment {
             task = new Thread(() -> {
                 try {
                     ApkPatcher patcher = new ApkPatcher(context);
-                    patcher.registerProgressListener((progress)->{
-                        DialogUtils.setProgressDialogState(root, dialog, null, progress);
-                    });
+                    patcher.registerProgressListener((progress)-> DialogUtils.setProgressDialogState(root, dialog, null, progress));
                     DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
                     String path = patcher.extract();
                     if (path == null) {

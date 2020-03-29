@@ -3,17 +3,14 @@ package com.zane.smapiinstaller.utils;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimaps;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.zane.smapiinstaller.constant.Constants;
-import com.zane.smapiinstaller.entity.GoogleTranslationDto;
-import com.zane.smapiinstaller.entity.TranslationResult;
-import com.zane.smapiinstaller.entity.YouDaoTranslationDto;
+import com.zane.smapiinstaller.dto.GoogleTranslationDto;
+import com.zane.smapiinstaller.dto.TranslationResult;
+import com.zane.smapiinstaller.dto.YouDaoTranslationDto;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,6 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import java9.util.stream.Collectors;
+import java9.util.stream.StreamSupport;
+
+/**
+ * @author Zane
+ */
 public class TranslateUtil {
 
     public static final String GOOGLE = "Google";
@@ -30,8 +33,8 @@ public class TranslateUtil {
         if(textList == null || textList.size() == 0) {
             return;
         }
-        textList = Lists.newArrayList(Iterables.filter(textList, item -> StringUtils.isNoneBlank(item) && !item.contains("\n")));
-        if(textList.size() == 0) {
+        textList = StreamSupport.stream(textList).filter(item -> StringUtils.isNoneBlank(item) && !item.contains("\n")).collect(Collectors.toList());
+        if(textList.isEmpty()) {
             return;
         }
         String queryText = Joiner.on("%0A").join(textList);

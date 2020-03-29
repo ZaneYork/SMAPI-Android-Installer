@@ -16,12 +16,14 @@ import butterknife.OnClick;
 import butterknife.OnTextChanged;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.google.common.collect.Lists;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
 import java.util.ArrayList;
 
+/**
+ * @author Zane
+ */
 public class ConfigFragment extends Fragment {
 
     @BindView(R.id.view_mod_list)
@@ -37,9 +39,9 @@ public class ConfigFragment extends Fragment {
         configViewModel = new ConfigViewModel(root);
         ModManifestAdapter modManifestAdapter = new ModManifestAdapter(configViewModel, new ArrayList<>(configViewModel.getModList()));
         recyclerView.setAdapter(modManifestAdapter);
-        configViewModel.registerListChangeListener((list) -> {
+        configViewModel.registerOnChangeListener((list) -> {
             modManifestAdapter.setList(new ArrayList<>(list));
-            return true;
+            return false;
         });
         recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         return root;
