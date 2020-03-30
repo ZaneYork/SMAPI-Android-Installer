@@ -8,7 +8,6 @@ import com.lzy.okgo.OkGo;
 import com.zane.smapiinstaller.entity.DaoMaster;
 import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.utils.DbOpenHelper;
-import com.zane.smapiinstaller.utils.GzipRequestInterceptor;
 
 import org.greenrobot.greendao.database.Database;
 
@@ -27,7 +26,7 @@ public class MainApplication extends Application {
         super.onCreate();
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 //开启Gzip压缩
-                .addInterceptor(new GzipRequestInterceptor())
+//                .addInterceptor(new GzipRequestInterceptor())
                 .build();
         OkGo.getInstance().setOkHttpClient(okHttpClient).init(this);
         LanguagesManager.init(this);

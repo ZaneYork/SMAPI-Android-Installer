@@ -1,6 +1,7 @@
 package com.zane.smapiinstaller.logic;
 
 import android.app.Activity;
+import android.content.pm.PackageInfo;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
@@ -8,17 +9,23 @@ import android.view.View;
 import com.afollestad.materialdialogs.DialogAction;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Queues;
+import com.lzy.okgo.OkGo;
+import com.lzy.okgo.model.Response;
+import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.dto.ModUpdateCheckRequestDto;
+import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
+import com.zane.smapiinstaller.utils.JSONUtil;
+import com.zane.smapiinstaller.utils.JsonCallback;
 import com.zane.smapiinstaller.utils.VersionUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,11 +37,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import androidx.core.util.Consumer;
 import java9.util.Objects;
+import java9.util.function.Predicate;
 import java9.util.stream.Collectors;
 import java9.util.stream.StreamSupport;
-
-import androidx.core.util.Consumer;
 
 /**
  * Mod资源管理器
@@ -68,7 +75,7 @@ public class ModAssetsManager {
                         foundManifest = true;
                         if (manifest != null) {
                             manifest.setAssetPath(file.getParentFile().getAbsolutePath());
-                            if (filter.apply(manifest)) {
+                            if (filter.test(manifest)) {
                                 return manifest;
                             }
                         }
@@ -155,7 +162,7 @@ public class ModAssetsManager {
                 if (installedMods.size() > 1) {
                     DialogUtils.showAlertDialog(root, R.string.error,
                             String.format(context.getString(R.string.duplicate_mod_found),
-                                    Joiner.on(",").join(Lists.transform(installedMods, item -> FileUtils.toPrettyPath(item.getAssetPath())))));
+                                    StreamSupport.stream(installedMods).map(item -> FileUtils.toPrettyPath(item.getAssetPath())).collect(Collectors.joining(","))));
                     return false;
                 } else if (installedMods.size() == 0) {
                     installedMods = installedModMap.get(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"));
@@ -212,7 +219,7 @@ public class ModAssetsManager {
         for (String key : installedModMap.keySet()) {
             ImmutableList<ModManifestEntry> installedMods = installedModMap.get(key);
             if (installedMods.size() > 1) {
-                list.add(Joiner.on(",").join(Lists.transform(installedMods, item -> FileUtils.toPrettyPath(item.getAssetPath()))));
+                list.add(StreamSupport.stream(installedMods).map(item -> FileUtils.toPrettyPath(item.getAssetPath())).collect(Collectors.joining(",")));
             }
         }
         if (!list.isEmpty()) {
@@ -281,6 +288,37 @@ public class ModAssetsManager {
                     }));
         } else {
             returnCallback.accept(true);
+        }
+    }
+
+    public void checkModUpdate() {
+        List<ModUpdateCheckRequestDto.ModInfo> list = StreamSupport.stream(findAllInstalledMods(false))
+                .filter(mod -> mod.getUpdateKeys() != null && !mod.getUpdateKeys().isEmpty())
+                .map(ModUpdateCheckRequestDto.ModInfo::fromModManifestEntry)
+                .filter(modInfo -> modInfo.getInstalledVersion() != null)
+                .collect(Collectors.toList());
+        Activity context = CommonLogic.getActivityFromView(root);
+        PackageInfo gamePackageInfo = GameLauncher.getGamePackageInfo(context);
+        if (gamePackageInfo == null) {
+            return;
+        }
+        try {
+            ModUpdateCheckRequestDto requestDto = new ModUpdateCheckRequestDto(list, new ModUpdateCheckRequestDto.SemanticVersion(gamePackageInfo.versionName));
+            OkGo.<List<ModUpdateCheckResponseDto>>post(Constants.UPDATE_CHECK_SERVICE_URL)
+                    .upJson(JSONUtil.toJson(requestDto))
+                    .execute(new JsonCallback<List<ModUpdateCheckResponseDto>>(new TypeReference<List<ModUpdateCheckResponseDto>>() {
+                    }) {
+                        @Override
+                        public void onSuccess(Response<List<ModUpdateCheckResponseDto>> response) {
+                            List<ModUpdateCheckResponseDto> checkResponseDtos = response.body();
+                            if (checkResponseDtos != null) {
+                                List<ModUpdateCheckResponseDto> list = StreamSupport.stream(checkResponseDtos).filter(dto -> dto.getSuggestedUpdate() != null).collect(Collectors.toList());
+
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+            Crashes.trackError(e);
         }
     }
 

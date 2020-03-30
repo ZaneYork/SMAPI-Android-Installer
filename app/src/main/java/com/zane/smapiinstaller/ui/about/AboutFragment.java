@@ -24,7 +24,6 @@ import androidx.fragment.app.Fragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import java9.util.Objects;
 
 /**
  * @author Zane
@@ -44,17 +43,16 @@ public class AboutFragment extends Fragment {
 
     @OnClick(R.id.button_release)
     void release() {
-        CommonLogic.openUrl(this.getContext(), "https://github.com/ZaneYork/SMAPI-Android-Installer/releases");
+        CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, "https://github.com/ZaneYork/SMAPI-Android-Installer/releases"));
     }
 
     @OnClick(R.id.button_gplay)
     void gplay() {
         try {
-            this.openPlayStore("market://details?id=" + this.getActivity().getPackageName());
+            CommonLogic.doOnNonNull(this.getActivity(), (activity) -> this.openPlayStore("market://details?id=" + activity.getPackageName()));
         } catch (ActivityNotFoundException ex) {
-            CommonLogic.openUrl(this.getContext(), "https://play.google.com/store/apps/details?id=" + this.getActivity().getPackageName());
+            CommonLogic.doOnNonNull(this.getActivity(), (activity) -> CommonLogic.openUrl(activity, "https://play.google.com/store/apps/details?id=" + activity.getPackageName()));
         }
-
     }
 
     private void openPlayStore(String url) {
@@ -62,29 +60,26 @@ public class AboutFragment extends Fragment {
         intent.setData(Uri.parse(url));
         intent.setPackage("com.android.vending");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        this.getActivity().startActivity(intent);
+        CommonLogic.doOnNonNull(this.getActivity(), (activity) -> activity.startActivity(intent));
     }
 
     @OnClick({R.id.button_qq_group_1, R.id.button_qq_group_2})
     void joinQQ(Button which) {
         String baseUrl = "mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26k%3D";
         if (which.getId() == R.id.button_qq_group_1) {
-            CommonLogic.openUrl(this.getContext(), baseUrl + "AAflCLHiWw1haM1obu_f-CpGsETxXc6b");
+            CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "AAflCLHiWw1haM1obu_f-CpGsETxXc6b"));
         } else {
-            CommonLogic.openUrl(this.getContext(), baseUrl + "kshK7BavcS2jXZ6exDvezc18ksLB8YsM");
+            CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "kshK7BavcS2jXZ6exDvezc18ksLB8YsM"));
         }
     }
 
     @OnClick(R.id.button_donation)
     void donation() {
-        Context context = this.getContext();
-        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(context)
+        CommonLogic.doOnNonNull(this.getContext(), (context) -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(context)
                 .title(R.string.button_donation_text)
                 .items(R.array.donation_methods)
                 .itemsCallback((dialog, itemView, position, text) ->
-                        CommonLogic.showAnimation(imgHeart, R.anim.heart_beat, (animation) -> {
-                            listSelectLogic(context, position);
-                        })).show());
+                        CommonLogic.showAnimation(imgHeart, R.anim.heart_beat, (animation) -> listSelectLogic(context, position))).show()));
     }
 
     private void listSelectLogic(Context context, int position) {
@@ -108,10 +103,11 @@ public class AboutFragment extends Fragment {
                 if (hasInstalledAlipayClient) {
                     if (CommonLogic.copyToClipboard(context, Constants.RED_PACKET_CODE)) {
                         PackageManager packageManager = context.getPackageManager();
-                        Intent intent = packageManager.getLaunchIntentForPackage("com.eg.android.AlipayGphone");
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(intent);
-                        Toast.makeText(context, R.string.toast_redpacket_message, Toast.LENGTH_LONG).show();
+                        CommonLogic.doOnNonNull(packageManager.getLaunchIntentForPackage("com.eg.android.AlipayGphone"), (intent) -> {
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            context.startActivity(intent);
+                            Toast.makeText(context, R.string.toast_redpacket_message, Toast.LENGTH_LONG).show();
+                        });
                     }
                 }
                 break;

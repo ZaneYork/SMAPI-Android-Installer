@@ -23,6 +23,7 @@ import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.entity.FrameworkConfig;
 import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
+import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.TranslateUtil;
 
@@ -168,6 +169,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.settings_translation_service:
                 selectTranslateServiceLogic();
                 return true;
+            case R.id.toolbar_update_check:
+                updateCheckLogic();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -268,6 +272,11 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         }).show());
+    }
+
+    private void updateCheckLogic() {
+        ModAssetsManager modAssetsManager = new ModAssetsManager(toolbar);
+        modAssetsManager.checkModUpdate();
     }
 
     @Override

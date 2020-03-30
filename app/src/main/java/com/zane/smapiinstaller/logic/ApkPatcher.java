@@ -189,6 +189,9 @@ public class ApkPatcher {
         AtomicReference<String> packageName = new AtomicReference<>();
         AtomicLong versionCode = new AtomicLong();
         Predicate<ManifestTagVisitor.AttrArgs> processLogic = (attr) -> {
+            if(attr == null) {
+                return true;
+            }
             if (attr.type == NodeVisitor.TYPE_STRING) {
                 String strObj = (String) attr.obj;
                 switch (attr.name) {
@@ -227,6 +230,9 @@ public class ApkPatcher {
         try {
             byte[] modifyManifest = CommonLogic.modifyManifest(bytes, processLogic);
             Iterables.removeIf(manifests, manifest -> {
+                if(manifest == null) {
+                    return true;
+                }
                 if (versionCode.get() < manifest.getMinBuildCode()) {
                     return true;
                 }

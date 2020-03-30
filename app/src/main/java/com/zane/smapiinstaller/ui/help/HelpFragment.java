@@ -50,18 +50,20 @@ public class HelpFragment extends Fragment {
         return root;
     }
     @OnClick(R.id.button_compat) void compat() {
-        CommonLogic.openUrl(this.getContext(), "https://smapi.io/mods");
+        CommonLogic.doOnNonNull(this.getContext(), context -> CommonLogic.openUrl(context, "https://smapi.io/mods"));
     }
     @OnClick(R.id.button_nexus) void nexus() {
-        CommonLogic.openUrl(this.getContext(), "https://www.nexusmods.com/stardewvalley/mods/");
+        CommonLogic.doOnNonNull(this.getContext(), context -> CommonLogic.openUrl(context, "https://www.nexusmods.com/stardewvalley/mods/"));
     }
     @OnClick({R.id.button_logs}) void showLog() {
-        NavController controller = Navigation.findNavController(this.getView());
-        File logFile = new File(Environment.getExternalStorageDirectory(), Constants.LOG_PATH);
-        if(logFile.exists()) {
-            HelpFragmentDirections.ActionNavHelpToConfigEditFragment action = HelpFragmentDirections.actionNavHelpToConfigEditFragment(logFile.getAbsolutePath());
-            action.setEditable(false);
-            controller.navigate(action);
-        }
+        CommonLogic.doOnNonNull(this.getView(), view -> {
+            NavController controller = Navigation.findNavController(view);
+            File logFile = new File(Environment.getExternalStorageDirectory(), Constants.LOG_PATH);
+            if(logFile.exists()) {
+                HelpFragmentDirections.ActionNavHelpToConfigEditFragment action = HelpFragmentDirections.actionNavHelpToConfigEditFragment(logFile.getAbsolutePath());
+                action.setEditable(false);
+                controller.navigate(action);
+            }
+        });
     }
 }

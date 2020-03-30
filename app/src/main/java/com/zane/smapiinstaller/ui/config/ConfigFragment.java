@@ -17,6 +17,7 @@ import butterknife.OnTextChanged;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class ConfigFragment extends Fragment {
     @OnClick(R.id.button_sort_by)
     void onSortByClick() {
         int index;
-        switch (configViewModel.getSortBy()){
+        switch (configViewModel.getSortBy()) {
             case "Name asc":
                 index = 0;
                 break;
@@ -71,24 +72,27 @@ public class ConfigFragment extends Fragment {
             default:
                 index = 0;
         }
-        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this.getContext()).title(R.string.sort_by).items(R.array.mod_list_sort_by).itemsCallbackSingleChoice(index, (dialog, itemView, position, text) -> {
-            switch (position) {
-                case 0:
-                    configViewModel.switchSortBy("Name asc");
-                    break;
-                case 1:
-                    configViewModel.switchSortBy("Name desc");
-                    break;
-                case 2:
-                    configViewModel.switchSortBy("Date asc");
-                    break;
-                case 3:
-                    configViewModel.switchSortBy("Date desc");
-                    break;
-                default:
-                    return false;
-            }
-            return true;
-        }).show());
+        CommonLogic.doOnNonNull(this.getContext(), context -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(context)
+                .title(R.string.sort_by)
+                .items(R.array.mod_list_sort_by)
+                .itemsCallbackSingleChoice(index, (dialog, itemView, position, text) -> {
+                    switch (position) {
+                        case 0:
+                            configViewModel.switchSortBy("Name asc");
+                            break;
+                        case 1:
+                            configViewModel.switchSortBy("Name desc");
+                            break;
+                        case 2:
+                            configViewModel.switchSortBy("Date asc");
+                            break;
+                        case 3:
+                            configViewModel.switchSortBy("Date desc");
+                            break;
+                        default:
+                            return false;
+                    }
+                    return true;
+                }).show()));
     }
 }

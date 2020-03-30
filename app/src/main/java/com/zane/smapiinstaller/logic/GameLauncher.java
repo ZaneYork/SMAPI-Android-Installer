@@ -24,10 +24,11 @@ public class GameLauncher {
     }
 
     /**
-     * 启动逻辑
+     * 检查已安装MOD版本游戏
+     * @param context 上下文
+     * @return 软件包信息
      */
-    public void launch() {
-        Activity context = CommonLogic.getActivityFromView(root);
+    public static PackageInfo getGamePackageInfo(Activity context) {
         PackageManager packageManager = context.getPackageManager();
         try {
             PackageInfo packageInfo;
@@ -36,20 +37,35 @@ public class GameLauncher {
             } catch (PackageManager.NameNotFoundException ignored) {
                 packageInfo = packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME_SAMSUNG, 0);
             }
+            return packageInfo;
+        } catch (PackageManager.NameNotFoundException ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * 启动逻辑
+     */
+    public void launch() {
+        Activity context = CommonLogic.getActivityFromView(root);
+        PackageManager packageManager = context.getPackageManager();
+        try {
+            PackageInfo packageInfo = getGamePackageInfo(context);
+            if(packageInfo == null) {
+                DialogUtils.showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed);
+                return;
+            }
             if(!CommonLogic.unpackSmapiFiles(context, packageInfo.applicationInfo.publicSourceDir, true)) {
                 DialogUtils.showAlertDialog(root, R.string.error, R.string.error_failed_to_repair);
                 return;
             }
             ModAssetsManager modAssetsManager = new ModAssetsManager(root);
-            PackageInfo finalPackageInfo = packageInfo;
             modAssetsManager.checkModEnvironment((isConfirm) -> {
                 if(isConfirm) {
-                    Intent intent = packageManager.getLaunchIntentForPackage(finalPackageInfo.packageName);
+                    Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
                     context.startActivity(intent);
                 }
             });
-        } catch (PackageManager.NameNotFoundException ignored) {
-            DialogUtils.showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed);
         } catch (Exception e) {
             Crashes.trackError(e);
             DialogUtils.showAlertDialog(root, R.string.error, e.getLocalizedMessage());

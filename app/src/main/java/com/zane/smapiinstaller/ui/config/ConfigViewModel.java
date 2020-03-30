@@ -39,9 +39,11 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
     private List<ModManifestEntry> filteredModList;
 
     private String sortBy = "Name asc";
+
     public String getSortBy() {
         return sortBy;
     }
+
     private final View root;
 
     private final List<Predicate<List<ModManifestEntry>>> onChangedListener = new ArrayList<>();
@@ -55,7 +57,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
             AppConfigDao appConfigDao = app.getDaoSession().getAppConfigDao();
             Query<AppConfig> query = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.MOD_LIST_SORT_BY)).build();
             AppConfig appConfig = query.unique();
-            if(null != appConfig) {
+            if (null != appConfig) {
                 sortBy = appConfig.getValue();
             }
         }
@@ -64,7 +66,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
 
     public void switchSortBy(String sortBy) {
         MainApplication app = CommonLogic.getApplicationFromView(root);
-        if(null == app) {
+        if (null == app) {
             return;
         }
         this.sortBy = sortBy;
@@ -78,35 +80,34 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
         switch (sortBy) {
             case "Name asc":
                 Collections.sort(modList, (a, b) -> a.getName().compareTo(b.getName()));
-                if(filteredModList != null && filteredModList != modList) {
+                if (filteredModList != null && filteredModList != modList) {
                     Collections.sort(filteredModList, (a, b) -> a.getName().compareTo(b.getName()));
                 }
                 break;
             case "Name desc":
                 Collections.sort(modList, (a, b) -> b.getName().compareTo(a.getName()));
-                if(filteredModList != null && filteredModList != modList) {
+                if (filteredModList != null && filteredModList != modList) {
                     Collections.sort(filteredModList, (a, b) -> b.getName().compareTo(a.getName()));
                 }
                 break;
             case "Date asc":
                 Collections.sort(modList, (a, b) -> a.getLastModified().compareTo(b.getLastModified()));
-                if(filteredModList != null && filteredModList != modList) {
+                if (filteredModList != null && filteredModList != modList) {
                     Collections.sort(filteredModList, (a, b) -> a.getLastModified().compareTo(b.getLastModified()));
                 }
                 break;
             case "Date desc":
                 Collections.sort(modList, (a, b) -> b.getLastModified().compareTo(a.getLastModified()));
-                if(filteredModList != null && filteredModList != modList) {
+                if (filteredModList != null && filteredModList != modList) {
                     Collections.sort(filteredModList, (a, b) -> b.getLastModified().compareTo(a.getLastModified()));
                 }
                 break;
             default:
                 return;
         }
-        if(filteredModList != null) {
+        if (filteredModList != null) {
             emitDataChangeEvent(filteredModList);
-        }
-        else {
+        } else {
             emitDataChangeEvent(modList);
         }
     }
@@ -136,15 +137,17 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
                     }
                 }).filter(Objects::nonNull).distinct().collect(Collectors.toList());
                 if (!untranslatedText.isEmpty()) {
-                    TranslateUtil.translateText(untranslatedText, translator, language, (results) -> {
-                        daoSession.getTranslationResultDao().insertOrReplaceInTx(results);
-                        ImmutableMap<String, TranslationResult> map = Maps.uniqueIndex(results, TranslationResult::getOrigin);
-                        for (ModManifestEntry mod : modList) {
-                            if (map.containsKey(mod.getDescription())) {
-                                mod.setTranslatedDescription(map.get(mod.getDescription()).getTranslation());
+                    TranslateUtil.translateText(untranslatedText, translator, language, (result) -> {
+                        CommonLogic.doOnNonNull(result, (results) -> {
+                            daoSession.getTranslationResultDao().insertOrReplaceInTx(results);
+                            ImmutableMap<String, TranslationResult> map = Maps.uniqueIndex(results, TranslationResult::getOrigin);
+                            for (ModManifestEntry mod : modList) {
+                                if (map.containsKey(mod.getDescription())) {
+                                    mod.setTranslatedDescription(map.get(mod.getDescription()).getTranslation());
+                                }
                             }
-                        }
-                        emitDataChangeEvent(modList);
+                            emitDataChangeEvent(modList);
+                        });
                         return true;
                     });
                 }

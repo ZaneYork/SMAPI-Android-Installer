@@ -8,7 +8,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
-import com.google.common.base.Predicate;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
@@ -29,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import java9.util.function.Predicate;
 
 /**
  * @author Zane
@@ -104,7 +104,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         public List<Integer> removeAll(Predicate<ModManifestEntry> predicate) {
             List<Integer> deletedId = new ArrayList<>();
             for (int i = modList.size() - 1; i >= 0; i--) {
-                if (predicate.apply(modList.get(i))) {
+                if (predicate.test(modList.get(i))) {
                     modList.remove(i);
                     deletedId.add(i);
                 }
@@ -151,7 +151,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
 
         public Integer findFirst(Predicate<ModManifestEntry> predicate) {
             for (int i = 0; i < modList.size(); i++) {
-                if (predicate.apply(modList.get(i))) {
+                if (predicate.test(modList.get(i))) {
                     return i;
                 }
             }

@@ -69,4 +69,9 @@ public class Constants {
      * 平台
      */
     public static final String PLATFORM = "Android";
+
+    /**
+     * SMAPI更新服务
+     */
+    public static final String UPDATE_CHECK_SERVICE_URL = "https://smapi.io/api/v" + SMAPI_VERSION + "/mods";
 }

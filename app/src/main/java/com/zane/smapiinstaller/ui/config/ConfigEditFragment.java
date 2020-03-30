@@ -14,6 +14,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
 import com.zane.smapiinstaller.utils.JSONUtil;
@@ -48,33 +49,36 @@ public class ConfigEditFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_config_edit, container, false);
         ButterKnife.bind(this, root);
-        editable = this.getArguments().getBoolean("editable");
-        if(!editable) {
+        CommonLogic.doOnNonNull(this.getArguments(), arguments -> {
+            editable = arguments.getBoolean("editable");
+            configPath = arguments.getString("configPath");
+        });
+        if (!editable) {
             editText.setKeyListener(null);
             buttonConfigSave.setVisibility(View.INVISIBLE);
             buttonConfigCancel.setVisibility(View.INVISIBLE);
         }
-        configPath = this.getArguments().getString("configPath");
-        if(configPath != null) {
+        if (configPath != null) {
             File file = new File(configPath);
-            if(file.exists() && file.length() < Constants.TEXT_FILE_OPEN_SIZE_LIMIT) {
+            if (file.exists() && file.length() < Constants.TEXT_FILE_OPEN_SIZE_LIMIT) {
                 String fileText = FileUtils.getFileText(file);
                 if (fileText != null) {
                     editText.setText(fileText);
                 }
-            }
-            else {
+            } else {
                 editText.setText("");
                 editText.setKeyListener(null);
                 DialogUtils.showConfirmDialog(root, R.string.error, this.getString(R.string.text_too_large), R.string.open_with, R.string.cancel, ((dialog, which) -> {
-                    if(which == DialogAction.POSITIVE) {
+                    if (which == DialogAction.POSITIVE) {
                         Intent intent = new Intent("android.intent.action.VIEW");
                         intent.addCategory("android.intent.category.DEFAULT");
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            Uri contentUri = FileProvider.getUriForFile(this.getContext(), BuildConfig.APPLICATION_ID + ".provider", file);
-                            intent.setDataAndType(contentUri, "text/plain");
+                            CommonLogic.doOnNonNull(this.getContext(), (context -> {
+                                Uri contentUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file);
+                                intent.setDataAndType(contentUri, "text/plain");
+                            }));
                         } else {
                             intent.setDataAndType(Uri.fromFile(file), "text/plain");
                         }
@@ -86,21 +90,23 @@ public class ConfigEditFragment extends Fragment {
         }
         return root;
     }
-    @OnClick(R.id.button_config_save) void onConfigSave() {
+
+    @OnClick(R.id.button_config_save)
+    void onConfigSave() {
         try {
             JSONUtil.checkJson(editText.getText().toString());
             FileOutputStream outputStream = new FileOutputStream(configPath);
-            try(OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream)){
+            try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream)) {
                 outputStreamWriter.write(editText.getText().toString());
                 outputStreamWriter.flush();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             DialogUtils.showAlertDialog(getView(), R.string.error, e.getLocalizedMessage());
         }
     }
 
-    @OnClick(R.id.button_config_cancel) void onConfigCancel() {
-        Navigation.findNavController(getView()).popBackStack();
+    @OnClick(R.id.button_config_cancel)
+    void onConfigCancel() {
+        CommonLogic.doOnNonNull(getView(), view -> Navigation.findNavController(view).popBackStack());
     }
 }
