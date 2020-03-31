@@ -121,26 +121,24 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Response<AppUpdateCheckResultDto> response) {
                 AppUpdateCheckResultDto dto = response.body();
                 if (dto != null && CommonLogic.getVersionCode(MainActivity.this) < dto.getVersionCode()) {
-                    if(appConfig != null && StringUtils.equals(appConfig.getValue(), String.valueOf(dto.getVersionCode()))) {
+                    if (appConfig != null && StringUtils.equals(appConfig.getValue(), String.valueOf(dto.getVersionCode()))) {
                         return;
                     }
                     DialogUtils.showConfirmDialog(toolbar, R.string.settings_check_for_updates,
                             MainActivity.this.getString(R.string.app_update_detected, dto.getVersionName()), (dialog, which) -> {
-                        if (which == DialogAction.POSITIVE) {
-                            CommonLogic.openInPlayStore(MainActivity.this);
-                        }
-                        else {
-                            AppConfig config;
-                            if(appConfig != null) {
-                                config = appConfig;
-                                config.setValue(String.valueOf(dto.getVersionCode()));
-                            }
-                            else {
-                                config = new AppConfig(null, AppConfigKey.IGNORE_UPDATE_VERSION_CODE, String.valueOf(dto.getVersionCode()));
-                            }
-                            appConfigDao.insertOrReplace(config);
-                        }
-                    });
+                                if (which == DialogAction.POSITIVE) {
+                                    CommonLogic.openInPlayStore(MainActivity.this);
+                                } else {
+                                    AppConfig config;
+                                    if (appConfig != null) {
+                                        config = appConfig;
+                                        config.setValue(String.valueOf(dto.getVersionCode()));
+                                    } else {
+                                        config = new AppConfig(null, AppConfigKey.IGNORE_UPDATE_VERSION_CODE, String.valueOf(dto.getVersionCode()));
+                                    }
+                                    appConfigDao.insertOrReplace(config);
+                                }
+                            });
                 }
             }
         });
@@ -319,6 +317,7 @@ public class MainActivity extends AppCompatActivity {
         modAssetsManager.checkModUpdate((list) -> {
             if (list.isEmpty()) {
                 CommonLogic.runOnUiThread(this, (activity) -> Toast.makeText(activity, R.string.no_update_text, Toast.LENGTH_SHORT).show());
+                return;
             }
             try {
                 NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment);

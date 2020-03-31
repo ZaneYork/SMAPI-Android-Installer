@@ -73,4 +73,6 @@
     <string name="open_with">Open With</string>
     <string name="no_update_text">All mods are up to date</string>
     <string name="app_update_detected">New version detected: %1$s</string>
+    <string name="parser">Parser</string>
+    <string name="mod_version_update_checking">Checking for mod updates</string>
 </resources>

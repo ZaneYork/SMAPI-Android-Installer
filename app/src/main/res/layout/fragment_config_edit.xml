@@ -28,6 +28,15 @@
         android:layout_height="wrap_content" />
 
     <Button
+        android:id="@+id/button_log_parser"
+        android:text="@string/parser"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@id/guideline_v1"
+        app:layout_constraintTop_toBottomOf="@id/guideline_h2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
         android:id="@+id/button_config_cancel"
         android:text="@string/cancel"
         app:layout_constraintEnd_toStartOf="@id/guideline_v2"

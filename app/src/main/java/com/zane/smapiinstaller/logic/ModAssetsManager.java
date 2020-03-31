@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
@@ -295,7 +296,7 @@ public class ModAssetsManager {
     }
 
     public void checkModUpdate(Consumer<List<ModUpdateCheckResponseDto>> callback) {
-        if(checkUpdating.get()) {
+        if (checkUpdating.get()) {
             return;
         }
         List<ModUpdateCheckRequestDto.ModInfo> list = StreamSupport.stream(findAllInstalledMods(false))
@@ -309,6 +310,7 @@ public class ModAssetsManager {
         if (gamePackageInfo == null) {
             return;
         }
+        context.runOnUiThread(() -> Toast.makeText(context, R.string.mod_version_update_checking, Toast.LENGTH_SHORT).show());
         checkUpdating.set(true);
         try {
             ModUpdateCheckRequestDto requestDto = new ModUpdateCheckRequestDto(list, new ModUpdateCheckRequestDto.SemanticVersion(gamePackageInfo.versionName));

@@ -43,6 +43,8 @@ public class ConfigEditFragment extends Fragment {
     Button buttonConfigSave;
     @BindView(R.id.button_config_cancel)
     Button buttonConfigCancel;
+    @BindView(R.id.button_log_parser)
+    Button buttonLogParser;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -56,6 +58,7 @@ public class ConfigEditFragment extends Fragment {
                 editText.setKeyListener(null);
                 buttonConfigSave.setVisibility(View.INVISIBLE);
                 buttonConfigCancel.setVisibility(View.INVISIBLE);
+                buttonLogParser.setVisibility(View.VISIBLE);
             }
             configPath = args.getConfigPath();
             File file = new File(configPath);
@@ -107,5 +110,10 @@ public class ConfigEditFragment extends Fragment {
     @OnClick(R.id.button_config_cancel)
     void onConfigCancel() {
         CommonLogic.doOnNonNull(getView(), view -> Navigation.findNavController(view).popBackStack());
+    }
+
+    @OnClick(R.id.button_log_parser)
+    void onLogParser() {
+        CommonLogic.doOnNonNull(getContext(), context -> CommonLogic.openUrl(context, "https://smapi.io/log"));
     }
 }

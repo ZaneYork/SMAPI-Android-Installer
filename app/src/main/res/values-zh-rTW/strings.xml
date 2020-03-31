@@ -69,4 +69,6 @@
     <string name="open_with">打開為</string>
     <string name="no_update_text">所有MOD已是最新狀態</string>
     <string name="app_update_detected">檢測到新版本: %1$s</string>
+    <string name="parser">格式化</string>
+    <string name="mod_version_update_checking">正在檢查MOD更新</string>
 </resources>
