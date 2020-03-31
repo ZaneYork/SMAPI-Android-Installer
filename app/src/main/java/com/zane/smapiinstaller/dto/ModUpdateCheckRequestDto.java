@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -122,6 +123,7 @@ public class ModUpdateCheckRequestDto {
     }
 
     @Data
+    @EqualsAndHashCode(of = "id")
     public static class ModInfo {
         private String id;
         private List<String> updateKeys;

@@ -74,4 +74,9 @@ public class Constants {
      * SMAPI更新服务
      */
     public static final String UPDATE_CHECK_SERVICE_URL = "https://smapi.io/api/v" + SMAPI_VERSION + "/mods";
+
+    /**
+     * 软件检查更新服务
+     */
+    public static final String SELF_UPDATE_CHECK_SERVICE_URL = "http://zaneyork.cn/download/app_version.json";
 }

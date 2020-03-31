@@ -17,7 +17,10 @@
     <fragment
         android:id="@+id/config_edit_fragment"
         android:name="com.zane.smapiinstaller.ui.config.ConfigEditFragment"
-        android:label="@string/menu_config_edit" />
+        android:label="@string/menu_config_edit" >
+        <argument android:name="configPath" app:argType="string"/>
+        <argument android:name="editable" android:defaultValue="true" app:argType="boolean"/>
+    </fragment>
     <fragment
         android:id="@+id/nav_config"
         android:name="com.zane.smapiinstaller.ui.config.ConfigFragment"
@@ -58,6 +61,10 @@
         android:name="com.zane.smapiinstaller.ui.update.ModUpdateFragment"
         android:label="@string/settings_check_for_updates"
         tools:layout="@layout/fragment_mod_update_list">
+        <argument
+            android:name="updateInfoListJson"
+            android:defaultValue="{}"
+            app:argType="string" />
     </fragment>
     <action
         android:id="@+id/action_nav_any_to_mod_update_fragment"

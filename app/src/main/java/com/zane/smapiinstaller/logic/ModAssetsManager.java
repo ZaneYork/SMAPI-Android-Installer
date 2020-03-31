@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import java9.util.Objects;
 import java9.util.function.Consumer;
@@ -51,6 +52,8 @@ public class ModAssetsManager {
     private final View root;
 
     private static final String TAG = "MANAGER";
+
+    private final AtomicBoolean checkUpdating = new AtomicBoolean(false);
 
     public ModAssetsManager(View root) {
         this.root = root;
@@ -292,9 +295,13 @@ public class ModAssetsManager {
     }
 
     public void checkModUpdate(Consumer<List<ModUpdateCheckResponseDto>> callback) {
+        if(checkUpdating.get()) {
+            return;
+        }
         List<ModUpdateCheckRequestDto.ModInfo> list = StreamSupport.stream(findAllInstalledMods(false))
                 .filter(mod -> mod.getUpdateKeys() != null && !mod.getUpdateKeys().isEmpty())
                 .map(ModUpdateCheckRequestDto.ModInfo::fromModManifestEntry)
+                .distinct()
                 .filter(modInfo -> modInfo.getInstalledVersion() != null)
                 .collect(Collectors.toList());
         Activity context = CommonLogic.getActivityFromView(root);
@@ -302,6 +309,7 @@ public class ModAssetsManager {
         if (gamePackageInfo == null) {
             return;
         }
+        checkUpdating.set(true);
         try {
             ModUpdateCheckRequestDto requestDto = new ModUpdateCheckRequestDto(list, new ModUpdateCheckRequestDto.SemanticVersion(gamePackageInfo.versionName));
             OkGo.<List<ModUpdateCheckResponseDto>>post(Constants.UPDATE_CHECK_SERVICE_URL)
@@ -309,7 +317,14 @@ public class ModAssetsManager {
                     .execute(new JsonCallback<List<ModUpdateCheckResponseDto>>(new TypeReference<List<ModUpdateCheckResponseDto>>() {
                     }) {
                         @Override
+                        public void onError(Response<List<ModUpdateCheckResponseDto>> response) {
+                            super.onError(response);
+                            checkUpdating.set(false);
+                        }
+
+                        @Override
                         public void onSuccess(Response<List<ModUpdateCheckResponseDto>> response) {
+                            checkUpdating.set(false);
                             List<ModUpdateCheckResponseDto> checkResponseDtos = response.body();
                             if (checkResponseDtos != null) {
                                 List<ModUpdateCheckResponseDto> list = StreamSupport.stream(checkResponseDtos).filter(dto -> dto.getSuggestedUpdate() != null).collect(Collectors.toList());
@@ -318,6 +333,7 @@ public class ModAssetsManager {
                         }
                     });
         } catch (Exception e) {
+            checkUpdating.set(false);
             Crashes.trackError(e);
         }
     }

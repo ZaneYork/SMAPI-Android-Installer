@@ -47,11 +47,7 @@ public class AboutFragment extends Fragment {
 
     @OnClick(R.id.button_gplay)
     void gplay() {
-        try {
-            CommonLogic.doOnNonNull(this.getActivity(), (activity) -> this.openPlayStore("market://details?id=" + activity.getPackageName()));
-        } catch (Exception ex) {
-            CommonLogic.doOnNonNull(this.getActivity(), (activity) -> CommonLogic.openUrl(activity, "https://play.google.com/store/apps/details?id=" + activity.getPackageName()));
-        }
+        CommonLogic.openInPlayStore(this.getActivity());
     }
 
     private void openPlayStore(String url) {

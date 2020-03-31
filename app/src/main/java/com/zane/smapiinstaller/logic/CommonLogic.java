@@ -7,7 +7,10 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
@@ -94,6 +97,7 @@ public class CommonLogic {
 
     /**
      * 在UI线程执行操作
+     *
      * @param activity activity
      * @param action   操作
      */
@@ -266,5 +270,43 @@ public class CommonLogic {
             }
         });
         view.startAnimation(animation);
+    }
+
+    /**
+     * 获取版本号
+     *
+     * @return 当前应用的版本号
+     */
+    public static long getVersionCode(Activity activity) {
+        try {
+            PackageManager manager = activity.getPackageManager();
+            PackageInfo info = manager.getPackageInfo(activity.getPackageName(), 0);
+            String version = info.versionName;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                return info.getLongVersionCode();
+            }
+            return info.versionCode;
+        } catch (Exception ignored) {
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    /**
+     * 在谷歌商店打开
+     *
+     * @param activity activity
+     */
+    public static void openInPlayStore(Activity activity) {
+        CommonLogic.doOnNonNull(activity, (context) -> {
+            try {
+                Intent intent = new Intent("android.intent.action.VIEW");
+                intent.setData(Uri.parse("market://details?id=" + context.getPackageName()));
+                intent.setPackage("com.android.vending");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            } catch (Exception ex) {
+                CommonLogic.openUrl(activity, "https://play.google.com/store/apps/details?id=" + context.getPackageName());
+            }
+        });
     }
 }

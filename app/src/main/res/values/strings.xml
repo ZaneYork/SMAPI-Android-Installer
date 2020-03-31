@@ -67,7 +67,10 @@
 
     <string name="toast_redpacket_message" translatable="false">红包码已复制\n支付宝首页搜索“9188262” 立即领红包</string>
     <string name="icon_desc" translatable="false">icon</string>
+    <string name="mod_version_update_text" translatable="false">%1$s -> %2$s</string>
     <string name="sort_by">Sort by</string>
     <string name="text_too_large">Text file is too large for editor</string>
     <string name="open_with">Open With</string>
+    <string name="no_update_text">All mods are up to date</string>
+    <string name="app_update_detected">New version detected: %1$s</string>
 </resources>

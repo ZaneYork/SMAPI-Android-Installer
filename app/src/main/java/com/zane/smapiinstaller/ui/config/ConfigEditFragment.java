@@ -50,15 +50,14 @@ public class ConfigEditFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_config_edit, container, false);
         ButterKnife.bind(this, root);
         CommonLogic.doOnNonNull(this.getArguments(), arguments -> {
-            editable = arguments.getBoolean("editable");
-            configPath = arguments.getString("configPath");
-        });
-        if (!editable) {
-            editText.setKeyListener(null);
-            buttonConfigSave.setVisibility(View.INVISIBLE);
-            buttonConfigCancel.setVisibility(View.INVISIBLE);
-        }
-        if (configPath != null) {
+            ConfigEditFragmentArgs args = ConfigEditFragmentArgs.fromBundle(arguments);
+            editable = args.getEditable();
+            if (!editable) {
+                editText.setKeyListener(null);
+                buttonConfigSave.setVisibility(View.INVISIBLE);
+                buttonConfigCancel.setVisibility(View.INVISIBLE);
+            }
+            configPath = args.getConfigPath();
             File file = new File(configPath);
             if (file.exists() && file.length() < Constants.TEXT_FILE_OPEN_SIZE_LIMIT) {
                 String fileText = FileUtils.getFileText(file);
@@ -87,7 +86,7 @@ public class ConfigEditFragment extends Fragment {
                     onConfigCancel();
                 }));
             }
-        }
+        });
         return root;
     }
 

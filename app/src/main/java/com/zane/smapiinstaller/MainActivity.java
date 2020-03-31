@@ -8,24 +8,31 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.hjq.language.LanguagesManager;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
+import com.lzy.okgo.OkGo;
+import com.lzy.okgo.model.Response;
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.constant.AppConfigKey;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.constant.DialogAction;
+import com.zane.smapiinstaller.dto.AppUpdateCheckResultDto;
 import com.zane.smapiinstaller.entity.AppConfig;
 import com.zane.smapiinstaller.entity.AppConfigDao;
 import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.entity.FrameworkConfig;
+import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.JSONUtil;
+import com.zane.smapiinstaller.utils.JsonCallback;
 import com.zane.smapiinstaller.utils.TranslateUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -102,6 +109,41 @@ public class MainActivity extends AppCompatActivity {
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+        checkAppUpdate();
+    }
+
+    private void checkAppUpdate() {
+        DaoSession daoSession = ((MainApplication) this.getApplication()).getDaoSession();
+        AppConfigDao appConfigDao = daoSession.getAppConfigDao();
+        AppConfig appConfig = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.IGNORE_UPDATE_VERSION_CODE)).build().unique();
+        OkGo.<AppUpdateCheckResultDto>get(Constants.SELF_UPDATE_CHECK_SERVICE_URL).execute(new JsonCallback<AppUpdateCheckResultDto>(AppUpdateCheckResultDto.class) {
+            @Override
+            public void onSuccess(Response<AppUpdateCheckResultDto> response) {
+                AppUpdateCheckResultDto dto = response.body();
+                if (dto != null && CommonLogic.getVersionCode(MainActivity.this) < dto.getVersionCode()) {
+                    if(appConfig != null && StringUtils.equals(appConfig.getValue(), String.valueOf(dto.getVersionCode()))) {
+                        return;
+                    }
+                    DialogUtils.showConfirmDialog(toolbar, R.string.settings_check_for_updates,
+                            MainActivity.this.getString(R.string.app_update_detected, dto.getVersionName()), (dialog, which) -> {
+                        if (which == DialogAction.POSITIVE) {
+                            CommonLogic.openInPlayStore(MainActivity.this);
+                        }
+                        else {
+                            AppConfig config;
+                            if(appConfig != null) {
+                                config = appConfig;
+                                config.setValue(String.valueOf(dto.getVersionCode()));
+                            }
+                            else {
+                                config = new AppConfig(null, AppConfigKey.IGNORE_UPDATE_VERSION_CODE, String.valueOf(dto.getVersionCode()));
+                            }
+                            appConfigDao.insertOrReplace(config);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @OnClick(R.id.launch)
@@ -170,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
                 selectTranslateServiceLogic();
                 return true;
             case R.id.toolbar_update_check:
-                updateCheckLogic();
+                checkModUpdateLogic();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -272,11 +314,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void updateCheckLogic() {
+    private void checkModUpdateLogic() {
         ModAssetsManager modAssetsManager = new ModAssetsManager(toolbar);
         modAssetsManager.checkModUpdate((list) -> {
+            if (list.isEmpty()) {
+                CommonLogic.runOnUiThread(this, (activity) -> Toast.makeText(activity, R.string.no_update_text, Toast.LENGTH_SHORT).show());
+            }
             try {
-                NavController controller = Navigation.findNavController(toolbar);
+                NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment);
                 controller.navigate(MobileNavigationDirections.actionNavAnyToModUpdateFragment(JSONUtil.toJson(list)));
             } catch (Exception e) {
                 Crashes.trackError(e);

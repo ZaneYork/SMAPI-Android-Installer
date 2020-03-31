@@ -3,7 +3,6 @@ package com.zane.smapiinstaller.utils;
 import android.app.Activity;
 import android.text.InputType;
 import android.view.View;
-import android.widget.ProgressBar;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.input.DialogInputExtKt;
@@ -188,20 +187,20 @@ public class DialogUtils {
      * 解散当前对话框
      */
     public static void dismissDialog() {
-        if (currentDialog != null) {
-            if (currentDialog instanceof MaterialDialog) {
-                MaterialDialog dialog = (MaterialDialog) currentDialog;
-                if (dialog.isShowing()) {
-                    try {
+        try {
+            if (currentDialog != null) {
+                if (currentDialog instanceof MaterialDialog) {
+                    MaterialDialog dialog = (MaterialDialog) currentDialog;
+                    if (dialog.isShowing()) {
                         dialog.dismiss();
-                    } catch (Exception e) {
-                        Crashes.trackError(e);
                     }
+                } else if (currentDialog instanceof ProgressDialog) {
+                    ProgressDialog dialog = (ProgressDialog) currentDialog;
+                    dialog.dismiss();
                 }
-            } else if (currentDialog instanceof ProgressDialog) {
-                ProgressDialog dialog = (ProgressDialog) currentDialog;
-                dialog.dismiss();
             }
+        } catch (Exception e) {
+            Crashes.trackError(e);
         }
     }
 

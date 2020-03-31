@@ -42,9 +42,10 @@ public class ModUpdateFragment extends Fragment {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
+
             CommonLogic.doOnNonNull(this.getArguments(), arguments -> {
-                String updateInfoListJson = arguments.getString("updateInfoListJson", "[]");
-                List<ModUpdateCheckResponseDto.UpdateInfo> updateInfos = JSONUtil.fromJson(updateInfoListJson, new TypeReference<List<ModUpdateCheckResponseDto.UpdateInfo>>() {
+                String updateInfoListJson = ModUpdateFragmentArgs.fromBundle(arguments).getUpdateInfoListJson();
+                List<ModUpdateCheckResponseDto> updateInfos = JSONUtil.fromJson(updateInfoListJson, new TypeReference<List<ModUpdateCheckResponseDto>>() {
                 });
                 ModUpdateAdapter adapter = new ModUpdateAdapter(updateInfos);
                 recyclerView.setAdapter(adapter);
