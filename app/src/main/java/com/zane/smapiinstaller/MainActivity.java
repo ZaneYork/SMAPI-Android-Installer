@@ -9,9 +9,9 @@ import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.material.navigation.NavigationView;
 import com.hjq.language.LanguagesManager;
+import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.Crashes;
@@ -25,6 +25,7 @@ import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.JSONUtil;
 import com.zane.smapiinstaller.utils.TranslateUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -128,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.isCheckable()) {
+        if (item.isCheckable()) {
             if (item.isChecked()) {
                 item.setChecked(false);
             } else {
@@ -148,16 +149,15 @@ public class MainActivity extends AppCompatActivity {
                 config.setDeveloperMode(item.isChecked());
                 break;
             case R.id.settings_set_mod_path:
-                DialogUtils.showInputDialog(this, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {
-                    if(StringUtils.isNoneBlank(input)) {
+                DialogUtils.showInputDialog(toolbar, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {
+                    if (StringUtils.isNoneBlank(input)) {
                         String pathString = input.toString();
                         File file = new File(Environment.getExternalStorageDirectory(), pathString);
-                        if(file.exists() && file.isDirectory()) {
+                        if (file.exists() && file.isDirectory()) {
                             Constants.MOD_PATH = pathString;
                             config.setModsPath(pathString);
                             manager.flushConfig();
-                        }
-                        else {
+                        } else {
                             DialogUtils.showAlertDialog(drawer, R.string.error, R.string.error_illegal_path);
                         }
                     }
@@ -180,10 +180,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int getTranslateServiceIndex(AppConfig selectedTranslator) {
-        if(selectedTranslator == null) {
+        if (selectedTranslator == null) {
             return 0;
         }
-        switch (selectedTranslator.getValue()){
+        switch (selectedTranslator.getValue()) {
             case "OFF":
                 return 0;
             case "Google":
@@ -194,19 +194,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectTranslateServiceLogic() {
-        DaoSession daoSession = ((MainApplication)this.getApplication()).getDaoSession();
+        DaoSession daoSession = ((MainApplication) this.getApplication()).getDaoSession();
         AppConfigDao appConfigDao = daoSession.getAppConfigDao();
         int index = getTranslateServiceIndex(appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique());
-        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_translation_service).items(R.array.translators).itemsCallbackSingleChoice(index, (dialog, itemView, position, text) -> {
+        DialogUtils.showSingleChoiceDialog(toolbar, R.string.settings_translation_service, R.array.translators, index, (dialog, position) -> {
             AppConfig activeTranslator = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
             switch (position) {
                 case 0:
-                    if(activeTranslator != null) {
+                    if (activeTranslator != null) {
                         appConfigDao.delete(activeTranslator);
                     }
                     break;
                 case 1:
-                    if(activeTranslator == null) {
+                    if (activeTranslator == null) {
                         activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.GOOGLE);
                     } else {
                         activeTranslator.setValue(TranslateUtil.GOOGLE);
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
                     appConfigDao.insertOrReplace(activeTranslator);
                     break;
                 case 2:
-                    if(activeTranslator == null) {
+                    if (activeTranslator == null) {
                         activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.YOU_DAO);
                     } else {
                         activeTranslator.setValue(TranslateUtil.YOU_DAO);
@@ -222,14 +222,12 @@ public class MainActivity extends AppCompatActivity {
                     appConfigDao.insertOrReplace(activeTranslator);
                     break;
                 default:
-                    return false;
             }
-            return true;
-        }).show());
+        });
     }
 
     private void selectLanguageLogic() {
-        DialogUtils.setCurrentDialog(new MaterialDialog.Builder(this).title(R.string.settings_set_language).items(R.array.languages).itemsCallback((dialog, itemView, position, text) -> {
+        DialogUtils.showListItemsDialog(toolbar, R.string.settings_set_language, R.array.languages, (dialog, position) -> {
             boolean restart;
             switch (position) {
                 case 0:
@@ -271,12 +269,19 @@ public class MainActivity extends AppCompatActivity {
                 overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
                 finish();
             }
-        }).show());
+        });
     }
 
     private void updateCheckLogic() {
         ModAssetsManager modAssetsManager = new ModAssetsManager(toolbar);
-        modAssetsManager.checkModUpdate();
+        modAssetsManager.checkModUpdate((list) -> {
+            try {
+                NavController controller = Navigation.findNavController(toolbar);
+                controller.navigate(MobileNavigationDirections.actionNavAnyToModUpdateFragment(JSONUtil.toJson(list)));
+            } catch (Exception e) {
+                Crashes.trackError(e);
+            }
+        });
     }
 
     @Override
@@ -284,6 +289,20 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Object dialog = DialogUtils.getCurrentDialog();
+        if (dialog instanceof ProgressDialog) {
+            ProgressDialog progressDialog = ((ProgressDialog) dialog);
+            progressDialog.onBackPressed(
+                    () -> {
+                        super.onBackPressed();
+                        return null;
+                    }
+            );
+        }
     }
 
     @Override

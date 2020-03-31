@@ -10,10 +10,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;

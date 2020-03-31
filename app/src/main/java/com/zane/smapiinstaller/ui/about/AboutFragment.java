@@ -1,6 +1,5 @@
 package com.zane.smapiinstaller.ui.about;
 
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,7 +13,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
+import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.logic.CommonLogic;
@@ -50,7 +49,7 @@ public class AboutFragment extends Fragment {
     void gplay() {
         try {
             CommonLogic.doOnNonNull(this.getActivity(), (activity) -> this.openPlayStore("market://details?id=" + activity.getPackageName()));
-        } catch (ActivityNotFoundException ex) {
+        } catch (Exception ex) {
             CommonLogic.doOnNonNull(this.getActivity(), (activity) -> CommonLogic.openUrl(activity, "https://play.google.com/store/apps/details?id=" + activity.getPackageName()));
         }
     }
@@ -75,11 +74,9 @@ public class AboutFragment extends Fragment {
 
     @OnClick(R.id.button_donation)
     void donation() {
-        CommonLogic.doOnNonNull(this.getContext(), (context) -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(context)
-                .title(R.string.button_donation_text)
-                .items(R.array.donation_methods)
-                .itemsCallback((dialog, itemView, position, text) ->
-                        CommonLogic.showAnimation(imgHeart, R.anim.heart_beat, (animation) -> listSelectLogic(context, position))).show()));
+        DialogUtils.showListItemsDialog(imgHeart, R.string.button_donation_text, R.array.donation_methods, (dialog, position) ->
+                CommonLogic.showAnimation(imgHeart, R.anim.heart_beat, (animation) ->
+                        CommonLogic.doOnNonNull(this.getActivity(), (activity) -> listSelectLogic(activity, position))));
     }
 
     private void listSelectLogic(Context context, int position) {
@@ -87,7 +84,12 @@ public class AboutFragment extends Fragment {
             case 0:
                 boolean hasInstalledAlipayClient = AlipayDonate.hasInstalledAlipayClient(context);
                 if (hasInstalledAlipayClient) {
-                    AlipayDonate.startAlipayClient(this.getActivity(), "fkx13570v1pp2xenyrx4y3f");
+                    try {
+                        AlipayDonate.startAlipayClient(this.getActivity(), "fkx13570v1pp2xenyrx4y3f");
+                    } catch (Exception e) {
+                        Crashes.trackError(e);
+                        CommonLogic.openUrl(context, "http://dl.zaneyork.cn/alipay.png");
+                    }
                 } else {
                     CommonLogic.openUrl(context, "http://dl.zaneyork.cn/alipay.png");
                 }

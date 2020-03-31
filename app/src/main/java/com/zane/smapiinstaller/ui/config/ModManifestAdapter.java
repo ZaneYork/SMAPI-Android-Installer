@@ -7,9 +7,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;

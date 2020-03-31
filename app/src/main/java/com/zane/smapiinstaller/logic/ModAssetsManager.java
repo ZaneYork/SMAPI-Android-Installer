@@ -6,7 +6,6 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -19,6 +18,7 @@ import com.lzy.okgo.model.Response;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.dto.ModUpdateCheckRequestDto;
 import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
@@ -37,8 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import androidx.core.util.Consumer;
 import java9.util.Objects;
+import java9.util.function.Consumer;
 import java9.util.function.Predicate;
 import java9.util.stream.Collectors;
 import java9.util.stream.StreamSupport;
@@ -291,7 +291,7 @@ public class ModAssetsManager {
         }
     }
 
-    public void checkModUpdate() {
+    public void checkModUpdate(Consumer<List<ModUpdateCheckResponseDto>> callback) {
         List<ModUpdateCheckRequestDto.ModInfo> list = StreamSupport.stream(findAllInstalledMods(false))
                 .filter(mod -> mod.getUpdateKeys() != null && !mod.getUpdateKeys().isEmpty())
                 .map(ModUpdateCheckRequestDto.ModInfo::fromModManifestEntry)
@@ -313,7 +313,7 @@ public class ModAssetsManager {
                             List<ModUpdateCheckResponseDto> checkResponseDtos = response.body();
                             if (checkResponseDtos != null) {
                                 List<ModUpdateCheckResponseDto> list = StreamSupport.stream(checkResponseDtos).filter(dto -> dto.getSuggestedUpdate() != null).collect(Collectors.toList());
-
+                                callback.accept(list);
                             }
                         }
                     });

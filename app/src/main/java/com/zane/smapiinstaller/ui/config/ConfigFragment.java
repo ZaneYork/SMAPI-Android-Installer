@@ -5,6 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.utils.DialogUtils;
+
+import java.util.ArrayList;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -14,13 +19,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
-
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.utils.DialogUtils;
-
-import java.util.ArrayList;
 
 /**
  * @author Zane
@@ -55,7 +53,7 @@ public class ConfigFragment extends Fragment {
 
     @OnClick(R.id.button_sort_by)
     void onSortByClick() {
-        int index;
+        int index = 0;
         switch (configViewModel.getSortBy()) {
             case "Name asc":
                 index = 0;
@@ -70,29 +68,23 @@ public class ConfigFragment extends Fragment {
                 index = 3;
                 break;
             default:
-                index = 0;
         }
-        CommonLogic.doOnNonNull(this.getContext(), context -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(context)
-                .title(R.string.sort_by)
-                .items(R.array.mod_list_sort_by)
-                .itemsCallbackSingleChoice(index, (dialog, itemView, position, text) -> {
-                    switch (position) {
-                        case 0:
-                            configViewModel.switchSortBy("Name asc");
-                            break;
-                        case 1:
-                            configViewModel.switchSortBy("Name desc");
-                            break;
-                        case 2:
-                            configViewModel.switchSortBy("Date asc");
-                            break;
-                        case 3:
-                            configViewModel.switchSortBy("Date desc");
-                            break;
-                        default:
-                            return false;
-                    }
-                    return true;
-                }).show()));
+        DialogUtils.showSingleChoiceDialog(recyclerView, R.string.sort_by, R.array.mod_list_sort_by, index, (dialog, position) -> {
+            switch (position) {
+                case 0:
+                    configViewModel.switchSortBy("Name asc");
+                    break;
+                case 1:
+                    configViewModel.switchSortBy("Name desc");
+                    break;
+                case 2:
+                    configViewModel.switchSortBy("Date asc");
+                    break;
+                case 3:
+                    configViewModel.switchSortBy("Date desc");
+                    break;
+                default:
+            }
+        });
     }
 }

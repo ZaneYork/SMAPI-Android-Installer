@@ -9,7 +9,7 @@ import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.dto.GoogleTranslationDto;
-import com.zane.smapiinstaller.dto.TranslationResult;
+import com.zane.smapiinstaller.entity.TranslationResult;
 import com.zane.smapiinstaller.dto.YouDaoTranslationDto;
 
 import org.apache.commons.lang3.StringUtils;

@@ -1,26 +1,40 @@
 package com.zane.smapiinstaller.utils;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.text.InputType;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.input.DialogInputExtKt;
+import com.afollestad.materialdialogs.list.DialogListExtKt;
+import com.afollestad.materialdialogs.list.DialogSingleChoiceExtKt;
+import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.CommonLogic;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import java9.util.function.BiConsumer;
+
 /**
  * 对话框相关工具类
+ *
  * @author Zane
  */
 public class DialogUtils {
-    private static Dialog currentDialog = null;
-    public static void setCurrentDialog(Dialog currentDialog) {
+    private static Object currentDialog = null;
+
+    public static Object getCurrentDialog() {
+        return currentDialog;
+    }
+
+    public static void setCurrentDialog(Object currentDialog) {
         DialogUtils.currentDialog = currentDialog;
     }
+
     /**
      * 设置进度条状态
      *
@@ -29,18 +43,15 @@ public class DialogUtils {
      * @param message  消息
      * @param progress 进度
      */
-    public static void setProgressDialogState(View view, MaterialDialog dialog, Integer message, Integer progress) {
-        Activity activity = CommonLogic.getActivityFromView(view);
-        if (activity != null && !activity.isFinishing() && !dialog.isCancelled()) {
-            activity.runOnUiThread(() -> {
-                if(progress != null) {
-                    dialog.setProgress(progress);
-                }
-                if(message != null) {
-                    dialog.setContent(message);
-                }
-            });
-        }
+    public static void setProgressDialogState(View view, ProgressDialog dialog, Integer message, Integer progress) {
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            if (progress != null) {
+                dialog.setProgress(progress);
+            }
+            if (message != null) {
+                dialog.setMessage(activity.getString(message));
+            }
+        });
     }
 
     /**
@@ -51,10 +62,11 @@ public class DialogUtils {
      * @param message 消息
      */
     public static void showAlertDialog(View view, int title, String message) {
-        Activity activity = CommonLogic.getActivityFromView(view);
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show()));
-        }
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(null, message, null).positiveButton(R.string.ok, null, null);
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
     }
 
     /**
@@ -65,10 +77,11 @@ public class DialogUtils {
      * @param message 消息
      */
     public static void showAlertDialog(View view, int title, int message) {
-        Activity activity = CommonLogic.getActivityFromView(view);
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.ok).show()));
-        }
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(message, null, null).positiveButton(R.string.ok, null, null);
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
     }
 
     /**
@@ -79,11 +92,18 @@ public class DialogUtils {
      * @param message  消息
      * @param callback 回调
      */
-    public static void showConfirmDialog(View view, int title, int message, MaterialDialog.SingleButtonCallback callback) {
-        Activity activity = CommonLogic.getActivityFromView(view);
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(R.string.confirm).negativeText(R.string.cancel).onAny(callback).show()));
-        }
+    public static void showConfirmDialog(View view, int title, int message, BiConsumer<MaterialDialog, DialogAction> callback) {
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(message, null, null).positiveButton(R.string.confirm, null, dialog -> {
+                callback.accept(dialog, DialogAction.POSITIVE);
+                return null;
+            }).negativeButton(R.string.cancel, null, dialog -> {
+                callback.accept(dialog, DialogAction.NEGATIVE);
+                return null;
+            });
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
     }
 
     /**
@@ -94,7 +114,7 @@ public class DialogUtils {
      * @param message  消息
      * @param callback 回调
      */
-    public static void showConfirmDialog(View view, int title, String message, MaterialDialog.SingleButtonCallback callback) {
+    public static void showConfirmDialog(View view, int title, String message, BiConsumer<MaterialDialog, DialogAction> callback) {
         showConfirmDialog(view, title, message, R.string.confirm, R.string.cancel, callback);
     }
 
@@ -108,11 +128,18 @@ public class DialogUtils {
      * @param negativeText 取消文本
      * @param callback     回调
      */
-    public static void showConfirmDialog(View view, int title, String message, int positiveText, int negativeText, MaterialDialog.SingleButtonCallback callback) {
-        Activity activity = CommonLogic.getActivityFromView(view);
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity).title(title).content(message).positiveText(positiveText).negativeText(negativeText).onAny(callback).show()));
-        }
+    public static void showConfirmDialog(View view, int title, String message, int positiveText, int negativeText, BiConsumer<MaterialDialog, DialogAction> callback) {
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(null, message, null).positiveButton(positiveText, null, dialog -> {
+                callback.accept(dialog, DialogAction.POSITIVE);
+                return null;
+            }).negativeButton(negativeText, null, dialog -> {
+                callback.accept(dialog, DialogAction.NEGATIVE);
+                return null;
+            });
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
     }
 
     /**
@@ -123,58 +150,123 @@ public class DialogUtils {
      * @param message 消息
      * @return 对话框引用
      */
-    public static AtomicReference<MaterialDialog> showProgressDialog(View view, int title, String message) {
-        Activity activity = CommonLogic.getActivityFromView(view);
-        AtomicReference<MaterialDialog> reference = new AtomicReference<>();
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> {
-                MaterialDialog dialog = new MaterialDialog.Builder(activity)
-                        .title(title)
-                        .content(message)
-                        .progress(false, 100, true)
-                        .cancelable(false)
-                        .show();
-                currentDialog = dialog;
-                reference.set(dialog);
-            });
-        }
+    public static AtomicReference<ProgressDialog> showProgressDialog(View view, int title, String message) {
+        AtomicReference<ProgressDialog> reference = new AtomicReference<>();
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            ProgressDialog dialog = new ProgressDialog(activity);
+            DialogUtils.setCurrentDialog(dialog);
+            dialog.setMessage(message);
+            dialog.setCancelable(false);
+            dialog.setMax(100);
+            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            dialog.show();
+            reference.set(dialog);
+        });
         return reference;
     }
 
+    /**
+     * 解散指定对话框
+     *
+     * @param view   view
+     * @param dialog 对话框
+     */
     public static void dismissDialog(View view, MaterialDialog dialog) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            if (dialog != null && !dialog.isCancelled()) {
+            if (dialog != null && dialog.isShowing()) {
                 try {
                     dialog.dismiss();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Crashes.trackError(e);
                 }
             }
         }
     }
 
+    /**
+     * 解散当前对话框
+     */
     public static void dismissDialog() {
-        if (currentDialog != null && currentDialog.isShowing()) {
-            try {
-                currentDialog.dismiss();
-            }
-            catch (Exception e) {
-                Crashes.trackError(e);
+        if (currentDialog != null) {
+            if (currentDialog instanceof MaterialDialog) {
+                MaterialDialog dialog = (MaterialDialog) currentDialog;
+                if (dialog.isShowing()) {
+                    try {
+                        dialog.dismiss();
+                    } catch (Exception e) {
+                        Crashes.trackError(e);
+                    }
+                }
+            } else if (currentDialog instanceof ProgressDialog) {
+                ProgressDialog dialog = (ProgressDialog) currentDialog;
+                dialog.dismiss();
             }
         }
     }
 
-    public static void showInputDialog(Activity activity, int title, int content, String hint, String prefill, MaterialDialog.InputCallback callback) {
-        if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(() -> DialogUtils.setCurrentDialog(new MaterialDialog.Builder(activity)
-                    .title(title)
-                    .content(content)
-                    .inputType(InputType.TYPE_CLASS_TEXT)
-                    .input(hint, prefill, callback)
-                    .show())
-            );
-        }
+    /**
+     * 显示输入框
+     *
+     * @param view     context容器
+     * @param title    标题
+     * @param content  内容
+     * @param hint     提示
+     * @param prefill  预输入
+     * @param callback 回调
+     */
+    public static void showInputDialog(View view, int title, int content, String hint, String prefill, BiConsumer<MaterialDialog, CharSequence> callback) {
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            MaterialDialog dialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(content, null, null);
+            dialog = DialogInputExtKt.input(dialog, hint, null, prefill, null,
+                    InputType.TYPE_CLASS_TEXT,
+                    null, true, false, (materialDialog, text) -> {
+                        callback.accept(materialDialog, text);
+                        return null;
+                    });
+            DialogUtils.setCurrentDialog(dialog);
+            dialog.show();
+        });
+    }
+
+    /**
+     * 显示列表单选框
+     *
+     * @param view     context容器
+     * @param title    标题
+     * @param items    列表
+     * @param index    默认选择
+     * @param callback 回调
+     */
+    public static void showSingleChoiceDialog(View view, int title, int items, int index, BiConsumer<MaterialDialog, Integer> callback) {
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null);
+            materialDialog = DialogSingleChoiceExtKt.listItemsSingleChoice(materialDialog, items, null, null, index, false, (dialog, position, text) -> {
+                callback.accept(dialog, position);
+                return null;
+            });
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
+    }
+
+    /**
+     * 显示列表选择框
+     *
+     * @param view     context容器
+     * @param title    标题
+     * @param items    列表
+     * @param callback 回调
+     */
+    public static void showListItemsDialog(View view, int title, int items, BiConsumer<MaterialDialog, Integer> callback) {
+        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null);
+            materialDialog = DialogListExtKt.listItems(materialDialog, items, null, null, false, (dialog, position, text) -> {
+                callback.accept(dialog, position);
+                return null;
+            });
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
     }
 }

@@ -93,6 +93,17 @@ public class CommonLogic {
     }
 
     /**
+     * 在UI线程执行操作
+     * @param activity activity
+     * @param action   操作
+     */
+    public static void runOnUiThread(Activity activity, Consumer<Activity> action) {
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(() -> action.accept(activity));
+        }
+    }
+
+    /**
      * 打开指定URL
      *
      * @param context context

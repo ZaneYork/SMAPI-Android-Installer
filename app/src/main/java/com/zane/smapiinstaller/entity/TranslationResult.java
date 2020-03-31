@@ -1,4 +1,4 @@
-package com.zane.smapiinstaller.dto;
+package com.zane.smapiinstaller.entity;
 
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;

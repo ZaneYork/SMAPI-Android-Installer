@@ -11,7 +11,7 @@ import com.zane.smapiinstaller.entity.AppConfig;
 import com.zane.smapiinstaller.entity.AppConfigDao;
 import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
-import com.zane.smapiinstaller.dto.TranslationResult;
+import com.zane.smapiinstaller.entity.TranslationResult;
 import com.zane.smapiinstaller.entity.TranslationResultDao;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ListenableObject;

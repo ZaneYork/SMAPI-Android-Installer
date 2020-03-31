@@ -7,6 +7,9 @@ import com.lzy.okgo.request.base.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+/**
+ * @author Zane
+ */
 public abstract class JsonCallback<T> extends AbsCallback<T> {
 
     private TypeReference<T> type;

@@ -52,4 +52,16 @@
         android:name="com.zane.smapiinstaller.ui.about.AboutFragment"
         android:label="@string/menu_about"
         tools:layout="@layout/fragment_about" />
+
+    <fragment
+        android:id="@+id/nav_mod_update"
+        android:name="com.zane.smapiinstaller.ui.update.ModUpdateFragment"
+        android:label="@string/settings_check_for_updates"
+        tools:layout="@layout/fragment_mod_update_list">
+    </fragment>
+    <action
+        android:id="@+id/action_nav_any_to_mod_update_fragment"
+        app:destination="@id/nav_mod_update" >
+        <argument android:name="updateInfoListJson" app:argType="string"/>
+    </action>
 </navigation>

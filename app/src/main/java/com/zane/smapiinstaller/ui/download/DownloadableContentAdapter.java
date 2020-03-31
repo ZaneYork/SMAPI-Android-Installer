@@ -13,14 +13,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.DialogAction;
-import com.afollestad.materialdialogs.MaterialDialog;
+import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.FileCallback;
 import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.model.Response;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.constant.DownloadableContentTypes;
 import com.zane.smapiinstaller.entity.DownloadableContent;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
@@ -157,13 +157,13 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
             }
             downloading.set(true);
             ModManifestEntry finalModManifestEntry = modManifestEntry;
-            AtomicReference<MaterialDialog> dialogRef = DialogUtils.showProgressDialog(itemView, R.string.progress, "");
+            AtomicReference<ProgressDialog> dialogRef = DialogUtils.showProgressDialog(itemView, R.string.progress, "");
             OkGo.<File>get(downloadableContent.getUrl()).execute(new FileCallback(file.getParentFile().getAbsolutePath(), file.getName()) {
                 @Override
                 public void onError(Response<File> response) {
                     super.onError(response);
-                    MaterialDialog dialog = dialogRef.get();
-                    DialogUtils.dismissDialog(itemView, dialog);
+                    ProgressDialog dialog = dialogRef.get();
+                    dialog.dismiss();
                     downloading.set(false);
                     DialogUtils.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
                 }
@@ -171,17 +171,17 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                 @Override
                 public void downloadProgress(Progress progress) {
                     super.downloadProgress(progress);
-                    MaterialDialog dialog = dialogRef.get();
-                    if (dialog != null && !dialog.isCancelled()) {
-                        dialog.setContent(R.string.downloading, progress.currentSize / 1024, progress.totalSize / 1024);
+                    ProgressDialog dialog = dialogRef.get();
+                    if (dialog != null) {
+                        dialog.setMessage(context.getString(R.string.downloading, progress.currentSize / 1024, progress.totalSize / 1024));
                         dialog.setProgress((int) (progress.currentSize * 100.0 / progress.totalSize));
                     }
                 }
 
                 @Override
                 public void onSuccess(Response<File> response) {
-                    MaterialDialog dialog = dialogRef.get();
-                    DialogUtils.dismissDialog(itemView, dialog);
+                    ProgressDialog dialog = dialogRef.get();
+                    dialog.dismiss();
                     downloading.set(false);
                     File downloadedFile = response.body();
                     String hash = com.zane.smapiinstaller.utils.FileUtils.getFileHash(downloadedFile);
