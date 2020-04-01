@@ -1,11 +1,5 @@
 package com.zane.smapiinstaller.ui.download;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +30,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DownloadableContent}
@@ -162,8 +162,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                 @Override
                 public void onError(Response<File> response) {
                     super.onError(response);
-                    ProgressDialog dialog = dialogRef.get();
-                    dialog.dismiss();
+                    DialogUtils.dismissDialog(itemView, dialogRef.get());
                     downloading.set(false);
                     DialogUtils.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
                 }
@@ -180,8 +179,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
 
                 @Override
                 public void onSuccess(Response<File> response) {
-                    ProgressDialog dialog = dialogRef.get();
-                    dialog.dismiss();
+                    DialogUtils.dismissDialog(itemView, dialogRef.get());
                     downloading.set(false);
                     File downloadedFile = response.body();
                     String hash = com.zane.smapiinstaller.utils.FileUtils.getFileHash(downloadedFile);

@@ -173,13 +173,35 @@ public class DialogUtils {
     public static void dismissDialog(View view, MaterialDialog dialog) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            if (dialog != null && dialog.isShowing()) {
-                try {
-                    dialog.dismiss();
-                } catch (Exception e) {
-                    Crashes.trackError(e);
+            activity.runOnUiThread(()->{
+                if (dialog != null && dialog.isShowing()) {
+                    try {
+                        dialog.dismiss();
+                    } catch (Exception e) {
+                        Crashes.trackError(e);
+                    }
                 }
-            }
+            });
+        }
+    }
+    /**
+     * 解散指定对话框
+     *
+     * @param view   view
+     * @param dialog 对话框
+     */
+    public static void dismissDialog(View view, ProgressDialog dialog) {
+        Activity activity = CommonLogic.getActivityFromView(view);
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(()->{
+                if (dialog != null) {
+                    try {
+                        dialog.dismiss();
+                    } catch (Exception e) {
+                        Crashes.trackError(e);
+                    }
+                }
+            });
         }
     }
 

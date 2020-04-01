@@ -1,6 +1,6 @@
 package com.zane.smapiinstaller.ui.install;
 
-import android.content.Context;
+import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -32,7 +32,7 @@ import butterknife.OnClick;
  */
 public class InstallFragment extends Fragment {
 
-    private Context context;
+    private Activity context;
 
     private Thread task;
 
@@ -120,9 +120,7 @@ public class InstallFragment extends Fragment {
                 Crashes.trackError(e);
                 DialogUtils.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
             } finally {
-                if(dialog != null) {
-                    dialog.dismiss();
-                }
+                DialogUtils.dismissDialog(root, dialog);
             }
         });
         task.start();
