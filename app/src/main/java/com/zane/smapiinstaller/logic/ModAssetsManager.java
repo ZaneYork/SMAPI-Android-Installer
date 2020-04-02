@@ -73,7 +73,11 @@ public class ModAssetsManager {
             File currentFile = files.poll();
             if (currentFile != null && currentFile.exists()) {
                 boolean foundManifest = false;
-                for (File file : currentFile.listFiles(File::isFile)) {
+                File[] listFiles = currentFile.listFiles(File::isFile);
+                if (listFiles == null) {
+                    continue;
+                }
+                for (File file : listFiles) {
                     if (StringUtils.equalsIgnoreCase(file.getName(), "manifest.json")) {
                         ModManifestEntry manifest = FileUtils.getFileJson(file, ModManifestEntry.class);
                         foundManifest = true;
