@@ -1,10 +1,15 @@
 {
-  "version": 1,
+  "version": 2,
   "items": [
     {
       "title": "Mod Install General Procedure",
       "author": "ZaneYork",
       "content": "1.Query <a href=\"https://smapi.io/mods\">Compat</a> website for mod compatibility and latest download url<br>2.Download mod to your phone<br>3.Extract mod zip pack to internal storage of StardewValley/Mods directory<br>4.Press launch button provided by installer to make sure mod environment is satisfied and launch game"
+    },
+    {
+      "title": "相关视频教程",
+      "author": "凪白みと的小狐狸",
+      "content":"<a href=\"https://m.bilibili.com/video/BV1N54y1d75z\">(一)星露谷物语安装smapi和bgm</a><br><a href=\"https://m.bilibili.com/video/BV1iV411f77B\">(二)星露谷物语玩转n网及添加mod </a><br><a href=\"https://m.bilibili.com/video/BV1nZ4y1x7DF\">(三)星露谷物语安装美化详解 如何让人物看着顺眼</a><br><a href=\"https://m.bilibili.com/video/BV1Kk4y1R7xF\">(四)星露谷物语键盘详解</a>"
     },
     {
       "title": "Mod Compat Website Instructions",

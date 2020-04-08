@@ -60,7 +60,7 @@
     <string name="settings_verbose_logging">Verbose Logging</string>
     <string name="signing_package">Signing</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
-    <string name="smapi_version">SMAPI Version: 3.4.1.1</string>
+    <string name="smapi_version">SMAPI Version: 3.4.1.2</string>
     <string name="text_install_tip1">Notes: Game version 1.4.5.138 or later is required.</string>
     <string name="text_install_tip2">The base game is required when updating/installing.</string>
     <string name="unpacking_smapi_files">Unpacking</string>
@@ -75,4 +75,5 @@
     <string name="app_update_detected">New version detected: %1$s</string>
     <string name="parser">Parser</string>
     <string name="mod_version_update_checking">Checking for mod updates</string>
+    <string name="smapi_version_runing">Latest running: %s</string>
 </resources>

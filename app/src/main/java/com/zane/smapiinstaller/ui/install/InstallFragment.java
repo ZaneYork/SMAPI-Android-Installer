@@ -3,27 +3,36 @@ package com.zane.smapiinstaller.ui.install;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import com.google.common.io.Files;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -38,12 +47,25 @@ public class InstallFragment extends Fragment {
 
     private View root;
 
+    @BindView(R.id.text_latest_running)
+    TextView textLatestRunning;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_install, container, false);
         ButterKnife.bind(this, root);
         context = this.getActivity();
+        try {
+            String firstLine = Files.asCharSource(new File(Environment.getExternalStorageDirectory(), Constants.LOG_PATH), StandardCharsets.UTF_8).readFirstLine();
+            if(StringUtils.isNoneBlank(firstLine)) {
+                String versionString = RegExUtils.removePattern(firstLine, "\\[.+\\]\\s+");
+                versionString = RegExUtils.removePattern(versionString, "\\s+with.+");
+                textLatestRunning.setText(context.getString(R.string.smapi_version_runing, versionString));
+                textLatestRunning.setVisibility(View.VISIBLE);
+            }
+        } catch (IOException ignored) {
+        }
         return root;
     }
 
