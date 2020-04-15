@@ -130,6 +130,11 @@
     "origin": 1
   },
   {
+    "targetPath": "smapi-internal/BmFont.dll",
+    "assetPath": "assemblies/BmFont.dll",
+    "origin": 1
+  },
+  {
     "targetPath": "smapi-internal/i18n/de.json",
     "assetPath": "smapi/i18n/de.json",
     "origin": 0

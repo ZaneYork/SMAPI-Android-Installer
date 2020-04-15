@@ -139,9 +139,9 @@
 -keep class pxb.android.** { *; }
 -keep class net.fornwall.apksigner.** { *; }
 -keep class com.android.apksig.** { *; }
--keep class org.spongycastle.**
--dontwarn org.spongycastle.jce.provider.X509LDAPCertStoreSpi
--dontwarn org.spongycastle.x509.util.LDAPStoreHelper
+#Warning:org.bouncycastle.jce.provider.X509LDAPCertStoreSpi: can't find referenced class javax.naming.NamingEnumeration
+-dontwarn javax.naming.**
+-keep class org.bouncycastle.** {*;}
 -keep class org.slf4j.**
 -keep class com.hjq.language.** {*;}
 

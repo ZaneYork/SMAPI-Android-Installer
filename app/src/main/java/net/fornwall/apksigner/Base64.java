@@ -3,7 +3,7 @@ package net.fornwall.apksigner;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.spongycastle.util.encoders.Base64Encoder;
+import org.bouncycastle.util.encoders.Base64Encoder;
 
 /** Base64 encoding handling in a portable way across Android and JSE. */
 public class Base64 {

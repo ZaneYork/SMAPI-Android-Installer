@@ -11,6 +11,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.android.apksig.ApkSigner;
+import com.android.apksig.ApkVerifier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
@@ -274,9 +275,10 @@ public class ApkPatcher {
                 PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "android".toCharArray());
                 ApkSigner.SignerConfig signerConfig = new ApkSigner.SignerConfig.Builder("debug", privateKey, Collections.singletonList(publicKey)).build();
                 emitProgress(49);
+                File outputFile = new File(signApkPath);
                 ApkSigner signer = new ApkSigner.Builder(Collections.singletonList(signerConfig))
                         .setInputApk(new File(apkPath))
-                        .setOutputApk(new File(signApkPath))
+                        .setOutputApk(outputFile)
                         .setV1SigningEnabled(true)
                         .setV2SigningEnabled(true).build();
                 long zipOpElapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
@@ -289,7 +291,7 @@ public class ApkPatcher {
                             long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
                             double progress = elapsed * 0.98 / zipOpElapsed;
                             if (progress < 1.0) {
-                                emitProgress((int) (49 + 40 * progress));
+                                emitProgress((int) (49 + 45 * progress));
                             }
                         } catch (InterruptedException ignored) {
                             return;
@@ -298,11 +300,16 @@ public class ApkPatcher {
                 });
                 thread.start();
                 signer.sign();
+                FileUtils.forceDelete(new File(apkPath));
+                ApkVerifier.Result result = new ApkVerifier.Builder(outputFile).build().verify();
                 if (thread.isAlive() && !thread.isInterrupted()) {
                     thread.interrupt();
                 }
-                FileUtils.forceDelete(new File(apkPath));
-                emitProgress(90);
+                if(result.containsErrors()) {
+                    errorMessage.set(StreamSupport.stream(result.getErrors()).map(ApkVerifier.IssueWithParams::toString).collect(Collectors.joining(",")));
+                    return null;
+                }
+                emitProgress(95);
                 return signApkPath;
             }
         } catch (Exception e) {

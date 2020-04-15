@@ -10,14 +10,14 @@ import java.security.KeyStore;
 import java.security.Provider;
 import java.security.Security;
 
-import org.spongycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class KeyStoreFileManager {
 
 	public static final Provider SECURITY_PROVIDER = new BouncyCastleProvider();
 
 	static {
-		// Add the spongycastle version of the BC provider so that the implementation classes returned from the keystore
+		// Add the bouncycastle version of the BC provider so that the implementation classes returned from the keystore
 		// are all from the spongycastle libs.
 		Security.addProvider(SECURITY_PROVIDER);
 	}
