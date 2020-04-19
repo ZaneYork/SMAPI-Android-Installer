@@ -163,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.settings_verbose_logging).setChecked(config.isVerboseLogging());
         menu.findItem(R.id.settings_check_for_updates).setChecked(config.isCheckForUpdates());
         menu.findItem(R.id.settings_developer_mode).setChecked(config.isDeveloperMode());
+        menu.findItem(R.id.settings_disable_mono_mod).setChecked(config.isDisableMonoMod());
         Constants.MOD_PATH = config.getModsPath();
         return super.onPrepareOptionsMenu(menu);
     }
@@ -188,6 +189,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.settings_developer_mode:
                 config.setDeveloperMode(item.isChecked());
                 break;
+            case R.id.settings_disable_mono_mod:
+                config.setDisableMonoMod(item.isChecked());
+                break;
             case R.id.settings_set_mod_path:
                 DialogUtils.showInputDialog(toolbar, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {
                     if (StringUtils.isNoneBlank(input)) {
@@ -200,6 +204,24 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             DialogUtils.showAlertDialog(drawer, R.string.error, R.string.error_illegal_path);
                         }
+                    }
+                });
+                return true;
+            case R.id.settings_set_max_log_size:
+                DialogUtils.showInputDialog(toolbar, R.string.input, R.string.settings_set_max_log_size, String.valueOf(config.getMaxLogSize()), String.valueOf(config.getMaxLogSize()), (dialog, input) -> {
+                    if (StringUtils.isNoneBlank(input)) {
+                        try {
+                            int size = Integer.parseInt(input.toString());
+                            config.setMaxLogSize(size);
+                            manager.flushConfig();
+                        }
+                        catch (Exception ignored){
+
+                        }
+                    }
+                    else {
+                        config.setMaxLogSize(Integer.MAX_VALUE);
+                        manager.flushConfig();
                     }
                 });
                 return true;

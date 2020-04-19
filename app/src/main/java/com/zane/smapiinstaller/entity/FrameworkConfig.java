@@ -29,6 +29,18 @@ public class FrameworkConfig {
     private boolean DeveloperMode = false;
 
     /**
+     * 禁用MonoMod
+     */
+    @JsonProperty("DisableMonoMod")
+    private boolean DisableMonoMod = false;
+
+    /**
+     * 最大日志大小
+     */
+    @JsonProperty("MaxLogSize")
+    private int MaxLogSize = Integer.MAX_VALUE;
+
+    /**
      * Mod存放位置
      */
     @JsonProperty("ModsPath")

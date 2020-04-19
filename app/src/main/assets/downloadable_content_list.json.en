@@ -1,5 +1,5 @@
 {
-  "version": 12,
+  "version": 13,
   "contents": [
     {
       "type": "COMPAT",
@@ -13,9 +13,9 @@
       "type": "COMPAT",
       "name": "SMAPI for Galaxy Store",
       "assetPath": "compat/samsung_138/",
-      "description": "SMAPI compat package for game 1.4.4.138 - latest, SMAPI 3.4.1.5",
-      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138_7.zip",
-      "hash": "141ac038ff831ece5e6627dc29a45deddc131a008b3cfdecc678d1da2c0ee7a0"
+      "description": "SMAPI compat package for game 1.4.4.138 - latest, SMAPI 3.4.1.6",
+      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138_8.zip",
+      "hash": "9def0e6f711c46e50cd962d10aa0ccf6014026a7cc544be42922ac9b49172a38"
     },
     {
       "type": "LOCALE",
