@@ -5,7 +5,7 @@
         <item>微信</item>
         <item>QQ</item>
         <item>紅包碼</item>
-        <item>捐贈列表</item>
+        <item>贊助列表</item>
     </string-array>
     <string-array name="languages">
         <item>自動</item>
@@ -21,13 +21,13 @@
     </string-array>
     <string-array name="translators">
         <item>關閉</item>
-        <item>谷歌</item>
-        <item>有道</item>
+        <item>Google 翻譯</item>
+        <item>有道翻譯</item>
     </string-array>
     <string-array name="mod_list_sort_by">
-        <item>名稱(正序)</item>
-        <item>名稱(倒序)</item>
-        <item>日期(正序)</item>
-        <item>日期(倒序)</item>
+        <item>名稱（正序）</item>
+        <item>名稱（倒序）</item>
+        <item>日期（正序）</item>
+        <item>日期（倒序）</item>
     </string-array>
 </resources>
