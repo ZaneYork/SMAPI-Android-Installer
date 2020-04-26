@@ -17,7 +17,7 @@ import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
-import com.zane.smapiinstaller.utils.JSONUtil;
+import com.zane.smapiinstaller.utils.JsonUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -96,7 +96,7 @@ public class ConfigEditFragment extends Fragment {
     @OnClick(R.id.button_config_save)
     void onConfigSave() {
         try {
-            JSONUtil.checkJson(editText.getText().toString());
+            JsonUtil.checkJson(editText.getText().toString());
             FileOutputStream outputStream = new FileOutputStream(configPath);
             try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream)) {
                 outputStreamWriter.write(editText.getText().toString());

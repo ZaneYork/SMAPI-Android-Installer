@@ -92,7 +92,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
         try {
             InputStream inputStream = new FileInputStream(file);
             try (InputStreamReader reader = new InputStreamReader(new BOMInputStream(inputStream), StandardCharsets.UTF_8)) {
-                return JSONUtil.fromJson(CharStreams.toString(reader), type);
+                return JsonUtil.fromJson(CharStreams.toString(reader), type);
             }
         } catch (Exception ignored) {
         }
@@ -110,7 +110,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
         try {
             InputStream inputStream = new FileInputStream(file);
             try (InputStreamReader reader = new InputStreamReader(new BOMInputStream(inputStream), StandardCharsets.UTF_8)) {
-                return JSONUtil.fromJson(CharStreams.toString(reader), tClass);
+                return JsonUtil.fromJson(CharStreams.toString(reader), tClass);
             }
         } catch (Exception ignored) {
         }
@@ -129,7 +129,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
             File file = new File(context.getFilesDir(), tmpFilename);
             FileOutputStream outputStream = new FileOutputStream(file);
             try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
-                writer.write(JSONUtil.toJson(content));
+                writer.write(JsonUtil.toJson(content));
             } finally {
                 File distFile = new File(context.getFilesDir(), filename);
                 if(distFile.exists()) {
@@ -156,7 +156,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
             File fileTmp = new File(file.getParent(), tmpFilename);
             FileOutputStream outputStream = new FileOutputStream(fileTmp);
             try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
-                writer.write(JSONUtil.toJson(content));
+                writer.write(JsonUtil.toJson(content));
             } finally {
                 if(file.exists()) {
                     org.zeroturnaround.zip.commons.FileUtils.forceDelete(file);
@@ -179,7 +179,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
         try {
             InputStream inputStream = getLocalAsset(context, filename);
             try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return JSONUtil.fromJson(CharStreams.toString(reader), tClass);
+                return JsonUtil.fromJson(CharStreams.toString(reader), tClass);
             }
         } catch (IOException ignored) {
         }
@@ -190,7 +190,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
         try {
             InputStream inputStream = getLocaledLocalAsset(context, filename);
             try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return JSONUtil.fromJson(CharStreams.toString(reader), tClass);
+                return JsonUtil.fromJson(CharStreams.toString(reader), tClass);
             }
         } catch (IOException ignored) {
         }
@@ -209,7 +209,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
         try {
             InputStream inputStream = getLocalAsset(context, filename);
             try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return JSONUtil.fromJson(CharStreams.toString(reader), type);
+                return JsonUtil.fromJson(CharStreams.toString(reader), type);
             }
         } catch (IOException ignored) {
         }

@@ -22,6 +22,7 @@ public class ConfigManager {
         }
         if(config == null) {
             config = new FrameworkConfig();
+            config.setInitial(true);
         }
     }
 

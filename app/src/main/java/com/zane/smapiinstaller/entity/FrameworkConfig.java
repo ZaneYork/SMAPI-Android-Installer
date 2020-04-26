@@ -1,6 +1,7 @@
 package com.zane.smapiinstaller.entity;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
@@ -12,6 +13,8 @@ import lombok.Data;
 @Data
 @JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY, getterVisibility= JsonAutoDetect.Visibility.NONE)
 public class FrameworkConfig {
+    @JsonIgnore
+    private transient boolean initial;
     /**
      * 详细日志
      */

@@ -8,7 +8,7 @@ import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 import com.zane.smapiinstaller.entity.UpdatableList;
 import com.zane.smapiinstaller.utils.FileUtils;
-import com.zane.smapiinstaller.utils.JSONUtil;
+import com.zane.smapiinstaller.utils.JsonUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,7 +60,7 @@ public class UpdatableListManager<T extends UpdatableList> implements Listenable
 
             @Override
             public void onSuccess(Response<String> response) {
-                UpdatableList content = JSONUtil.fromJson(response.body(), tClass);
+                UpdatableList content = JsonUtil.fromJson(response.body(), tClass);
                 if(content != null && updatableList.getVersion() < content.getVersion()) {
                     FileUtils.writeAssetJson(root.getContext(), finalFilename, content);
                     updatableList = content;

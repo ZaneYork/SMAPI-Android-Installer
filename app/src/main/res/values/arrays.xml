@@ -30,4 +30,9 @@
         <item>by Date(asc)</item>
         <item>by Date(desc)</item>
     </string-array>
+    <string-array name="qq_group_list">
+        <item>860453392</item>
+        <item>1078428449</item>
+        <item>980882763</item>
+    </string-array>
 </resources>

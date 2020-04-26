@@ -18,7 +18,7 @@ public class KeyStoreFileManager {
 
 	static {
 		// Add the bouncycastle version of the BC provider so that the implementation classes returned from the keystore
-		// are all from the spongycastle libs.
+		// are all from the bouncycastle libs.
 		Security.addProvider(SECURITY_PROVIDER);
 	}
 

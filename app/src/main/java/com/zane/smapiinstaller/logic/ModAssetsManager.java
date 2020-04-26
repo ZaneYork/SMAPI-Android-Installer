@@ -25,7 +25,7 @@ import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
-import com.zane.smapiinstaller.utils.JSONUtil;
+import com.zane.smapiinstaller.utils.JsonUtil;
 import com.zane.smapiinstaller.utils.JsonCallback;
 import com.zane.smapiinstaller.utils.VersionUtil;
 
@@ -319,7 +319,7 @@ public class ModAssetsManager {
         try {
             ModUpdateCheckRequestDto requestDto = new ModUpdateCheckRequestDto(list, new ModUpdateCheckRequestDto.SemanticVersion(gamePackageInfo.versionName));
             OkGo.<List<ModUpdateCheckResponseDto>>post(Constants.UPDATE_CHECK_SERVICE_URL)
-                    .upJson(JSONUtil.toJson(requestDto))
+                    .upJson(JsonUtil.toJson(requestDto))
                     .execute(new JsonCallback<List<ModUpdateCheckResponseDto>>(new TypeReference<List<ModUpdateCheckResponseDto>>() {
                     }) {
                         @Override

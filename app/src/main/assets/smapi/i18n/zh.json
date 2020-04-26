@@ -1,3 +1,6 @@
 {
-    "warn.invalid-content-removed": "非法内容已移除以防游戏闪退（查看SMAPI控制台获得更多信息）"
+    "warn.invalid-content-removed": "非法内容已移除以防游戏闪退（查看SMAPI控制台获得更多信息）",
+    "warn.save-broken": "无法加载该存档,存档可能已损坏.你可以切换到前一日的存档,或者手动恢复到备份的存档.SMAPI提供的备份文件位于: StardewValley/smapi-internal/save-backups",
+    "btn.swap": "切换",
+    "btn.back": "返回"
 }

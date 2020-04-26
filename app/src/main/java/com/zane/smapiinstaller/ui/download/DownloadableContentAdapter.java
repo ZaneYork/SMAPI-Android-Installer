@@ -39,6 +39,7 @@ import butterknife.OnClick;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DownloadableContent}
+ *
  * @author Zane
  */
 public class DownloadableContentAdapter extends RecyclerView.Adapter<DownloadableContentAdapter.ViewHolder> {
@@ -193,14 +194,18 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
         }
 
         private void unpackLogic(Context context, File downloadedFile, ModManifestEntry finalModManifestEntry) {
-            if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypes.LOCALE)) {
-                if (finalModManifestEntry != null) {
-                    ZipUtil.unpack(downloadedFile, new File(finalModManifestEntry.getAssetPath()));
+            try {
+                if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypes.LOCALE)) {
+                    if (finalModManifestEntry != null) {
+                        ZipUtil.unpack(downloadedFile, new File(finalModManifestEntry.getAssetPath()));
+                    }
+                } else {
+                    ZipUtil.unpack(downloadedFile, new File(context.getFilesDir(), downloadableContent.getAssetPath()));
                 }
-            } else {
-                ZipUtil.unpack(downloadedFile, new File(context.getFilesDir(), downloadableContent.getAssetPath()));
+                DialogUtils.showAlertDialog(itemView, R.string.info, R.string.download_unpack_success);
+            } catch (Exception e) {
+                DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
             }
-            DialogUtils.showAlertDialog(itemView, R.string.info, R.string.download_unpack_success);
         }
     }
 }

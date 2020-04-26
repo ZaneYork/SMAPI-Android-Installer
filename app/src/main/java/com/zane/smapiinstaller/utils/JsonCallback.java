@@ -41,10 +41,10 @@ public abstract class JsonCallback<T> extends AbsCallback<T> {
         }
         T data = null;
         if (type != null) {
-            data = JSONUtil.fromJson(body.string(), type);
+            data = JsonUtil.fromJson(body.string(), type);
         }
         if (clazz != null) {
-            data = JSONUtil.fromJson(body.string(), clazz);
+            data = JsonUtil.fromJson(body.string(), clazz);
         }
         return data;
     }

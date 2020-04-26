@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
 import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.utils.JSONUtil;
+import com.zane.smapiinstaller.utils.JsonUtil;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class ModUpdateFragment extends Fragment {
 
             CommonLogic.doOnNonNull(this.getArguments(), arguments -> {
                 String updateInfoListJson = ModUpdateFragmentArgs.fromBundle(arguments).getUpdateInfoListJson();
-                List<ModUpdateCheckResponseDto> updateInfos = JSONUtil.fromJson(updateInfoListJson, new TypeReference<List<ModUpdateCheckResponseDto>>() {
+                List<ModUpdateCheckResponseDto> updateInfos = JsonUtil.fromJson(updateInfoListJson, new TypeReference<List<ModUpdateCheckResponseDto>>() {
                 });
                 ModUpdateAdapter adapter = new ModUpdateAdapter(updateInfos);
                 recyclerView.setAdapter(adapter);

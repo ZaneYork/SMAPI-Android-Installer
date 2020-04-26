@@ -50,22 +50,22 @@ public class AboutFragment extends Fragment {
         CommonLogic.openInPlayStore(this.getActivity());
     }
 
-    private void openPlayStore(String url) {
-        Intent intent = new Intent("android.intent.action.VIEW");
-        intent.setData(Uri.parse(url));
-        intent.setPackage("com.android.vending");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        CommonLogic.doOnNonNull(this.getActivity(), (activity) -> activity.startActivity(intent));
-    }
-
-    @OnClick({R.id.button_qq_group_1, R.id.button_qq_group_2})
-    void joinQQ(Button which) {
+    @OnClick(R.id.button_qq_group_1)
+    void joinQQ() {
         String baseUrl = "mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26k%3D";
-        if (which.getId() == R.id.button_qq_group_1) {
-            CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "AAflCLHiWw1haM1obu_f-CpGsETxXc6b"));
-        } else {
-            CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "kshK7BavcS2jXZ6exDvezc18ksLB8YsM"));
-        }
+        DialogUtils.showListItemsDialog(imgHeart, R.string.button_qq_group_text, R.array.qq_group_list, (dialog, position) -> {
+            switch (position){
+                case 0:
+                    CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "AAflCLHiWw1haM1obu_f-CpGsETxXc6b"));
+                    break;
+                case 1:
+                    CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "kshK7BavcS2jXZ6exDvezc18ksLB8YsM"));
+                    break;
+                default:
+                    CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "zqsWYGBuAxPx0n9RI_ONs-7NA1Mm48QY"));
+                    break;
+            }
+        });
     }
 
     @OnClick(R.id.button_donation)

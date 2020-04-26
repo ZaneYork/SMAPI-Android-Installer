@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.common.io.Files;
@@ -17,6 +18,7 @@ import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
+import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
@@ -46,6 +48,9 @@ public class InstallFragment extends Fragment {
     private Thread task;
 
     private View root;
+
+    @BindView(R.id.button_install)
+    Button installButton;
 
     @BindView(R.id.text_latest_running)
     TextView textLatestRunning;
@@ -98,6 +103,14 @@ public class InstallFragment extends Fragment {
                     dialog = dialogHolder.get();
                 } while (dialog == null);
                 ApkPatcher patcher = new ApkPatcher(context);
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                    ConfigManager configManager = new ConfigManager();
+                    if(configManager.getConfig().isInitial()) {
+                        configManager.getConfig().setInitial(false);
+                        configManager.getConfig().setDisableMonoMod(true);
+                        configManager.flushConfig();
+                    }
+                }
                 ProgressDialog finalDialog = dialog;
                 patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(root, finalDialog, null, progress));
                 DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
@@ -120,7 +133,7 @@ public class InstallFragment extends Fragment {
                     if (target == R.string.menu_download) {
                         DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
                             if (which == DialogAction.POSITIVE) {
-                                NavController controller = Navigation.findNavController(root);
+                                NavController controller = Navigation.findNavController(installButton);
                                 controller.navigate(InstallFragmentDirections.actionNavInstallToNavDownload());
                             }
                         });

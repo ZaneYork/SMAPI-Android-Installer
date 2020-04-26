@@ -54,7 +54,7 @@ public class TranslateUtil {
             OkGo.<String>get(String.format(Constants.TRANSLATE_SERVICE_URL_YOUDAO, queryText)).execute(new StringCallback() {
                 @Override
                 public void onSuccess(Response<String> response) {
-                    YouDaoTranslationDto translationDto = JSONUtil.fromJson(response.body(), YouDaoTranslationDto.class);
+                    YouDaoTranslationDto translationDto = JsonUtil.fromJson(response.body(), YouDaoTranslationDto.class);
                     if (translationDto != null && translationDto.getErrorCode() == 0) {
                         List<List<YouDaoTranslationDto.Entry>> lists = translationDto.getTranslateResult();
                         List<TranslationResult> translations = new ArrayList<>(lists.size());
@@ -83,7 +83,7 @@ public class TranslateUtil {
             OkGo.<String>get(String.format(Constants.TRANSLATE_SERVICE_URL_GOOGLE, locale, queryText)).execute(new StringCallback() {
                 @Override
                 public void onSuccess(Response<String> response) {
-                    GoogleTranslationDto translationDto = JSONUtil.fromJson(response.body(), GoogleTranslationDto.class);
+                    GoogleTranslationDto translationDto = JsonUtil.fromJson(response.body(), GoogleTranslationDto.class);
                     if(translationDto != null) {
                         List<String> sourceText = Splitter.on("%0A").splitToList(queryText);
                         List<TranslationResult> translations = new ArrayList<>(sourceText.size());

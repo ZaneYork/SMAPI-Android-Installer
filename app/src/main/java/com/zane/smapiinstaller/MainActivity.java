@@ -31,7 +31,7 @@ import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.DialogUtils;
-import com.zane.smapiinstaller.utils.JSONUtil;
+import com.zane.smapiinstaller.utils.JsonUtil;
 import com.zane.smapiinstaller.utils.JsonCallback;
 import com.zane.smapiinstaller.utils.TranslateUtil;
 
@@ -343,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
             }
             try {
                 NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment);
-                controller.navigate(MobileNavigationDirections.actionNavAnyToModUpdateFragment(JSONUtil.toJson(list)));
+                controller.navigate(MobileNavigationDirections.actionNavAnyToModUpdateFragment(JsonUtil.toJson(list)));
             } catch (Exception e) {
                 Crashes.trackError(e);
             }
