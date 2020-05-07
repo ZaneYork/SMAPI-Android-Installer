@@ -26,6 +26,7 @@ import java9.util.stream.StreamSupport;
  */
 public class TranslateUtil {
 
+    public static final String NONE = "OFF";
     public static final String GOOGLE = "Google";
     public static final String YOU_DAO = "YouDao";
 

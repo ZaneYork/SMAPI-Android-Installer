@@ -14,6 +14,7 @@ public class AppConfig {
     @Unique
     private String name;
     private String value;
+
     @Generated(hash = 1859776450)
     public AppConfig(Long id, String name, String value) {
         this.id = id;

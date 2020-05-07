@@ -8,8 +8,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.hjq.language.LanguagesManager;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
@@ -23,16 +25,15 @@ import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.dto.AppUpdateCheckResultDto;
 import com.zane.smapiinstaller.entity.AppConfig;
-import com.zane.smapiinstaller.entity.AppConfigDao;
-import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.entity.FrameworkConfig;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
+import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.DialogUtils;
-import com.zane.smapiinstaller.utils.JsonUtil;
 import com.zane.smapiinstaller.utils.JsonCallback;
+import com.zane.smapiinstaller.utils.JsonUtil;
 import com.zane.smapiinstaller.utils.TranslateUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
 
+    @BindView(R.id.launch)
+    FloatingActionButton buttonLaunch;
+
     @BindView(R.id.toolbar)
     Toolbar toolbar;
 
@@ -69,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.nav_view)
     NavigationView navigationView;
+
+    private int currentFragment = R.id.nav_install;
 
     private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -94,11 +100,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        AppCenter.start(getApplication(), Constants.APP_CENTER_SECRET, Analytics.class, Crashes.class);
-        requestPermissions();
+        AppConfig appConfig = ConfigUtils.getConfig((MainApplication) this.getApplication(), AppConfigKey.PRIVACY_POLICY_CONFIRM, false);
+        if (Boolean.parseBoolean(appConfig.getValue())) {
+            requestPermissions();
+        } else {
+            CommonLogic.showPrivacyPolicy(toolbar, (dialog, action) -> {
+                if (action == DialogAction.POSITIVE) {
+                    appConfig.setValue(String.valueOf(true));
+                    ConfigUtils.saveConfig((MainApplication) this.getApplication(), appConfig);
+                    requestPermissions();
+                } else {
+                    this.finish();
+                }
+            });
+        }
     }
 
     private void initView() {
+        AppCenter.start(getApplication(), Constants.APP_CENTER_SECRET, Analytics.class, Crashes.class);
         setSupportActionBar(toolbar);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -109,19 +128,31 @@ public class MainActivity extends AppCompatActivity {
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            currentFragment = destination.getId();
+            this.invalidateOptionsMenu();
+            switch (currentFragment){
+                case R.id.nav_about:
+                case R.id.nav_help:
+                case R.id.config_edit_fragment:
+                    buttonLaunch.setVisibility(View.INVISIBLE);
+                    break;
+                default:
+                    buttonLaunch.setVisibility(View.VISIBLE);
+            }
+        });
         checkAppUpdate();
     }
 
     private void checkAppUpdate() {
-        DaoSession daoSession = ((MainApplication) this.getApplication()).getDaoSession();
-        AppConfigDao appConfigDao = daoSession.getAppConfigDao();
-        AppConfig appConfig = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.IGNORE_UPDATE_VERSION_CODE)).build().unique();
+        MainApplication application = (MainApplication) this.getApplication();
         OkGo.<AppUpdateCheckResultDto>get(Constants.SELF_UPDATE_CHECK_SERVICE_URL).execute(new JsonCallback<AppUpdateCheckResultDto>(AppUpdateCheckResultDto.class) {
             @Override
             public void onSuccess(Response<AppUpdateCheckResultDto> response) {
                 AppUpdateCheckResultDto dto = response.body();
                 if (dto != null && CommonLogic.getVersionCode(MainActivity.this) < dto.getVersionCode()) {
-                    if (appConfig != null && StringUtils.equals(appConfig.getValue(), String.valueOf(dto.getVersionCode()))) {
+                    AppConfig appConfig = ConfigUtils.getConfig(application, AppConfigKey.IGNORE_UPDATE_VERSION_CODE, dto.getVersionCode());
+                    if (StringUtils.equals(appConfig.getValue(), String.valueOf(dto.getVersionCode()))) {
                         return;
                     }
                     DialogUtils.showConfirmDialog(toolbar, R.string.settings_check_for_updates,
@@ -129,14 +160,7 @@ public class MainActivity extends AppCompatActivity {
                                 if (which == DialogAction.POSITIVE) {
                                     CommonLogic.openInPlayStore(MainActivity.this);
                                 } else {
-                                    AppConfig config;
-                                    if (appConfig != null) {
-                                        config = appConfig;
-                                        config.setValue(String.valueOf(dto.getVersionCode()));
-                                    } else {
-                                        config = new AppConfig(null, AppConfigKey.IGNORE_UPDATE_VERSION_CODE, String.valueOf(dto.getVersionCode()));
-                                    }
-                                    appConfigDao.insertOrReplace(config);
+                                    ConfigUtils.saveConfig(application, appConfig);
                                 }
                             });
                 }
@@ -162,6 +186,12 @@ public class MainActivity extends AppCompatActivity {
         FrameworkConfig config = manager.getConfig();
         menu.findItem(R.id.settings_verbose_logging).setChecked(config.isVerboseLogging());
         menu.findItem(R.id.settings_check_for_updates).setChecked(config.isCheckForUpdates());
+        if(currentFragment != R.id.nav_config) {
+            menu.findItem(R.id.toolbar_update_check).setVisible(false);
+        }
+        else {
+            menu.findItem(R.id.toolbar_update_check).setVisible(true);
+        }
         menu.findItem(R.id.settings_developer_mode).setChecked(config.isDeveloperMode());
         menu.findItem(R.id.settings_disable_mono_mod).setChecked(config.isDisableMonoMod());
         Constants.MOD_PATH = config.getModsPath();
@@ -214,12 +244,10 @@ public class MainActivity extends AppCompatActivity {
                             int size = Integer.parseInt(input.toString());
                             config.setMaxLogSize(size);
                             manager.flushConfig();
-                        }
-                        catch (Exception ignored){
+                        } catch (Exception ignored) {
 
                         }
-                    }
-                    else {
+                    } else {
                         config.setMaxLogSize(Integer.MAX_VALUE);
                         manager.flushConfig();
                     }
@@ -242,9 +270,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int getTranslateServiceIndex(AppConfig selectedTranslator) {
-        if (selectedTranslator == null) {
-            return 0;
-        }
         switch (selectedTranslator.getValue()) {
             case "OFF":
                 return 0;
@@ -256,32 +281,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void selectTranslateServiceLogic() {
-        DaoSession daoSession = ((MainApplication) this.getApplication()).getDaoSession();
-        AppConfigDao appConfigDao = daoSession.getAppConfigDao();
-        int index = getTranslateServiceIndex(appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique());
+        MainApplication application = (MainApplication) this.getApplication();
+        AppConfig activeTranslator = ConfigUtils.getConfig(application, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
+        int index = getTranslateServiceIndex(activeTranslator);
         DialogUtils.showSingleChoiceDialog(toolbar, R.string.settings_translation_service, R.array.translators, index, (dialog, position) -> {
-            AppConfig activeTranslator = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
             switch (position) {
                 case 0:
-                    if (activeTranslator != null) {
-                        appConfigDao.delete(activeTranslator);
-                    }
+                    activeTranslator.setValue(TranslateUtil.NONE);
+                    ConfigUtils.saveConfig(application, activeTranslator);
                     break;
                 case 1:
-                    if (activeTranslator == null) {
-                        activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.GOOGLE);
-                    } else {
-                        activeTranslator.setValue(TranslateUtil.GOOGLE);
-                    }
-                    appConfigDao.insertOrReplace(activeTranslator);
+                    activeTranslator.setValue(TranslateUtil.GOOGLE);
+                    ConfigUtils.saveConfig(application, activeTranslator);
                     break;
                 case 2:
-                    if (activeTranslator == null) {
-                        activeTranslator = new AppConfig(null, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.YOU_DAO);
-                    } else {
-                        activeTranslator.setValue(TranslateUtil.YOU_DAO);
-                    }
-                    appConfigDao.insertOrReplace(activeTranslator);
+                    activeTranslator.setValue(TranslateUtil.YOU_DAO);
+                    ConfigUtils.saveConfig(application, activeTranslator);
                     break;
                 default:
             }

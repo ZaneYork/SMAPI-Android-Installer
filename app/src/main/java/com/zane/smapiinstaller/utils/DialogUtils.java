@@ -8,6 +8,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.input.DialogInputExtKt;
 import com.afollestad.materialdialogs.list.DialogListExtKt;
 import com.afollestad.materialdialogs.list.DialogSingleChoiceExtKt;
+import com.afollestad.materialdialogs.message.DialogMessageSettings;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
@@ -128,14 +129,29 @@ public class DialogUtils {
      * @param callback     回调
      */
     public static void showConfirmDialog(View view, int title, String message, int positiveText, int negativeText, BiConsumer<MaterialDialog, DialogAction> callback) {
+        showConfirmDialog(view, title, message, positiveText, negativeText, false, callback);
+    }
+
+    public static void showConfirmDialog(View view, int title, String message, int positiveText, int negativeText, boolean isHtml, BiConsumer<MaterialDialog, DialogAction> callback) {
         CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
-            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(null, message, null).positiveButton(positiveText, null, dialog -> {
-                callback.accept(dialog, DialogAction.POSITIVE);
-                return null;
-            }).negativeButton(negativeText, null, dialog -> {
-                callback.accept(dialog, DialogAction.NEGATIVE);
-                return null;
-            });
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR())
+                    .title(title, null)
+                    .positiveButton(positiveText, null, dialog -> {
+                        callback.accept(dialog, DialogAction.POSITIVE);
+                        return null;
+                    }).negativeButton(negativeText, null, dialog -> {
+                        callback.accept(dialog, DialogAction.NEGATIVE);
+                        return null;
+                    });
+            if(isHtml){
+                materialDialog.message(null, message, (dialogMessageSettings) -> {
+                    dialogMessageSettings.html(null);
+                    return null;
+                });
+            }
+            else {
+                materialDialog.message(null, message, null);
+            }
             DialogUtils.setCurrentDialog(materialDialog);
             materialDialog.show();
         });
@@ -173,7 +189,7 @@ public class DialogUtils {
     public static void dismissDialog(View view, MaterialDialog dialog) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()->{
+            activity.runOnUiThread(() -> {
                 if (dialog != null && dialog.isShowing()) {
                     try {
                         dialog.dismiss();
@@ -184,6 +200,7 @@ public class DialogUtils {
             });
         }
     }
+
     /**
      * 解散指定对话框
      *
@@ -193,7 +210,7 @@ public class DialogUtils {
     public static void dismissDialog(View view, ProgressDialog dialog) {
         Activity activity = CommonLogic.getActivityFromView(view);
         if (activity != null && !activity.isFinishing()) {
-            activity.runOnUiThread(()->{
+            activity.runOnUiThread(() -> {
                 if (dialog != null) {
                     try {
                         dialog.dismiss();

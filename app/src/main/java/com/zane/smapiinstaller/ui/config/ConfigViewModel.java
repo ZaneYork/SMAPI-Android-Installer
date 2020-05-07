@@ -16,6 +16,7 @@ import com.zane.smapiinstaller.entity.TranslationResultDao;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ListenableObject;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
+import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.TranslateUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,12 +55,8 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
         translateLogic(root);
         MainApplication app = CommonLogic.getApplicationFromView(root);
         if (null != app) {
-            AppConfigDao appConfigDao = app.getDaoSession().getAppConfigDao();
-            Query<AppConfig> query = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.MOD_LIST_SORT_BY)).build();
-            AppConfig appConfig = query.unique();
-            if (null != appConfig) {
-                sortBy = appConfig.getValue();
-            }
+            AppConfig appConfig = ConfigUtils.getConfig(app, AppConfigKey.MOD_LIST_SORT_BY, sortBy);
+            sortBy = appConfig.getValue();
         }
         sortLogic(sortBy);
     }
@@ -70,9 +67,8 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
             return;
         }
         this.sortBy = sortBy;
-        AppConfigDao appConfigDao = app.getDaoSession().getAppConfigDao();
         AppConfig appConfig = new AppConfig(null, AppConfigKey.MOD_LIST_SORT_BY, sortBy);
-        appConfigDao.insertOrReplace(appConfig);
+        ConfigUtils.saveConfig(app, appConfig);
         sortLogic(appConfig.getValue());
     }
 
@@ -116,8 +112,8 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
         MainApplication app = CommonLogic.getApplicationFromView(root);
         if (null != app) {
             DaoSession daoSession = app.getDaoSession();
-            AppConfig activeTranslator = daoSession.getAppConfigDao().queryBuilder().where(AppConfigDao.Properties.Name.eq(AppConfigKey.ACTIVE_TRANSLATOR)).build().unique();
-            if (activeTranslator != null) {
+            AppConfig activeTranslator = ConfigUtils.getConfig(app, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
+            if (StringUtils.equals(activeTranslator.getValue(), TranslateUtil.NONE)) {
                 String translator = activeTranslator.getValue();
                 List<String> descriptions = StreamSupport.stream(this.modList).map(ModManifestEntry::getDescription).filter(Objects::nonNull).collect(Collectors.toList());
                 String language = LanguagesManager.getAppLanguage(app).getLanguage();

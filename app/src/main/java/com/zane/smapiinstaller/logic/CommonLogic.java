@@ -18,13 +18,17 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.zane.smapiinstaller.MainApplication;
+import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
+import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
 
 import org.zeroturnaround.zip.ZipUtil;
@@ -37,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import java9.util.function.BiConsumer;
 import java9.util.function.Consumer;
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
@@ -308,5 +313,11 @@ public class CommonLogic {
                 CommonLogic.openUrl(activity, "https://play.google.com/store/apps/details?id=" + context.getPackageName());
             }
         });
+    }
+
+    public static void showPrivacyPolicy(View view, BiConsumer<MaterialDialog, DialogAction> callback) {
+        Context context = view.getContext();
+        String policy = FileUtils.getLocaledAssetText(context, "privacy_policy.txt");
+        DialogUtils.showConfirmDialog(view, R.string.privacy_policy, policy, R.string.confirm, R.string.cancel, true, callback);
     }
 }

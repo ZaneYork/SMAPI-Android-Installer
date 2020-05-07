@@ -168,6 +168,40 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
     }
 
     /**
+     * 读取资源文本
+     * @param context context
+     * @param filename 文件名
+     * @return 文本
+     */
+    public static String getAssetText(Context context, String filename) {
+        try {
+            InputStream inputStream = getLocalAsset(context, filename);
+            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+                return CharStreams.toString(reader);
+            }
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * 读取本地化后的资源文本
+     * @param context context
+     * @param filename 文件名
+     * @return 文本
+     */
+    public static String getLocaledAssetText(Context context, String filename) {
+        try {
+            InputStream inputStream = getLocaledLocalAsset(context, filename);
+            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+                return CharStreams.toString(reader);
+            }
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    /**
      * 读取JSON资源
      * @param context  context
      * @param filename 资源名
@@ -176,12 +210,9 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @return 数据
      */
     public static <T> T getAssetJson(Context context, String filename, Class<T> tClass) {
-        try {
-            InputStream inputStream = getLocalAsset(context, filename);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return JsonUtil.fromJson(CharStreams.toString(reader), tClass);
-            }
-        } catch (IOException ignored) {
+        String text = getAssetText(context, filename);
+        if(text != null){
+            return JsonUtil.fromJson(text, tClass);
         }
         return null;
     }
@@ -206,12 +237,9 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @return 数据
      */
     public static <T> T getAssetJson(Context context, String filename, TypeReference<T> type) {
-        try {
-            InputStream inputStream = getLocalAsset(context, filename);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return JsonUtil.fromJson(CharStreams.toString(reader), type);
-            }
-        } catch (IOException ignored) {
+        String text = getAssetText(context, filename);
+        if(text != null){
+            return JsonUtil.fromJson(text, type);
         }
         return null;
     }

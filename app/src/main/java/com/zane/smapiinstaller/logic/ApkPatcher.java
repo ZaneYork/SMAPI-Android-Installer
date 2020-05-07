@@ -188,6 +188,7 @@ public class ApkPatcher {
      */
     private byte[] modifyManifest(byte[] bytes, List<ApkFilesManifest> manifests) {
         AtomicReference<String> packageName = new AtomicReference<>();
+        AtomicReference<String> versionName = new AtomicReference<>();
         AtomicLong versionCode = new AtomicLong();
         Predicate<ManifestTagVisitor.AttrArgs> processLogic = (attr) -> {
             if(attr == null) {
@@ -200,6 +201,11 @@ public class ApkPatcher {
                         if (packageName.get() == null) {
                             packageName.set(strObj);
                             attr.obj = strObj.replace(ManifestPatchConstants.APP_PACKAGE_NAME, Constants.TARGET_PACKAGE_NAME);
+                        }
+                        break;
+                    case ManifestPatchConstants.PATTERN_VERSION_NAME:
+                        if (versionName.get() == null) {
+                            versionName.set((String) attr.obj);
                         }
                         break;
                     case "label":
@@ -230,6 +236,9 @@ public class ApkPatcher {
         };
         try {
             byte[] modifyManifest = CommonLogic.modifyManifest(bytes, processLogic);
+            if(StringUtils.endsWith(versionName.get(), ManifestPatchConstants.PATTERN_VERSION_AMAZON)) {
+                packageName.set(ManifestPatchConstants.APP_PACKAGE_NAME + ManifestPatchConstants.PATTERN_VERSION_AMAZON);
+            }
             Iterables.removeIf(manifests, manifest -> {
                 if(manifest == null) {
                     return true;
