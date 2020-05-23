@@ -112,7 +112,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
         if (null != app) {
             DaoSession daoSession = app.getDaoSession();
             AppConfig activeTranslator = ConfigUtils.getConfig(app, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
-            if (StringUtils.equals(activeTranslator.getValue(), TranslateUtil.NONE)) {
+            if (!StringUtils.equals(activeTranslator.getValue(), TranslateUtil.NONE)) {
                 String translator = activeTranslator.getValue();
                 List<String> descriptions = StreamSupport.stream(this.modList).map(ModManifestEntry::getDescription).filter(Objects::nonNull).collect(Collectors.toList());
                 String language = LanguagesManager.getAppLanguage(app).getLanguage();
