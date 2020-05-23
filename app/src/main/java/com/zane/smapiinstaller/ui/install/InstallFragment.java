@@ -8,18 +8,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.common.io.Files;
-import com.lmntrx.android.library.livin.missme.ProgressDialog;
-import com.microsoft.appcenter.crashes.Crashes;
+import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.constant.AppConfigKey;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
+import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
 import org.apache.commons.lang3.RegExUtils;
@@ -28,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicReference;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -55,15 +55,22 @@ public class InstallFragment extends Fragment {
     @BindView(R.id.text_latest_running)
     TextView textLatestRunning;
 
+    @BindView(R.id.layout_adv_install)
+    LinearLayout layoutAdvInstall;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_install, container, false);
         ButterKnife.bind(this, root);
         context = this.getActivity();
+        if (Boolean.parseBoolean(ConfigUtils.getConfig((MainApplication) context.getApplication(), AppConfigKey.ADVANCED_MODE, "false").getValue())) {
+            installButton.setVisibility(View.INVISIBLE);
+            layoutAdvInstall.setVisibility(View.VISIBLE);
+        }
         try {
             String firstLine = Files.asCharSource(new File(Environment.getExternalStorageDirectory(), Constants.LOG_PATH), StandardCharsets.UTF_8).readFirstLine();
-            if(StringUtils.isNoneBlank(firstLine)) {
+            if (StringUtils.isNoneBlank(firstLine)) {
                 String versionString = RegExUtils.removePattern(firstLine, "\\[.+\\]\\s+");
                 versionString = RegExUtils.removePattern(versionString, "\\s+with.+");
                 textLatestRunning.setText(context.getString(R.string.smapi_version_runing, versionString));
@@ -87,77 +94,127 @@ public class InstallFragment extends Fragment {
         }
     }
 
+    @OnClick(R.id.button_adv_initial)
+    void advInitial() {
+        initialLogic();
+    }
+
+    @OnClick(R.id.button_adv_install)
+    void advInstall() {
+        if (task != null) {
+            task.interrupt();
+        }
+        task = new Thread(() -> CommonLogic.showProgressDialog(root, context, (dialog)->{
+            ApkPatcher patcher = new ApkPatcher(context);
+            patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(root, dialog, null, progress));
+            DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
+            String path = patcher.extract(1);
+            if (path == null) {
+                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
+                return;
+            }
+            DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, null);
+            if (!CommonLogic.unpackSmapiFiles(context, path, false)) {
+                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
+                return;
+            }
+            ModAssetsManager modAssetsManager = new ModAssetsManager(root);
+            DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 6);
+            modAssetsManager.installDefaultMods();
+            DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 8);
+            if (!patcher.patch(path, true)) {
+                int target = patcher.getSwitchAction().getAndSet(0);
+                if (target == R.string.menu_download) {
+                    DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
+                        if (which == DialogAction.POSITIVE) {
+                            NavController controller = Navigation.findNavController(installButton);
+                            controller.navigate(InstallFragmentDirections.actionNavInstallToNavDownload());
+                        }
+                    });
+                } else {
+                    DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
+                }
+                return;
+            }
+            DialogUtils.setProgressDialogState(root, dialog, R.string.signing_package, null);
+            String signPath = patcher.sign(path);
+            if (signPath == null) {
+                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
+                return;
+            }
+            DialogUtils.setProgressDialogState(root, dialog, R.string.installing_package, null);
+            patcher.install(signPath);
+        }));
+        task.start();
+    }
+
+    /**
+     * 初始化逻辑
+     */
+    private void initialLogic() {
+        if (task != null) {
+            task.interrupt();
+        }
+        task = new Thread(() -> CommonLogic.showProgressDialog(root, context, (dialog)->{
+            ApkPatcher patcher = new ApkPatcher(context);
+            patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(root, dialog, null, progress));
+            DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
+            String path = patcher.extract(0);
+            if (path == null) {
+                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
+            }
+        }));
+        task.start();
+    }
+
     /**
      * 安装逻辑
      */
     private void installLogic() {
-        AtomicReference<ProgressDialog> dialogHolder = DialogUtils.showProgressDialog(root, R.string.install_progress_title, context.getString(R.string.extracting_package));
         if (task != null) {
             task.interrupt();
         }
-        task = new Thread(() -> {
-            ProgressDialog dialog = null;
-            try {
-                do {
-                    Thread.sleep(10);
-                    dialog = dialogHolder.get();
-                } while (dialog == null);
-                ApkPatcher patcher = new ApkPatcher(context);
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                    ConfigManager configManager = new ConfigManager();
-                    if(configManager.getConfig().isInitial()) {
-                        configManager.getConfig().setInitial(false);
-                        configManager.getConfig().setDisableMonoMod(true);
-                        configManager.flushConfig();
-                    }
-                }
-                ProgressDialog finalDialog = dialog;
-                patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(root, finalDialog, null, progress));
-                DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
-                String path = patcher.extract();
-                if (path == null) {
-                    DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
-                    return;
-                }
-                DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, null);
-                if (!CommonLogic.unpackSmapiFiles(context, path, false)) {
-                    DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
-                    return;
-                }
-                ModAssetsManager modAssetsManager = new ModAssetsManager(root);
-                DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 6);
-                modAssetsManager.installDefaultMods();
-                DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 8);
-                if (!patcher.patch(path)) {
-                    int target = patcher.getSwitchAction().getAndSet(0);
-                    if (target == R.string.menu_download) {
-                        DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
-                            if (which == DialogAction.POSITIVE) {
-                                NavController controller = Navigation.findNavController(installButton);
-                                controller.navigate(InstallFragmentDirections.actionNavInstallToNavDownload());
-                            }
-                        });
-                    } else {
-                        DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
-                    }
-                    return;
-                }
-                DialogUtils.setProgressDialogState(root, dialog, R.string.signing_package, null);
-                String signPath = patcher.sign(path);
-                if (signPath == null) {
-                    DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
-                    return;
-                }
-                DialogUtils.setProgressDialogState(root, dialog, R.string.installing_package, null);
-                patcher.install(signPath);
-            } catch (InterruptedException ignored) {
-            } catch (Exception e) {
-                Crashes.trackError(e);
-                DialogUtils.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
-            } finally {
-                DialogUtils.dismissDialog(root, dialog);
+        task = new Thread(() -> CommonLogic.showProgressDialog(root, context, (dialog)-> {
+            ApkPatcher patcher = new ApkPatcher(context);
+            patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(root, dialog, null, progress));
+            DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
+            String path = patcher.extract();
+            if (path == null) {
+                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
+                return;
             }
-        });
+            DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, null);
+            if (!CommonLogic.unpackSmapiFiles(context, path, false)) {
+                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
+                return;
+            }
+            ModAssetsManager modAssetsManager = new ModAssetsManager(root);
+            DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 6);
+            modAssetsManager.installDefaultMods();
+            DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 8);
+            if (!patcher.patch(path)) {
+                int target = patcher.getSwitchAction().getAndSet(0);
+                if (target == R.string.menu_download) {
+                    DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
+                        if (which == DialogAction.POSITIVE) {
+                            NavController controller = Navigation.findNavController(installButton);
+                            controller.navigate(InstallFragmentDirections.actionNavInstallToNavDownload());
+                        }
+                    });
+                } else {
+                    DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
+                }
+                return;
+            }
+            DialogUtils.setProgressDialogState(root, dialog, R.string.signing_package, null);
+            String signPath = patcher.sign(path);
+            if (signPath == null) {
+                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
+                return;
+            }
+            DialogUtils.setProgressDialogState(root, dialog, R.string.installing_package, null);
+            patcher.install(signPath);
+        }));
         task.start();
     }
 

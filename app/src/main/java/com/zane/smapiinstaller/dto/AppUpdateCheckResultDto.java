@@ -2,6 +2,9 @@ package com.zane.smapiinstaller.dto;
 
 import lombok.Data;
 
+/**
+ * @author Zane
+ */
 @Data
 public class AppUpdateCheckResultDto {
     /**

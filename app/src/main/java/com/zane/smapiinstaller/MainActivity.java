@@ -194,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
         }
         menu.findItem(R.id.settings_developer_mode).setChecked(config.isDeveloperMode());
         menu.findItem(R.id.settings_disable_mono_mod).setChecked(config.isDisableMonoMod());
+        menu.findItem(R.id.settings_advanced_mode).setChecked(Boolean.parseBoolean(ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKey.ADVANCED_MODE, "false").getValue()));
         Constants.MOD_PATH = config.getModsPath();
         return super.onPrepareOptionsMenu(menu);
     }
@@ -262,6 +263,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.toolbar_update_check:
                 checkModUpdateLogic();
                 return true;
+            case R.id.settings_advanced_mode:
+                AppConfig appConfig = ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKey.ADVANCED_MODE, "false");
+                appConfig.setValue(String.valueOf(item.isChecked()));
+                ConfigUtils.saveConfig((MainApplication) getApplication(), appConfig);
+                startActivity(new Intent(this, MainActivity.class));
+                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+                finish();
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }

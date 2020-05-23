@@ -80,4 +80,6 @@
     <string name="settings_set_max_log_size">Max Log Size</string>
     <string name="button_qq_group_text">QQ Group</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="settings_advanced_mode">Advanced Patch Mode</string>
+    <string name="button_initial">Initial</string>
 </resources>

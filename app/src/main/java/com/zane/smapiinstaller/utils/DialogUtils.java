@@ -8,7 +8,6 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.input.DialogInputExtKt;
 import com.afollestad.materialdialogs.list.DialogListExtKt;
 import com.afollestad.materialdialogs.list.DialogSingleChoiceExtKt;
-import com.afollestad.materialdialogs.message.DialogMessageSettings;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;

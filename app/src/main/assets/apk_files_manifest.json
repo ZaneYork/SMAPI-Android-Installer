@@ -10,9 +10,10 @@
   "manifestEntries": [
     {
       "targetPath": "classes.dex",
-      "assetPath": "apk/classes.dex",
+      "assetPath": "apk/classes.dex.patch",
       "compression": 8,
-      "external": false
+      "external": false,
+      "patchCrc": "e918baf8"
     },
     {
       "targetPath": "res/mipmap-mdpi-v4/ic_launcher_foreground.png",
@@ -79,6 +80,14 @@
       "assetPath": "apk/System.Numerics.dll",
       "compression": 0,
       "external": false
+    },
+    {
+      "targetPath": "assemblies/MonoGame.Framework.dll",
+      "assetPath": "apk/MonoGame.Framework.dll.patch",
+      "compression": 0,
+      "external": false,
+      "patchCrc": "c7fec998",
+      "advanced": true
     }
   ]
 }

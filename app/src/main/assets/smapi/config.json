@@ -28,11 +28,6 @@ The default values are mirrored in StardewModdingAPI.Framework.Models.SConfig to
     "DeveloperMode": false,
 
     /**
-    * Whether to enable load mods with multithreading supports.
-    */
-    "MultithreadingLoading": false,
-
-    /**
      * Whether to add a section to the 'mod issues' list for mods which directly use potentially
      * sensitive .NET APIs like file or shell access. Note that many mods do this legitimately as
      * part of their normal functionality, so these warnings are meaningless without further

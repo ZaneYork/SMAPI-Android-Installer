@@ -23,6 +23,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+import com.lmntrx.android.library.livin.missme.ProgressDialog;
+import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.DialogAction;
@@ -40,6 +42,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import java9.util.function.BiConsumer;
 import java9.util.function.Consumer;
@@ -305,12 +308,12 @@ public class CommonLogic {
         CommonLogic.doOnNonNull(activity, (context) -> {
             try {
                 Intent intent = new Intent("android.intent.action.VIEW");
-                intent.setData(Uri.parse("market://details?id=" + context.getPackageName()));
+                intent.setData(Uri.parse("market://details?id=com.zane.smapiinstaller"));
                 intent.setPackage("com.android.vending");
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
             } catch (Exception ex) {
-                CommonLogic.openUrl(activity, "https://play.google.com/store/apps/details?id=" + context.getPackageName());
+                CommonLogic.openUrl(activity, "https://play.google.com/store/apps/details?id=com.zane.smapiinstaller");
             }
         });
     }
@@ -319,5 +322,31 @@ public class CommonLogic {
         Context context = view.getContext();
         String policy = FileUtils.getLocaledAssetText(context, "privacy_policy.txt");
         DialogUtils.showConfirmDialog(view, R.string.privacy_policy, policy, R.string.confirm, R.string.cancel, true, callback);
+    }
+
+    public static void showProgressDialog(View root, Context context, Consumer<ProgressDialog> dialogConsumer) {
+        AtomicReference<ProgressDialog> dialogHolder = DialogUtils.showProgressDialog(root, R.string.install_progress_title, context.getString(R.string.extracting_package));
+        ProgressDialog dialog = null;
+        try {
+            do {
+                Thread.sleep(10);
+                dialog = dialogHolder.get();
+            } while (dialog == null);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                ConfigManager configManager = new ConfigManager();
+                if (configManager.getConfig().isInitial()) {
+                    configManager.getConfig().setInitial(false);
+                    configManager.getConfig().setDisableMonoMod(true);
+                    configManager.flushConfig();
+                }
+            }
+            dialogConsumer.accept(dialog);
+        } catch (InterruptedException ignored) {
+        } catch (Exception e) {
+            Crashes.trackError(e);
+            DialogUtils.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
+        } finally {
+            DialogUtils.dismissDialog(root, dialog);
+        }
     }
 }

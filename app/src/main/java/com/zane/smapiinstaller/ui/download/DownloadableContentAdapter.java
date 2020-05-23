@@ -93,16 +93,23 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
             typeTextView.setText(downloadableContent.getType());
             nameTextView.setText(downloadableContent.getName());
             descriptionTextView.setText(downloadableContent.getDescription());
-            if (StringUtils.isBlank(downloadableContent.getAssetPath())) {
-                buttonRemove.setVisibility(View.INVISIBLE);
-                buttonDownload.setVisibility(View.VISIBLE);
-            } else {
+            if (StringUtils.isNoneBlank(downloadableContent.getAssetPath())) {
                 File contentFile = new File(itemView.getContext().getFilesDir(), downloadableContent.getAssetPath());
                 if (contentFile.exists()) {
+                    Context context = itemView.getContext();
+                    File file = new File(context.getCacheDir(), downloadableContent.getName() + ".zip");
+                    if (!file.exists() || !StringUtils.equalsIgnoreCase(FileUtils.getFileHash(file), downloadableContent.getHash())) {
+                        buttonRemove.setVisibility(View.VISIBLE);
+                        buttonDownload.setVisibility(View.VISIBLE);
+                        return;
+                    }
                     buttonRemove.setVisibility(View.VISIBLE);
                     buttonDownload.setVisibility(View.INVISIBLE);
+                    return;
                 }
             }
+            buttonRemove.setVisibility(View.INVISIBLE);
+            buttonDownload.setVisibility(View.VISIBLE);
         }
 
         public ViewHolder(View view) {
@@ -119,6 +126,8 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                         if (which == DialogAction.POSITIVE) {
                             try {
                                 FileUtils.forceDelete(contentFile);
+                                buttonDownload.setVisibility(View.VISIBLE);
+                                buttonRemove.setVisibility(View.INVISIBLE);
                             } catch (IOException e) {
                                 DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
                             }
@@ -203,6 +212,8 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                     ZipUtil.unpack(downloadedFile, new File(context.getFilesDir(), downloadableContent.getAssetPath()));
                 }
                 DialogUtils.showAlertDialog(itemView, R.string.info, R.string.download_unpack_success);
+                buttonDownload.setVisibility(View.INVISIBLE);
+                buttonRemove.setVisibility(View.VISIBLE);
             } catch (Exception e) {
                 DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
             }

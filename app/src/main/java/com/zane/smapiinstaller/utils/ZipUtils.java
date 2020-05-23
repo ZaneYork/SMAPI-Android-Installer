@@ -67,6 +67,31 @@ public class ZipUtils {
         }
     }
 
+    public static void removeEntries(String inputZipFilename, String prefix, String outputZipFilename, Consumer<Integer> progressCallback) throws IOException {
+        File inFile = new File(inputZipFilename).getCanonicalFile();
+        File outFile = new File(outputZipFilename).getCanonicalFile();
+        if (inFile.equals(outFile)) {
+            throw new IllegalArgumentException("Input and output files are the same");
+        }
+        try (ZipInput input = new ZipInput(inputZipFilename)) {
+            int size = input.entries.values().size();
+            int index = 0;
+            int reportInterval = size / 100;
+            try (ZipOutput zipOutput = new ZipOutput(new FileOutputStream(outFile))) {
+                for (ZioEntry inEntry : input.entries.values()) {
+                    if (!inEntry.getName().startsWith(prefix)) {
+                        zipOutput.write(inEntry);
+                    }
+                    index++;
+                    if(index % reportInterval == 0) {
+                        progressCallback.accept((int) (index * 100.0 / size));
+                    }
+                }
+                progressCallback.accept(100);
+            }
+        }
+    }
+
     @Data
     @AllArgsConstructor
     public static class ZipEntrySource {

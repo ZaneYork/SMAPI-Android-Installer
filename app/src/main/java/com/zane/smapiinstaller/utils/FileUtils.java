@@ -8,7 +8,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 import com.hjq.language.LanguagesManager;
+import com.microsoft.appcenter.crashes.Crashes;
+import com.smart.library.util.bspatch.BSPatchUtil;
 
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -24,11 +27,13 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * 文件工具类
+ *
  * @author Zane
  */
 public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
     /**
      * 读取文本文件
+     *
      * @param file 文件
      * @return 文本
      */
@@ -45,6 +50,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 读取本地资源或Asset资源
+     *
      * @param context  context
      * @param filename 文件名
      * @return 输入流
@@ -60,7 +66,8 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 尝试获取本地化后的资源文件
-     * @param context context
+     *
+     * @param context  context
      * @param filename 文件名
      * @return 输入流
      * @throws IOException 异常
@@ -74,8 +81,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
                 return new BOMInputStream(new FileInputStream(file));
             }
             return context.getAssets().open(localedFilename);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Log.d("LOCALE", "No locale asset found", e);
         }
         return getLocalAsset(context, filename);
@@ -83,6 +89,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 读取JSON文件
+     *
      * @param file 文件
      * @param type 数据类型
      * @param <T>  泛型类型
@@ -101,6 +108,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 读取JSON文件
+     *
      * @param file   文件
      * @param tClass 数据类型
      * @param <T>    泛型类型
@@ -119,6 +127,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 写入JSON文件到本地
+     *
      * @param context  context
      * @param filename 文件名
      * @param content  内容
@@ -132,7 +141,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
                 writer.write(JsonUtil.toJson(content));
             } finally {
                 File distFile = new File(context.getFilesDir(), filename);
-                if(distFile.exists()) {
+                if (distFile.exists()) {
                     org.zeroturnaround.zip.commons.FileUtils.forceDelete(distFile);
                 }
                 org.zeroturnaround.zip.commons.FileUtils.moveFile(file, distFile);
@@ -143,12 +152,13 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 写入JSON文件到本地
-     * @param file 文件
-     * @param content  内容
+     *
+     * @param file    文件
+     * @param content 内容
      */
     public static void writeFileJson(File file, Object content) {
         try {
-            if(!file.getParentFile().exists()) {
+            if (!file.getParentFile().exists()) {
                 org.zeroturnaround.zip.commons.FileUtils.forceMkdir(file.getParentFile());
             }
             String filename = file.getName();
@@ -158,7 +168,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
             try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
                 writer.write(JsonUtil.toJson(content));
             } finally {
-                if(file.exists()) {
+                if (file.exists()) {
                     org.zeroturnaround.zip.commons.FileUtils.forceDelete(file);
                 }
                 org.zeroturnaround.zip.commons.FileUtils.moveFile(fileTmp, file);
@@ -169,7 +179,8 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 读取资源文本
-     * @param context context
+     *
+     * @param context  context
      * @param filename 文件名
      * @return 文本
      */
@@ -186,7 +197,8 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 读取本地化后的资源文本
-     * @param context context
+     *
+     * @param context  context
      * @param filename 文件名
      * @return 文本
      */
@@ -203,6 +215,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 读取JSON资源
+     *
      * @param context  context
      * @param filename 资源名
      * @param tClass   数据类型
@@ -211,7 +224,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      */
     public static <T> T getAssetJson(Context context, String filename, Class<T> tClass) {
         String text = getAssetText(context, filename);
-        if(text != null){
+        if (text != null) {
             return JsonUtil.fromJson(text, tClass);
         }
         return null;
@@ -230,6 +243,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 读取JSON资源
+     *
      * @param context  context
      * @param filename 资源名
      * @param type     数据类型
@@ -238,7 +252,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      */
     public static <T> T getAssetJson(Context context, String filename, TypeReference<T> type) {
         String text = getAssetText(context, filename);
-        if(text != null){
+        if (text != null) {
             return JsonUtil.fromJson(text, type);
         }
         return null;
@@ -246,6 +260,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 读取资源为字节数组
+     *
      * @param context  context
      * @param filename 文件名
      * @return 字节数组
@@ -262,6 +277,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 简化路径前缀
+     *
      * @param path 文件路径
      * @return 移除前缀后的路径
      */
@@ -271,6 +287,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 计算资源文件SHA3-256
+     *
      * @param context  context
      * @param filename 资源名
      * @return SHA3-256值
@@ -285,6 +302,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     /**
      * 计算文件SHA3-256
+     *
      * @param file 文件
      * @return SHA3-256值
      */
@@ -292,6 +310,29 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
         try (InputStream inputStream = new FileInputStream(file)) {
             return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
         } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    public static byte[] patchFile(byte[] originBytes, byte[] patchBytes) {
+        File patch = null;
+        File origin = null;
+        File patched = null;
+        try {
+            patch = File.createTempFile("patch", null);
+            Files.write(patchBytes, patch);
+            origin = File.createTempFile("origin", null);
+            Files.write(originBytes, origin);
+            patched = File.createTempFile("patched", null);
+            if (BSPatchUtil.bspatch(origin.getAbsolutePath(), patched.getAbsolutePath(), patch.getAbsolutePath()) == 0) {
+                return Files.asByteSource(patched).read();
+            }
+        } catch (Exception e) {
+            Crashes.trackError(e);
+        } finally {
+            FileUtils.deleteQuietly(patch);
+            FileUtils.deleteQuietly(origin);
+            FileUtils.deleteQuietly(patched);
         }
         return null;
     }

@@ -135,7 +135,8 @@
 -dontwarn okio.**
 -keep class okio.**{*;}
 
--keep class com.zane.** { *; }
+-keep class com.zane.smapiinstaller.entity.** { *; }
+-keep class com.zane.smapiinstaller.dto.** { *; }
 -keep class pxb.android.** { *; }
 -keep class net.fornwall.apksigner.** { *; }
 -keep class com.android.apksig.** { *; }

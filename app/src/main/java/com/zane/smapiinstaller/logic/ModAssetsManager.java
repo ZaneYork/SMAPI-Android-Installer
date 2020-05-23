@@ -47,6 +47,7 @@ import java9.util.stream.StreamSupport;
 
 /**
  * Mod资源管理器
+ * @author Zane
  */
 public class ModAssetsManager {
 

@@ -4,20 +4,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.didikee.donate.AlipayDonate;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
-import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
@@ -25,7 +21,6 @@ import androidx.fragment.app.Fragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import java9.util.function.BiConsumer;
 
 /**
  * @author Zane

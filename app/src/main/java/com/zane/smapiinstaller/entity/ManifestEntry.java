@@ -28,4 +28,14 @@ public class ManifestEntry {
      * 文件是否不属于兼容包中
      */
     private boolean external;
+
+    /**
+     * 补丁CRC
+     */
+    private String patchCrc;
+
+    /**
+     * 是否为高级模式补丁
+     */
+    private boolean advanced;
 }

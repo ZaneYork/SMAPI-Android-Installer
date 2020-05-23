@@ -8,7 +8,6 @@ import com.hjq.language.LanguagesManager;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.constant.AppConfigKey;
 import com.zane.smapiinstaller.entity.AppConfig;
-import com.zane.smapiinstaller.entity.AppConfigDao;
 import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.entity.TranslationResult;

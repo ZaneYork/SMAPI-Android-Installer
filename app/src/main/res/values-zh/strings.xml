@@ -76,4 +76,6 @@
     <string name="settings_set_max_log_size">最大日志大小</string>
     <string name="button_qq_group_text">QQ群</string>
     <string name="privacy_policy">隐私权政策</string>
+    <string name="settings_advanced_mode">高级安装模式</string>
+    <string name="button_initial">初始化</string>
 </resources>
