@@ -13,7 +13,8 @@
       "assetPath": "apk/classes.dex.patch",
       "compression": 8,
       "external": false,
-      "patchCrc": "e918baf8"
+      "patchCrc": "e918baf8",
+      "patchedCrc": "e10ba7eb"
     },
     {
       "targetPath": "res/mipmap-mdpi-v4/ic_launcher_foreground.png",
@@ -87,6 +88,7 @@
       "compression": 0,
       "external": false,
       "patchCrc": "c7fec998",
+      "patchedCrc": "59087812",
       "advanced": true
     }
   ]

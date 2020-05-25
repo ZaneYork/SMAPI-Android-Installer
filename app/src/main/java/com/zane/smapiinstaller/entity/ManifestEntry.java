@@ -35,6 +35,11 @@ public class ManifestEntry {
     private String patchCrc;
 
     /**
+     * 补丁后CRC
+     */
+    private String patchedCrc;
+
+    /**
      * 是否为高级模式补丁
      */
     private boolean advanced;

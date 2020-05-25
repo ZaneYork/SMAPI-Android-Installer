@@ -95,7 +95,6 @@ public class ApkPatcher {
             errorMessage.set(context.getString(R.string.error_game_not_found));
             return null;
         }
-        emitProgress(1);
         for (String packageName : packageNames) {
             try {
                 PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
@@ -124,6 +123,7 @@ public class ApkPatcher {
                             }
                             return null;
                         });
+                        return distFile.getAbsolutePath();
                     } else if (advancedStage == 1) {
                         ZipUtils.removeEntries(sourceDir, "assets/Content", distFile.getAbsolutePath(), (progress) -> emitProgress((int) (progress * 0.05)));
                     } else {
@@ -195,10 +195,15 @@ public class ApkPatcher {
                         if (StringUtils.equals(crc, entry.getPatchCrc())) {
                             bytes = FileUtils.patchFile(originBytes, bytes);
                             if (bytes == null) {
-                                errorMessage.set("Patch failed");
+                                errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\nPatch " + entry.getTargetPath() + " failed");
+                                return null;
                             }
                         }
+                        else if(StringUtils.equals(crc, entry.getPatchedCrc())){
+                            bytes = originBytes;
+                        }
                         else {
+                            errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\nPatch " + entry.getTargetPath() + " failed: CRC (" + crc + ")");
                             return null;
                         }
                     }
