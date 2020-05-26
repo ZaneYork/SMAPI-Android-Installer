@@ -1,0 +1,36 @@
+{
+  "version": 20,
+  "contents": [
+    {
+      "type": "COMPAT",
+      "name": "SMAPI untuk 1.4.5.137",
+      "assetPath": "compat/137/",
+      "description": "Paket kompatibilitas SMAPI untuk versi 1.4.4.128 - 1.4.5.137, SMAPI 3.3.2.0",
+      "url": "http://zaneyork.cn/download/compat/smapi_137.zip",
+      "hash": "bd16e8e4cb52d636e24c6a2d2309b66a60e492d2b97c1b8f6a519c04ac42ebdc"
+    },
+    {
+      "type": "COMPAT",
+      "name": "SMAPI untuk Galaxy Store",
+      "assetPath": "compat/samsung_138/",
+      "description": "Paket kompatibilitas SMAPI untuk versi 1.4.4.138 - terbaru, SMAPI 3.5.0",
+      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138_14.zip",
+      "hash": "37a34290b6e7b83c7f2d6fefda03ce88cf059801265ef553660c8164b2681950"
+    },
+    {
+      "type": "COMPAT",
+      "name": "SMAPI untuk Amazon Store",
+      "assetPath": "compat/amazon_138/",
+      "description": "Paket kompatibilitas SMAPI untuk versi 1.4.4.138 - terbaru, SMAPI 3.5.0",
+      "url": "http://zaneyork.cn/download/compat/smapi_amazon_138_4.zip",
+      "hash": "595729161f967824ca13d0348fb2d5b04f750fd71bb443ffcf62457cad05e5b2"
+    },
+    {
+      "type": "LOCAL",
+      "name": "Lokal Cina v2.5.1",
+      "description": "Paket lokal Cina yang disederhanakan, terima kasih buat Wabi-Sabi",
+      "url": "http://zaneyork.cn/download/locale/locale_pack_zh_2.5.1.zip",
+      "hash": "4924ba7022c5604e7bc46ee2aad27d4f285c299a3939f3d2817afc10e2e73d77"
+    }
+  ]
+}
