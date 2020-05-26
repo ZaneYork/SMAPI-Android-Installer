@@ -7,7 +7,7 @@
     <string name="button_donation_text">การบริจาค</string>
     <string name="button_gplay">ดูใน Play Store</string>
     <string name="button_install">ติดตั้ง</string>
-    <string name="button_logs">บันทึก SMAPI</string>
+    <string name="button_logs">บันทึกการทำงานของ SMAPI</string>
     <string name="button_nexus">Nexus</string>
     <string name="button_qq_group_1_text">กลุ่ม QQ 1: 860453392</string>
     <string name="button_qq_group_2_text">กลุ่ม QQ 2: 1078428449</string>
@@ -21,8 +21,8 @@
     <string name="downloading">กำลังดาวน์โหลด: %1$d KB / %2$d KB</string>
     <string name="duplicate_mod_found">เจอ mod ที่เหมือนกันมากกว่าหนึ่ง กรุณาลบให้เหลืออันเดียว: %s</string>
     <string name="error">ผิดพลาด</string>
-    <string name="error_depends_on_mod">%1$s ขึ้นอยู่กับ %2$s กรุณาติดตั้งก่อน</string>
-    <string name="error_depends_on_mod_version">%1$s ขึ้นอยู่กับ %2$s %3$s เวอร์ชั่นหรือใหม่กว่า กรุณาอัปเดตก่อน</string>
+    <string name="error_depends_on_mod"> %1$s ขึ้นอยู่กับ %2$s กรุณาติดตั้งก่อน</string>
+    <string name="error_depends_on_mod_version"> %1$s ขึ้นอยู่กับ %2$s %3$s เวอร์ชั่นหรือใหม่กว่า กรุณาอัปเดตก่อน</string>
     <string name="error_failed_to_create_file">สร้างไฟล์เป้าหมายล้มเหลว: %s</string>
     <string name="error_failed_to_download">ล้มเหลวในการดาวน์โหลดทรัพยากรเป้าหมาย</string>
     <string name="error_failed_to_repair">ซ่อมแซม SMAPI environment ล้มเหลว</string>
@@ -32,7 +32,7 @@
     <string name="error_smapi_not_installed">ยังไม่ได้ติดตั้ง SMAPI กรุณาติดตั้งก่อน</string>
     <string name="extracting_package">กำลังแตกไฟล์ Install Package</string>
     <string name="failed_to_patch_game">แพทช์เกมไม่สำเร็จ กรุณาติดต่อผู้พัฒนาเพื่อขอความช่วยเหลือ</string>
-    <string name="failed_to_process_manifest">ล้มเหลวในการเข้าถึงไฟล์ AndroidManifest.xml</string>
+    <string name="failed_to_process_manifest">ล้มเหลวในการเข้าถึงไฟล์ AndroidManifest.xml </string>
     <string name="failed_to_sign_game">ลงทะเบียนแอปเกมไม่สำเร็จ กรุณาติดต่อผู้พัฒนาเพื่อขอความช่วยเหลือ</string>
     <string name="failed_to_unpack_smapi_files">แกะกล่องไฟล์ smapi ไม่สำเร็จ</string>
     <string name="info">ข้อมูล</string>
@@ -62,11 +62,13 @@
     <string name="signing_package">กำลังลงทะเบียนแอป</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
     <string name="smapi_version">เวอร์ชั่น SMAPI: 3.5.0</string>
-    <string name="text_install_tip1">โน้ต: ต้องการเกมเวอร์ชั่น 1.4.5.138 หรือใหม่กว่า</string>
+    <string name="text_install_tip1">โน้ต: ต้องการเกมเวอร์ชั่น 1.4.5.138 หรือใหม่กว่า </string>
     <string name="text_install_tip2">ต้องการเกมหลักเมื่อทำการอัปเดต / ติดตั้ง</string>
     <string name="unpacking_smapi_files">กำลังแกะกล่อง</string>
 
-    <string name="mod_version_update_text">พบเวอร์ชั่นใหม่: %2$s</string>
+    <string name="toast_redpacket_message" translatable="false">红包码已复制\n支付宝首页搜索“9188262” 立即领红包</string>
+    <string name="icon_desc" translatable="false">icon</string>
+    <string name="mod_version_update_text" translatable="false">พบเวอร์ชั่นใหม่: %2$s</string>
     <string name="sort_by">จัดเรียงตาม</string>
     <string name="text_too_large">ไฟล์ข้อความมีขนาดใหญ่เกินไปสำหรับเครื่องมือแก้ไข</string>
     <string name="open_with">เปิดด้วย</string>
