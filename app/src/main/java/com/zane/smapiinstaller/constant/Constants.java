@@ -63,7 +63,7 @@ public class Constants {
     /**
      * SMAPI版本
      */
-    public static final String SMAPI_VERSION = "3.5.0";
+    public static final String SMAPI_VERSION = "3.5.0.1";
 
     /**
      * 平台
