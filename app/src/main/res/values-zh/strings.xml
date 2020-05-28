@@ -78,4 +78,6 @@
     <string name="privacy_policy">隐私权政策</string>
     <string name="settings_advanced_mode">高级安装模式</string>
     <string name="button_initial">初始化</string>
+    <string name="error_directory_exists_with_same_filename">%1$s不是一个文件夹, 请手动删除该文件</string>
+    <string name="error_patch_crc_incorrect">增量更新%1$s失败: CRC (%2$s))</string>
 </resources>

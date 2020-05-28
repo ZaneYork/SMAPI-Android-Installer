@@ -125,6 +125,16 @@ public class ApkPatcher {
                         });
                         return distFile.getAbsolutePath();
                     } else if (advancedStage == 1) {
+                        File contentFolder = new File(externalFilesDir.getAbsolutePath() + "/StardewValley/Content");
+                        if(contentFolder.exists()) {
+                            if(!contentFolder.isDirectory()) {
+                                errorMessage.set(context.getString(R.string.error_directory_exists_with_same_filename, contentFolder.getAbsolutePath()));
+                                return null;
+                            }
+                        }
+                        else {
+                            extract(0);
+                        }
                         ZipUtils.removeEntries(sourceDir, "assets/Content", distFile.getAbsolutePath(), (progress) -> emitProgress((int) (progress * 0.05)));
                     } else {
                         Files.copy(apkFile, distFile);
@@ -195,7 +205,8 @@ public class ApkPatcher {
                         if (StringUtils.equals(crc, entry.getPatchCrc())) {
                             bytes = FileUtils.patchFile(originBytes, bytes);
                             if (bytes == null) {
-                                errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\nPatch " + entry.getTargetPath() + " failed");
+                                String errorMsg = context.getString(R.string.error_patch_crc_incorrect, entry.getTargetPath(), crc);
+                                errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\n" + errorMsg);
                                 return null;
                             }
                         }
@@ -203,7 +214,8 @@ public class ApkPatcher {
                             bytes = originBytes;
                         }
                         else {
-                            errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\nPatch " + entry.getTargetPath() + " failed: CRC (" + crc + ")");
+                            String errorMsg = context.getString(R.string.error_patch_crc_incorrect, entry.getTargetPath(), crc);
+                            errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\n" + errorMsg);
                             return null;
                         }
                     }

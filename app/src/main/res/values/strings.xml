@@ -82,4 +82,6 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="settings_advanced_mode">Advanced Patch Mode</string>
     <string name="button_initial">Initial</string>
+    <string name="error_directory_exists_with_same_filename">%1$s is not a directory, please delete it manually.</string>
+    <string name="error_patch_crc_incorrect">Patch %1$s failed: CRC (%2$s))</string>
 </resources>

@@ -78,4 +78,6 @@
     <string name="privacy_policy">隱私權條款</string>
     <string name="settings_advanced_mode">高級安裝模式</string>
     <string name="button_initial">初始化</string>
+    <string name="error_directory_exists_with_same_filename">%1$s不是一個文件夾, 請手動刪除該文件</string>
+    <string name="error_patch_crc_incorrect">增量更新%1$s失敗: CRC (%2$s))</string>
 </resources>
