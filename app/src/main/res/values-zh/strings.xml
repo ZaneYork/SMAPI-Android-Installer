@@ -72,7 +72,7 @@
     <string name="parser">格式化</string>
     <string name="mod_version_update_checking">正在检查MOD更新</string>
     <string name="smapi_version_runing">最近运行: %s</string>
-    <string name="settings_disable_mono_mod">禁用MonoMod</string>
+    <string name="settings_disable_mono_mod">禁用Harmony</string>
     <string name="settings_set_max_log_size">最大日志大小</string>
     <string name="button_qq_group_text">QQ群</string>
     <string name="privacy_policy">隐私权政策</string>

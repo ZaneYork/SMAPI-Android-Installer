@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#310077</color>
+    <color name="colorPrimaryDark">#1B0059</color>
+    <color name="colorAccent">#016D62</color>
+    <color name="colorTitle">#456</color>
+    <color name="colorText">#CCC</color>
+    <color name="colorDivider">#777</color>
+    <color name="colorSiderNavBarStart">#275B56</color>
+    <color name="colorSiderNavBarCenter">#004B44</color>
+    <color name="colorSiderNavBarEnd">#00342E</color>
+    <color name="colorPopupBackground">#0C0C0C</color>
+</resources>

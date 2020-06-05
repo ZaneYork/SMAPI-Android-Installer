@@ -4,4 +4,10 @@
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
     <color name="colorTitle">#8BD</color>
+    <color name="colorText">#333</color>
+    <color name="colorDivider">#EEE</color>
+    <color name="colorSiderNavBarStart">#4DB6AC</color>
+    <color name="colorSiderNavBarCenter">#009688</color>
+    <color name="colorSiderNavBarEnd">#00695C</color>
+    <color name="colorPopupBackground">#F3F3F3</color>
 </resources>

@@ -77,7 +77,7 @@
     <string name="parser">วิเคราะห์</string>
     <string name="mod_version_update_checking">กำลังตรวจหาการอัปเดตของ Mod</string>
     <string name="smapi_version_runing">ใช้งานล่าสุด: %s</string>
-    <string name="settings_disable_mono_mod">ปิดการใช้งาน MonoMod</string>
+    <string name="settings_disable_mono_mod">ปิดการใช้งาน Harmony</string>
     <string name="settings_set_max_log_size">ขนาดไพล์บันทึกสูงสุด</string>
     <string name="button_qq_group_text">QQ Group</string>
 </resources>

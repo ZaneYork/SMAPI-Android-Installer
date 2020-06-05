@@ -76,7 +76,7 @@
     <string name="parser">Parser</string>
     <string name="mod_version_update_checking">Checking for mod updates</string>
     <string name="smapi_version_runing">Latest running: %s</string>
-    <string name="settings_disable_mono_mod">Disable MonoMod</string>
+    <string name="settings_disable_mono_mod">Disable Harmony</string>
     <string name="settings_set_max_log_size">Max Log Size</string>
     <string name="button_qq_group_text">QQ Group</string>
     <string name="privacy_policy">Privacy Policy</string>
