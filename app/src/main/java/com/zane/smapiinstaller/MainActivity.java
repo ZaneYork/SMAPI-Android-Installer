@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
 
     @BindView(R.id.launch)
-    FloatingActionButton buttonLaunch;
+    public FloatingActionButton buttonLaunch;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -74,7 +74,9 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.nav_view)
     NavigationView navigationView;
 
-    private int currentFragment = R.id.nav_install;
+    private int currentFragment = R.id.nav_main;
+
+    public static MainActivity instance;
 
     private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -98,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance = this;
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         AppConfig appConfig = ConfigUtils.getConfig((MainApplication) this.getApplication(), AppConfigKey.PRIVACY_POLICY_CONFIRM, false);
@@ -122,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_install, R.id.nav_config, R.id.nav_help, R.id.nav_download, R.id.nav_about)
+                R.id.nav_main, R.id.nav_config, R.id.nav_help, R.id.nav_download, R.id.nav_about)
                 .setOpenableLayout(drawer)
                 .build();
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
@@ -405,6 +408,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         DialogUtils.dismissDialog();
         super.onDestroy();
+    }
+
+    public void setFloatingBarVisibility(boolean value) {
+        buttonLaunch.setVisibility(value ? View.VISIBLE: View.INVISIBLE);
     }
 }
 

@@ -5,9 +5,9 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_install"
+            android:id="@+id/nav_main"
             android:icon="@drawable/add"
-            android:title="@string/menu_install" />
+            android:title="@string/nav_header_title" />
         <item
             android:id="@+id/nav_config"
             android:icon="@drawable/edit"

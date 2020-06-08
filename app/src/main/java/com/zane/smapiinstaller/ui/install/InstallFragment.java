@@ -20,6 +20,8 @@ import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
+import com.zane.smapiinstaller.ui.main.MainTabsFragment;
+import com.zane.smapiinstaller.ui.main.MainTabsFragmentDirections;
 import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
@@ -128,7 +130,7 @@ public class InstallFragment extends Fragment {
                     DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
                         if (which == DialogAction.POSITIVE) {
                             NavController controller = Navigation.findNavController(installButton);
-                            controller.navigate(InstallFragmentDirections.actionNavInstallToNavDownload());
+                            controller.navigate(MainTabsFragmentDirections.actionNavMainToNavDownload());
                         }
                     });
                 } else {
@@ -198,7 +200,7 @@ public class InstallFragment extends Fragment {
                     DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
                         if (which == DialogAction.POSITIVE) {
                             NavController controller = Navigation.findNavController(installButton);
-                            controller.navigate(InstallFragmentDirections.actionNavInstallToNavDownload());
+                            controller.navigate(MainTabsFragmentDirections.actionNavMainToNavDownload());
                         }
                     });
                 } else {

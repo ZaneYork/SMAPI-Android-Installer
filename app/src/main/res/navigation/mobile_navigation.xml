@@ -3,16 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_install">
-
+    app:startDestination="@+id/nav_main">
     <fragment
-        android:id="@+id/nav_install"
+        android:id="@+id/nav_main"
+        android:name="com.zane.smapiinstaller.ui.main.MainTabsFragment"
+        android:label="@string/nav_header_title"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_nav_main_to_nav_download"
+            app:destination="@id/nav_download" />
+    </fragment>
+    <fragment
+        android:id="@+id/install_fragment"
         android:name="com.zane.smapiinstaller.ui.install.InstallFragment"
         android:label="@string/menu_install"
         tools:layout="@layout/fragment_install">
-        <action
-            android:id="@+id/action_nav_install_to_nav_download"
-            app:destination="@id/nav_download" />
     </fragment>
     <fragment
         android:id="@+id/config_edit_fragment"
