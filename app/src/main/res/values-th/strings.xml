@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="abort">หยุด</string>
-    <string name="android_version_confirm">ระบบอุปกรณ์ของคุณเก่าเกินกว่าจะใช้ MonoMod อาจจะทำให้ 0Harmony framework เกิดอาการ crash ถ้าเป็นไปได้กรุณาอัปเดตเป็น Android M หรือใหม่กว่า</string>
+    <string name="android_version_confirm">ระบบอุปกรณ์ของคุณเก่าเกินกว่าจะใช้ MonoMod อาจจะทำให้ 0Harmony framework เกิดอาการ game crash ถ้าเป็นไปได้กรุณาอัปเดตเป็น Android 6 หรือใหม่กว่า</string>
     <string name="app_name">แอปติดตั้ง SMAPI</string>
     <string name="button_compat">ใช้กับแอปนี้ได้</string>
     <string name="button_donation_text">การบริจาค</string>
@@ -14,15 +14,15 @@
     <string name="button_release">โหลดเวอร์ชั่นใหม่</string>
     <string name="cancel">ยกเลิก</string>
     <string name="confirm">ยืนยัน</string>
-    <string name="confirm_delete_content">คุณแน่ใจนะว่าจะลบ?</string>
+    <string name="confirm_delete_content">คุณแน่ใจว่าจะลบ mod นี้หรือไม่</string>
     <string name="confirm_disable_mod">คุณแน่ใจว่าจะปิดการใช้งานหรือไม่</string>
     <string name="continue_text">ต่อ</string>
     <string name="download_unpack_success">ดาวน์โหลดและแกะกล่องสำเร็จ</string>
     <string name="downloading">กำลังดาวน์โหลด: %1$d KB / %2$d KB</string>
     <string name="duplicate_mod_found">เจอ mod ที่เหมือนกันมากกว่าหนึ่ง กรุณาลบให้เหลืออันเดียว: %s</string>
     <string name="error">ผิดพลาด</string>
-    <string name="error_depends_on_mod"> %1$s ขึ้นอยู่กับ %2$s กรุณาติดตั้งก่อน</string>
-    <string name="error_depends_on_mod_version"> %1$s ขึ้นอยู่กับ %2$s %3$s เวอร์ชั่นหรือใหม่กว่า กรุณาอัปเดตก่อน</string>
+    <string name="error_depends_on_mod"> %1$s จำเป็นต้องติดตั้ง MOD %2$s ก่อนใช้งาน</string>
+    <string name="error_depends_on_mod_version"> %1$s จำเป็นต้องติดตั้ง MOD %2$s %3$s เวอร์ชั่นหรือใหม่กว่า กรุณาอัปเดตก่อน</string>
     <string name="error_failed_to_create_file">สร้างไฟล์เป้าหมายล้มเหลว: %s</string>
     <string name="error_failed_to_download">ล้มเหลวในการดาวน์โหลดทรัพยากรเป้าหมาย</string>
     <string name="error_failed_to_repair">ซ่อมแซม SMAPI environment ล้มเหลว</string>
@@ -30,14 +30,14 @@
     <string name="error_illegal_path">กรุณาใส่เส้นทางที่ถูกต้อง</string>
     <string name="error_no_supported_game_version">เวอร์ชั่นของเกมไม่สนับสนุน อัพเกรดหรือดาวน์โหลดแพคเกจที่ใช้กับแอปนี้ได้ก่อน</string>
     <string name="error_smapi_not_installed">ยังไม่ได้ติดตั้ง SMAPI กรุณาติดตั้งก่อน</string>
-    <string name="extracting_package">กำลังแตกไฟล์ Install Package</string>
+    <string name="extracting_package">กำลังแตกไฟล์สำหรับติดตั้ง Package</string>
     <string name="failed_to_patch_game">แพทช์เกมไม่สำเร็จ กรุณาติดต่อผู้พัฒนาเพื่อขอความช่วยเหลือ</string>
-    <string name="failed_to_process_manifest">ล้มเหลวในการเข้าถึงไฟล์ AndroidManifest.xml </string>
+    <string name="failed_to_process_manifest">ล้มเหลวในการเข้าถึงไฟล์ AndroidManifest.xml</string>
     <string name="failed_to_sign_game">ลงทะเบียนแอปเกมไม่สำเร็จ กรุณาติดต่อผู้พัฒนาเพื่อขอความช่วยเหลือ</string>
-    <string name="failed_to_unpack_smapi_files">แกะกล่องไฟล์ smapi ไม่สำเร็จ</string>
+    <string name="failed_to_unpack_smapi_files">แกะกล่องไฟล์ SMAPI ไม่สำเร็จ</string>
     <string name="info">ข้อมูล</string>
-    <string name="input">อินพุต</string>
-    <string name="input_mods_path">กรุณาใส่เส้นทาง mods</string>
+    <string name="input">โปรดระบุ</string>
+    <string name="input_mods_path">กรุณาใส่ที่อยู่โฟลเดอร์ mods ของคุณ</string>
     <string name="install_progress_title">ความคืบหน้าการติดตั้ง</string>
     <string name="installing_package">กำลังติดตั้ง</string>
     <string name="locale_pack">ชุดภาษาท้องถิ่น</string>
@@ -55,14 +55,14 @@
     <string name="save">บันทึก</string>
     <string name="settings_check_for_updates">ตรวจสอบสำหรับการอัปเดต</string>
     <string name="settings_developer_mode">โหมดนักพัฒนา</string>
-    <string name="settings_set_language">ภาษา</string>
+    <string name="settings_set_language">ตั้งค่าภาษา</string>
     <string name="settings_set_mod_path">ตั้งค่าเส้นทาง Mods</string>
     <string name="settings_translation_service">บริการแปล</string>
-    <string name="settings_verbose_logging">การบันทึกอย่างละเอียด</string>
+    <string name="settings_verbose_logging">บันทึกอย่างละเอียด</string>
     <string name="signing_package">กำลังลงทะเบียนแอป</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
     <string name="smapi_version">เวอร์ชั่น SMAPI: 3.5.0.1</string>
-    <string name="text_install_tip1">โน้ต: ต้องการเกมเวอร์ชั่น 1.4.5.138 หรือใหม่กว่า </string>
+    <string name="text_install_tip1">หมายเหตุ: ต้องการเกมเวอร์ชั่น 1.4.5.138 หรือใหม่กว่า</string>
     <string name="text_install_tip2">ต้องการเกมหลักเมื่อทำการอัปเดต / ติดตั้ง</string>
     <string name="unpacking_smapi_files">กำลังแกะกล่อง</string>
 
@@ -70,7 +70,7 @@
     <string name="icon_desc" translatable="false">icon</string>
     <string name="mod_version_update_text" translatable="false">พบเวอร์ชั่นใหม่: %2$s</string>
     <string name="sort_by">จัดเรียงตาม</string>
-    <string name="text_too_large">ไฟล์ข้อความมีขนาดใหญ่เกินไปสำหรับเครื่องมือแก้ไข</string>
+    <string name="text_too_large">ไฟล์มีขนาดใหญ่เกินไปสำหรับเครื่องมือแก้ไข</string>
     <string name="open_with">เปิดด้วย</string>
     <string name="no_update_text">Mods ทั้งหมดเป็นเวอร์ชั่นล่าสุด</string>
     <string name="app_update_detected">ตรวจพบเวอร์ชั่นใหม่: %1$s</string>
@@ -78,6 +78,11 @@
     <string name="mod_version_update_checking">กำลังตรวจหาการอัปเดตของ Mod</string>
     <string name="smapi_version_runing">ใช้งานล่าสุด: %s</string>
     <string name="settings_disable_mono_mod">ปิดการใช้งาน Harmony</string>
-    <string name="settings_set_max_log_size">ขนาดไพล์บันทึกสูงสุด</string>
-    <string name="button_qq_group_text">QQ Group</string>
+    <string name="settings_set_max_log_size">ขนาดไฟล์บันทึกสูงสุด</string>
+    <string name="button_qq_group_text">กลุ่ม QQ</string>
+    <string name="privacy_policy">นโยบายความเป็นส่วนตัว</string>
+    <string name="settings_advanced_mode">โหมดการแพทช์ขั้นสูง</string>
+    <string name="button_initial">เริ่มต้น</string>
+    <string name="error_directory_exists_with_same_filename">%1$s ไม่อยู่ในตำแหน่งที่ถูกต้อง กรุณาลบไฟล์ออก</string>
+    <string name="error_patch_crc_incorrect">การแพทช์ %1$s ล้มเหลว: CRC (%2$s))</string>
 </resources>
