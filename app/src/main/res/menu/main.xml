@@ -30,29 +30,34 @@
             android:title="@string/settings_disable_mono_mod"
             app:showAsAction="never" />
         <item
-            android:id="@+id/settings_advanced_mode"
+            android:id="@+id/settings_rewrite_in_parallel"
             android:orderInCategory="104"
+            android:title="@string/settings_rewrite_in_parallel"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/settings_advanced_mode"
+            android:orderInCategory="105"
             android:title="@string/settings_advanced_mode"
             app:showAsAction="never" />
     </group>
     <item
         android:id="@+id/settings_set_mod_path"
-        android:orderInCategory="105"
+        android:orderInCategory="110"
         android:title="@string/settings_set_mod_path"
         app:showAsAction="never" />
     <item
         android:id="@+id/settings_set_max_log_size"
-        android:orderInCategory="106"
+        android:orderInCategory="111"
         android:title="@string/settings_set_max_log_size"
         app:showAsAction="never" />
     <item
         android:id="@+id/settings_language"
-        android:orderInCategory="107"
+        android:orderInCategory="112"
         android:title="@string/settings_set_language"
         app:showAsAction="never" />
     <item
         android:id="@+id/settings_translation_service"
-        android:orderInCategory="108"
+        android:orderInCategory="113"
         android:title="@string/settings_translation_service"
         app:showAsAction="never" />
 </menu>

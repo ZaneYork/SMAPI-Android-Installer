@@ -25,6 +25,16 @@
     "origin": 1
   },
   {
+    "targetPath": "smapi-internal/MonoMod.RuntimeDetour.dll",
+    "assetPath": "smapi/MonoMod.RuntimeDetour.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/MonoMod.Utils.dll",
+    "assetPath": "smapi/MonoMod.Utils.dll",
+    "origin": 0
+  },
+  {
     "targetPath": "smapi-internal/mscorlib.dll",
     "assetPath": "assemblies/mscorlib.dll",
     "origin": 1

@@ -60,7 +60,7 @@
     <string name="settings_verbose_logging">Verbose Logging</string>
     <string name="signing_package">Signing</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
-    <string name="smapi_version">SMAPI Version: 3.5.0.1</string>
+    <string name="smapi_version">SMAPI Version: 3.6.1</string>
     <string name="text_install_tip1">Notes: Game version 1.4.5.138 or later is required.</string>
     <string name="text_install_tip2">The base game is required when updating/installing.</string>
     <string name="unpacking_smapi_files">Unpacking</string>
@@ -84,4 +84,5 @@
     <string name="button_initial">Initial</string>
     <string name="error_directory_exists_with_same_filename">%1$s is not a directory, please delete it manually.</string>
     <string name="error_patch_crc_incorrect">Patch %1$s failed: CRC (%2$s))</string>
+    <string name="settings_rewrite_in_parallel">Rewrite in Parallel</string>
 </resources>

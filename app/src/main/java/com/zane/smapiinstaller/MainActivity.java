@@ -197,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
         }
         menu.findItem(R.id.settings_developer_mode).setChecked(config.isDeveloperMode());
         menu.findItem(R.id.settings_disable_mono_mod).setChecked(config.isDisableMonoMod());
+        menu.findItem(R.id.settings_rewrite_in_parallel).setChecked(config.isRewriteInParallel());
         menu.findItem(R.id.settings_advanced_mode).setChecked(Boolean.parseBoolean(ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKey.ADVANCED_MODE, "false").getValue()));
         Constants.MOD_PATH = config.getModsPath();
         return super.onPrepareOptionsMenu(menu);
@@ -225,6 +226,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.settings_disable_mono_mod:
                 config.setDisableMonoMod(item.isChecked());
+                break;
+            case R.id.settings_rewrite_in_parallel:
+                config.setRewriteInParallel(item.isChecked());
                 break;
             case R.id.settings_set_mod_path:
                 DialogUtils.showInputDialog(toolbar, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {

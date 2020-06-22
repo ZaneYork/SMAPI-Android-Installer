@@ -38,6 +38,12 @@ public class FrameworkConfig {
     private boolean DisableMonoMod = false;
 
     /**
+     * 是否启用多线程重写
+     */
+    @JsonProperty("RewriteInParallel")
+    private boolean RewriteInParallel = false;
+
+    /**
      * 最大日志大小
      */
     @JsonProperty("MaxLogSize")
