@@ -1,5 +1,5 @@
 {
-  "version": 21,
+  "version": 23,
   "contents": [
     {
       "type": "COMPAT",
@@ -14,16 +14,16 @@
       "name": "SMAPI untuk Galaxy Store",
       "assetPath": "compat/samsung_138/",
       "description": "Paket kompatibilitas SMAPI untuk versi 1.4.4.138 - terbaru, SMAPI 3.6.1",
-      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138_16.zip",
-      "hash": "20cf2ce515dcf05596d523387b244c9e14c235387db61545e7067835e5856626"
+      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138_17.zip",
+      "hash": "ac6cff4a1decb19fc01da7314e79483f2a77d34523665370d62f8bf69dcf09dc"
     },
     {
       "type": "COMPAT",
       "name": "SMAPI untuk Amazon Store",
       "assetPath": "compat/amazon_138/",
       "description": "Paket kompatibilitas SMAPI untuk versi 1.4.4.138 - terbaru, SMAPI 3.6.1",
-      "url": "http://zaneyork.cn/download/compat/smapi_amazon_138_6.zip",
-      "hash": "f487f8f14fcdd0ee31ca4e3b731e6e9114bc4b43a50c930f651a939e927eeb5d"
+      "url": "http://zaneyork.cn/download/compat/smapi_amazon_138_7.zip",
+      "hash": "8a63e326ab122df5157a6c70c6cac8b8669ec81701f687746b80b7a860578dbb"
     },
     {
       "type": "LOCAL",

@@ -104,6 +104,19 @@ public class DialogUtils {
             materialDialog.show();
         });
     }
+    public static void showConfirmDialog(Activity context, int title, int message, BiConsumer<MaterialDialog, DialogAction> callback) {
+        CommonLogic.runOnUiThread(context, (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(message, null, null).positiveButton(R.string.confirm, null, dialog -> {
+                callback.accept(dialog, DialogAction.POSITIVE);
+                return null;
+            }).negativeButton(R.string.cancel, null, dialog -> {
+                callback.accept(dialog, DialogAction.NEGATIVE);
+                return null;
+            });
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
+    }
 
     /**
      * 显示确认对话框

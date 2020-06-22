@@ -81,4 +81,5 @@
     <string name="error_directory_exists_with_same_filename">%1$s不是一個文件夾, 請手動刪除該文件</string>
     <string name="error_patch_crc_incorrect">增量更新%1$s失敗: CRC (%2$s))</string>
     <string name="settings_rewrite_in_parallel">多線程重寫</string>
+    <string name="request_unknown_source_permission">需要开启未知源权限以安装Mod框架，是否前往设置开启？</string>
 </resources>

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.android.apksig.ApkSigner;
@@ -19,11 +20,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.zane.smapiinstaller.BuildConfig;
+import com.zane.smapiinstaller.MainActivity;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.constant.ManifestPatchConstants;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
+import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
 import com.zane.smapiinstaller.utils.ZipUtils;
 
@@ -126,13 +130,12 @@ public class ApkPatcher {
                         return distFile.getAbsolutePath();
                     } else if (advancedStage == 1) {
                         File contentFolder = new File(externalFilesDir.getAbsolutePath() + "/StardewValley/Content");
-                        if(contentFolder.exists()) {
-                            if(!contentFolder.isDirectory()) {
+                        if (contentFolder.exists()) {
+                            if (!contentFolder.isDirectory()) {
                                 errorMessage.set(context.getString(R.string.error_directory_exists_with_same_filename, contentFolder.getAbsolutePath()));
                                 return null;
                             }
-                        }
-                        else {
+                        } else {
                             extract(0);
                         }
                         ZipUtils.removeEntries(sourceDir, "assets/Content", distFile.getAbsolutePath(), (progress) -> emitProgress((int) (progress * 0.05)));
@@ -189,7 +192,7 @@ public class ApkPatcher {
             List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             errorMessage.set(null);
             List<ZipUtils.ZipEntrySource> entries = StreamSupport.stream(manifestEntries).map(entry -> {
-                if(entry.isAdvanced() && !advanced) {
+                if (entry.isAdvanced() && !advanced) {
                     return null;
                 }
                 byte[] bytes;
@@ -209,11 +212,9 @@ public class ApkPatcher {
                                 errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\n" + errorMsg);
                                 return null;
                             }
-                        }
-                        else if(StringUtils.equals(crc, entry.getPatchedCrc())){
+                        } else if (StringUtils.equals(crc, entry.getPatchedCrc())) {
                             bytes = originBytes;
-                        }
-                        else {
+                        } else {
                             String errorMsg = context.getString(R.string.error_patch_crc_incorrect, entry.getTargetPath(), crc);
                             errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\n" + errorMsg);
                             return null;
@@ -402,6 +403,20 @@ public class ApkPatcher {
      * @param apkPath 安装包路径
      */
     public void install(String apkPath) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            boolean haveInstallPermission = context.getPackageManager().canRequestPackageInstalls();
+            if (!haveInstallPermission) {
+                DialogUtils.showConfirmDialog(MainActivity.instance, R.string.confirm, R.string.request_unknown_source_permission, ((dialog, dialogAction) -> {
+                    if(dialogAction == DialogAction.POSITIVE) {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                        ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_APP_INSTALL, (resultCode, data) -> this.install(apkPath));
+                        MainActivity.instance.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_APP_INSTALL);
+                    }
+                }));
+                return;
+            }
+        }
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(fromFile(new File(apkPath)), "application/vnd.android.package-archive");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

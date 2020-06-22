@@ -26,6 +26,7 @@ import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.dto.AppUpdateCheckResultDto;
 import com.zane.smapiinstaller.entity.AppConfig;
 import com.zane.smapiinstaller.entity.FrameworkConfig;
+import com.zane.smapiinstaller.logic.ActivityResultHandler;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ConfigManager;
 import com.zane.smapiinstaller.logic.GameLauncher;
@@ -42,6 +43,7 @@ import java.io.File;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -95,6 +97,12 @@ public class MainActivity extends AppCompatActivity {
         } else {
             this.finish();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ActivityResultHandler.triggerListener(requestCode, resultCode, data);
     }
 
     @Override
