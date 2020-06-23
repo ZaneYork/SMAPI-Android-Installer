@@ -39,6 +39,7 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/text_install_tip1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/guideline_h1"
@@ -47,9 +48,11 @@
         android:layout_height="wrap_content" />
 
     <TextView
+        android:id="@+id/text_install_tip2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guideline_h2"
+        app:layout_constraintTop_toBottomOf="@id/text_install_tip1"
+        android:layout_marginTop="16dp"
         android:text="@string/text_install_tip2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
@@ -57,7 +60,8 @@
     <TextView
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guideline_h3"
+        app:layout_constraintTop_toBottomOf="@id/text_install_tip2"
+        android:layout_marginTop="16dp"
         android:text="@string/smapi_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
@@ -78,20 +82,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="50dp" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_h2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_begin="100dp" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_h3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_begin="150dp" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_h4"
