@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.zane.smapiinstaller.MobileNavigationDirections;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
@@ -175,7 +176,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             File file = new File(modPath, "config.json");
             if(file.exists()) {
                 NavController controller = Navigation.findNavController(itemView);
-                ConfigFragmentDirections.ActionNavConfigToConfigEditFragment action = ConfigFragmentDirections.actionNavConfigToConfigEditFragment(file.getAbsolutePath());
+                MobileNavigationDirections.ActionNavAnyToConfigEditFragment action = ConfigFragmentDirections.actionNavAnyToConfigEditFragment(file.getAbsolutePath());
                 controller.navigate(action);
             }
         }
