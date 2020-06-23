@@ -67,6 +67,13 @@ public class DialogUtils {
             materialDialog.show();
         });
     }
+    public static void showAlertDialog(Activity context, int title, String message) {
+        CommonLogic.runOnUiThread(context, (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(null, message, null).positiveButton(R.string.ok, null, null);
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
+    }
 
     /**
      * 显示警告对话框
@@ -83,6 +90,14 @@ public class DialogUtils {
         });
     }
 
+    public static void showAlertDialog(Activity context, int title, int message) {
+        CommonLogic.runOnUiThread(context, (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(message, null, null).positiveButton(R.string.ok, null, null);
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
+    }
+
     /**
      * 显示确认对话框
      *
@@ -93,6 +108,19 @@ public class DialogUtils {
      */
     public static void showConfirmDialog(View view, int title, int message, BiConsumer<MaterialDialog, DialogAction> callback) {
         CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
+            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(message, null, null).positiveButton(R.string.confirm, null, dialog -> {
+                callback.accept(dialog, DialogAction.POSITIVE);
+                return null;
+            }).negativeButton(R.string.cancel, null, dialog -> {
+                callback.accept(dialog, DialogAction.NEGATIVE);
+                return null;
+            });
+            DialogUtils.setCurrentDialog(materialDialog);
+            materialDialog.show();
+        });
+    }
+    public static void showConfirmDialog(Activity context, int title, int message, BiConsumer<MaterialDialog, DialogAction> callback) {
+        CommonLogic.runOnUiThread(context, (activity) -> {
             MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(message, null, null).positiveButton(R.string.confirm, null, dialog -> {
                 callback.accept(dialog, DialogAction.POSITIVE);
                 return null;
@@ -178,6 +206,20 @@ public class DialogUtils {
         });
         return reference;
     }
+    public static AtomicReference<ProgressDialog> showProgressDialog(Activity context, int title, String message) {
+        AtomicReference<ProgressDialog> reference = new AtomicReference<>();
+        CommonLogic.runOnUiThread(context, (activity) -> {
+            ProgressDialog dialog = new ProgressDialog(activity);
+            DialogUtils.setCurrentDialog(dialog);
+            dialog.setMessage(message);
+            dialog.setCancelable(false);
+            dialog.setMax(100);
+            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            dialog.show();
+            reference.set(dialog);
+        });
+        return reference;
+    }
 
     /**
      * 解散指定对话框
@@ -208,6 +250,20 @@ public class DialogUtils {
      */
     public static void dismissDialog(View view, ProgressDialog dialog) {
         Activity activity = CommonLogic.getActivityFromView(view);
+        if (activity != null && !activity.isFinishing()) {
+            activity.runOnUiThread(() -> {
+                if (dialog != null) {
+                    try {
+                        dialog.dismiss();
+                    } catch (Exception e) {
+                        Crashes.trackError(e);
+                    }
+                }
+            });
+        }
+    }
+
+    public static void dismissDialog(Activity activity, ProgressDialog dialog) {
         if (activity != null && !activity.isFinishing()) {
             activity.runOnUiThread(() -> {
                 if (dialog != null) {

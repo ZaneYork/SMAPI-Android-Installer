@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zane.smapiinstaller.MobileNavigationDirections;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.HelpItemList;
@@ -60,7 +61,7 @@ public class HelpFragment extends Fragment {
             NavController controller = Navigation.findNavController(view);
             File logFile = new File(Environment.getExternalStorageDirectory(), Constants.LOG_PATH);
             if(logFile.exists()) {
-                HelpFragmentDirections.ActionNavHelpToConfigEditFragment action = HelpFragmentDirections.actionNavHelpToConfigEditFragment(logFile.getAbsolutePath());
+                MobileNavigationDirections.ActionNavAnyToConfigEditFragment action = HelpFragmentDirections.actionNavAnyToConfigEditFragment(logFile.getAbsolutePath());
                 action.setEditable(false);
                 controller.navigate(action);
             }
