@@ -85,4 +85,6 @@
     <string name="button_initial">เริ่มต้น</string>
     <string name="error_directory_exists_with_same_filename">%1$s ไม่อยู่ในตำแหน่งที่ถูกต้อง กรุณาลบไฟล์ออก</string>
     <string name="error_patch_crc_incorrect">การแพทช์ %1$s ล้มเหลว: CRC (%2$s))</string>
+    <string name="settings_rewrite_in_parallel">เปิดใช้งาน Multi-Thread</string>
+    <string name="request_unknown_source_permission">จำเป็นต้องเปิดการอนุญาตให้ติดตั้ง App จากแหล่งที่ไม่รู้จักก่อน, คุณต้องการเปิดเมนูตั้งค่าหรือไม่?</string>
 </resources>
