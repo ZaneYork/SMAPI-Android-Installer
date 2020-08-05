@@ -4,7 +4,7 @@ import android.content.Intent;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import java9.util.function.BiConsumer;
+import java.util.function.BiConsumer;
 
 public class ActivityResultHandler {
     public static int REQUEST_CODE_APP_INSTALL = 1001;

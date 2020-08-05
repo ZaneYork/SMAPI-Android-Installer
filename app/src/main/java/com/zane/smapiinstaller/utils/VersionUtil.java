@@ -6,8 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
-import java9.util.stream.StreamSupport;
-
 /**
  * 版本比较工具
  * @author Zane
@@ -58,7 +56,7 @@ public class VersionUtil {
      * @return 是否为空版本段
      */
     private static boolean isZero(List<String> versionSections) {
-        return !StreamSupport.stream(versionSections).filter(version -> {
+        return !versionSections.stream().anyMatch(version -> {
             try {
                 int i = Integer.parseInt(version);
                 if (i == 0) {
@@ -67,7 +65,7 @@ public class VersionUtil {
             } catch (Exception ignored) {
             }
             return true;
-        }).findAny().isPresent();
+        });
     }
 
     /**

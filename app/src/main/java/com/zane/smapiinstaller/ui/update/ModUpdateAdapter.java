@@ -21,8 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import java9.util.Optional;
-import java9.util.stream.StreamSupport;
+import java.util.Optional;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link ModUpdateCheckResponseDto.UpdateInfo}
@@ -68,7 +67,7 @@ public class ModUpdateAdapter extends RecyclerView.Adapter<ModUpdateAdapter.View
         public void setUpdateInfo(ModUpdateCheckResponseDto updateInfo) {
             this.updateInfo = updateInfo;
             String id = updateInfo.getId();
-            Optional<ModManifestEntry> mod = StreamSupport.stream(installedModMap.get(id)).sorted((a, b) -> VersionUtil.compareVersion(a.getVersion(), b.getVersion())).findFirst();
+            Optional<ModManifestEntry> mod = installedModMap.get(id).stream().sorted((a, b) -> VersionUtil.compareVersion(a.getVersion(), b.getVersion())).findFirst();
             if (mod.isPresent()) {
                 ModManifestEntry modManifestEntry = mod.get();
                 textModName.setText(modManifestEntry.getName());

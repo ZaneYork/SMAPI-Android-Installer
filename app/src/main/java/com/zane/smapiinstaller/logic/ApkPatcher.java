@@ -52,10 +52,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.Deflater;
 
 import androidx.core.content.FileProvider;
-import java9.util.Objects;
-import java9.util.function.Consumer;
-import java9.util.stream.Collectors;
-import java9.util.stream.StreamSupport;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import pxb.android.axml.NodeVisitor;
 
 /**
@@ -191,7 +191,7 @@ public class ApkPatcher {
             ApkFilesManifest apkFilesManifest = apkFilesManifests.get(0);
             List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             errorMessage.set(null);
-            List<ZipUtils.ZipEntrySource> entries = StreamSupport.stream(manifestEntries).map(entry -> {
+            List<ZipUtils.ZipEntrySource> entries = manifestEntries.stream().map(entry -> {
                 if (entry.isAdvanced() && !advanced) {
                     return null;
                 }
@@ -384,7 +384,7 @@ public class ApkPatcher {
                     thread.interrupt();
                 }
                 if (result.containsErrors()) {
-                    errorMessage.set(StreamSupport.stream(result.getErrors()).map(ApkVerifier.IssueWithParams::toString).collect(Collectors.joining(",")));
+                    errorMessage.set(result.getErrors().stream().map(ApkVerifier.IssueWithParams::toString).collect(Collectors.joining(",")));
                     return null;
                 }
                 emitProgress(95);

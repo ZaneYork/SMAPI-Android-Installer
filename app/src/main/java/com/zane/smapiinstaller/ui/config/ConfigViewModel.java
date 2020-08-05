@@ -27,10 +27,9 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
-import java9.util.Objects;
-import java9.util.function.Predicate;
-import java9.util.stream.Collectors;
-import java9.util.stream.StreamSupport;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 class ConfigViewModel extends ViewModel implements ListenableObject<List<ModManifestEntry>> {
 
@@ -114,7 +113,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
             AppConfig activeTranslator = ConfigUtils.getConfig(app, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
             if (!StringUtils.equals(activeTranslator.getValue(), TranslateUtil.NONE)) {
                 String translator = activeTranslator.getValue();
-                List<String> descriptions = StreamSupport.stream(this.modList).map(ModManifestEntry::getDescription).filter(Objects::nonNull).collect(Collectors.toList());
+                List<String> descriptions = this.modList.stream().map(ModManifestEntry::getDescription).filter(Objects::nonNull).collect(Collectors.toList());
                 String language = LanguagesManager.getAppLanguage(app).getLanguage();
                 Query<TranslationResult> query = daoSession.getTranslationResultDao().queryBuilder().where(
                         TranslationResultDao.Properties.Origin.in(descriptions),
@@ -123,7 +122,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
                 ).build();
                 List<TranslationResult> translationResults = query.list();
                 ImmutableMap<String, TranslationResult> translateMap = Maps.uniqueIndex(translationResults, TranslationResult::getOrigin);
-                List<String> untranslatedText = StreamSupport.stream(modList).map(mod -> {
+                List<String> untranslatedText = modList.stream().map(mod -> {
                     if (translateMap.containsKey(mod.getDescription())) {
                         mod.setTranslatedDescription(translateMap.get(mod.getDescription()).getTranslation());
                         return null;
@@ -167,7 +166,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
         if (StringUtils.isBlank(text)) {
             filteredModList = modList;
         } else {
-            filteredModList = StreamSupport.stream(modList).filter(mod -> {
+            filteredModList = modList.stream().filter(mod -> {
                 if (StringUtils.containsIgnoreCase(mod.getName(), text)) {
                     return true;
                 }

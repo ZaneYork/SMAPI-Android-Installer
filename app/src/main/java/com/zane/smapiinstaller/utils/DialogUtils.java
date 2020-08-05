@@ -16,7 +16,7 @@ import com.zane.smapiinstaller.logic.CommonLogic;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import java9.util.function.BiConsumer;
+import java.util.function.BiConsumer;
 
 /**
  * 对话框相关工具类

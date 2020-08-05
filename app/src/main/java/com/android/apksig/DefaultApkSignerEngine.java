@@ -51,9 +51,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java9.util.Optional;
+import java.util.Optional;
 import java.util.Set;
-import java9.util.stream.StreamSupport;
+import java.util.stream.StreamSupport;
 
 /**
  * Default implementation of {@link ApkSignerEngine}.
@@ -438,8 +438,8 @@ public class DefaultApkSignerEngine implements ApkSignerEngine {
                     isDebuggable(entryName)) {
 
                 Optional<V1SchemeVerifier.NamedDigest> extractedDigest =
-                        StreamSupport.stream(V1SchemeVerifier.getDigestsToVerify(
-                                entry.getValue(), "-Digest", mMinSdkVersion, Integer.MAX_VALUE))
+                        V1SchemeVerifier.getDigestsToVerify(
+                                entry.getValue(), "-Digest", mMinSdkVersion, Integer.MAX_VALUE).stream()
                                 .filter(d -> d.jcaDigestAlgorithm == alg)
                                 .findFirst();
 

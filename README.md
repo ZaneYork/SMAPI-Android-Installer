@@ -18,3 +18,9 @@
 2. 生成SMAPI依赖的文件
 3. 修改安装包添加SMAPI的启动代码
 4. 签名安装包并发起Mod版游戏的安装
+
+### 下载地址
+
+1. [GitHub](https://github.com/ZaneYork/SMAPI-Android-Installer/releases)
+2. [Coolapk](https://www.coolapk.com/apk/256582)
+3. ~~Google Play~~ 已下架，开发者账户被谷歌无理由关联封禁，从此谷歌一生黑

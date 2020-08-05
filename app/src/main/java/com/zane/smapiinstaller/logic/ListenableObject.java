@@ -2,7 +2,7 @@ package com.zane.smapiinstaller.logic;
 
 import java.util.List;
 
-import java9.util.function.Predicate;
+import java.util.function.Predicate;
 
 /**
  * @author Zane

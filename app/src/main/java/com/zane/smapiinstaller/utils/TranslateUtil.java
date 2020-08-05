@@ -18,8 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import java9.util.stream.Collectors;
-import java9.util.stream.StreamSupport;
+import java.util.stream.Collectors;
 
 /**
  * @author Zane
@@ -34,7 +33,7 @@ public class TranslateUtil {
         if(textList == null || textList.size() == 0) {
             return;
         }
-        textList = StreamSupport.stream(textList).filter(item -> StringUtils.isNoneBlank(item) && !item.contains("\n")).collect(Collectors.toList());
+        textList = textList.stream().filter(item -> StringUtils.isNoneBlank(item) && !item.contains("\n")).collect(Collectors.toList());
         if(textList.isEmpty()) {
             return;
         }

@@ -29,7 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import java9.util.function.Predicate;
+import java.util.function.Predicate;
 
 /**
  * @author Zane

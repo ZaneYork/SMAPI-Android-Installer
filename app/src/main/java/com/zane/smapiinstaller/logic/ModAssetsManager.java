@@ -39,11 +39,10 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import java9.util.Objects;
-import java9.util.function.Consumer;
-import java9.util.function.Predicate;
-import java9.util.stream.Collectors;
-import java9.util.stream.StreamSupport;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Mod资源管理器
@@ -171,7 +170,7 @@ public class ModAssetsManager {
                 if (installedMods.size() > 1) {
                     DialogUtils.showAlertDialog(root, R.string.error,
                             String.format(context.getString(R.string.duplicate_mod_found),
-                                    StreamSupport.stream(installedMods).map(item -> FileUtils.toPrettyPath(item.getAssetPath())).collect(Collectors.joining(","))));
+                                    installedMods.stream().map(item -> FileUtils.toPrettyPath(item.getAssetPath())).collect(Collectors.joining(","))));
                     return false;
                 } else if (installedMods.size() == 0) {
                     installedMods = installedModMap.get(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"));
@@ -228,7 +227,7 @@ public class ModAssetsManager {
         for (String key : installedModMap.keySet()) {
             ImmutableList<ModManifestEntry> installedMods = installedModMap.get(key);
             if (installedMods.size() > 1) {
-                list.add(StreamSupport.stream(installedMods).map(item -> FileUtils.toPrettyPath(item.getAssetPath())).collect(Collectors.joining(",")));
+                list.add(installedMods.stream().map(item -> FileUtils.toPrettyPath(item.getAssetPath())).collect(Collectors.joining(",")));
             }
         }
         if (!list.isEmpty()) {
@@ -254,7 +253,7 @@ public class ModAssetsManager {
      * @param returnCallback  回调函数
      */
     private void checkUnsatisfiedDependencies(ImmutableListMultimap<String, ModManifestEntry> installedModMap, Consumer<Boolean> returnCallback) {
-        List<String> dependencyErrors = StreamSupport.stream(installedModMap.values())
+        List<String> dependencyErrors = installedModMap.values().stream()
                 .map(mod -> checkModDependencyError(mod, installedModMap))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -281,7 +280,7 @@ public class ModAssetsManager {
      * @param returnCallback  回调函数
      */
     private void checkContentpacks(ImmutableListMultimap<String, ModManifestEntry> installedModMap, Consumer<Boolean> returnCallback) {
-        List<String> dependencyErrors = StreamSupport.stream(installedModMap.values())
+        List<String> dependencyErrors = installedModMap.values().stream()
                 .map(mod -> checkContentPackDependencyError(mod, installedModMap))
                 .filter(Objects::nonNull).collect(Collectors.toList());
         if (!dependencyErrors.isEmpty()) {
@@ -304,7 +303,7 @@ public class ModAssetsManager {
         if (checkUpdating.get()) {
             return;
         }
-        List<ModUpdateCheckRequestDto.ModInfo> list = StreamSupport.stream(findAllInstalledMods(false))
+        List<ModUpdateCheckRequestDto.ModInfo> list = findAllInstalledMods(false).stream()
                 .filter(mod -> mod.getUpdateKeys() != null && !mod.getUpdateKeys().isEmpty())
                 .map(ModUpdateCheckRequestDto.ModInfo::fromModManifestEntry)
                 .distinct()
@@ -334,7 +333,7 @@ public class ModAssetsManager {
                             checkUpdating.set(false);
                             List<ModUpdateCheckResponseDto> checkResponseDtos = response.body();
                             if (checkResponseDtos != null) {
-                                List<ModUpdateCheckResponseDto> list = StreamSupport.stream(checkResponseDtos).filter(dto -> dto.getSuggestedUpdate() != null).collect(Collectors.toList());
+                                List<ModUpdateCheckResponseDto> list = checkResponseDtos.stream().filter(dto -> dto.getSuggestedUpdate() != null).collect(Collectors.toList());
                                 callback.accept(list);
                             }
                         }
@@ -347,7 +346,7 @@ public class ModAssetsManager {
 
     private String checkModDependencyError(ModManifestEntry mod, ImmutableListMultimap<String, ModManifestEntry> installedModMap) {
         if (mod.getDependencies() != null) {
-            List<ModManifestEntry> unsatisfiedDependencies = StreamSupport.stream(mod.getDependencies())
+            List<ModManifestEntry> unsatisfiedDependencies = mod.getDependencies().stream()
                     .filter(dependency -> isDependencyIsExist(dependency, installedModMap))
                     .collect(Collectors.toList());
             if (unsatisfiedDependencies.size() > 0) {

@@ -20,7 +20,6 @@ import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
-import com.zane.smapiinstaller.ui.main.MainTabsFragment;
 import com.zane.smapiinstaller.ui.main.MainTabsFragmentDirections;
 import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.DialogUtils;

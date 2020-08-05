@@ -30,8 +30,8 @@ import com.android.apksig.util.DataSink;
 import com.android.apksig.util.DataSinks;
 import com.android.apksig.util.DataSource;
 import com.android.apksig.util.DataSources;
-
 import com.android.apksig.util.RunnablesExecutor;
+
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -58,15 +58,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java9.util.function.Supplier;
-import java9.util.stream.Collectors;
-
-import java9.util.stream.StreamSupport;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class ApkSigningBlockUtils {
 
@@ -417,7 +412,7 @@ public class ApkSigningBlockUtils {
             DataSource centralDir,
             DataSource eocd) throws IOException, NoSuchAlgorithmException, DigestException {
         Map<ContentDigestAlgorithm, byte[]> contentDigests = new HashMap<>();
-        Set<ContentDigestAlgorithm> oneMbChunkBasedAlgorithm = StreamSupport.stream(digestAlgorithms)
+        Set<ContentDigestAlgorithm> oneMbChunkBasedAlgorithm = digestAlgorithms.stream()
                 .filter(a -> a == ContentDigestAlgorithm.CHUNKED_SHA256 ||
                              a == ContentDigestAlgorithm.CHUNKED_SHA512)
                 .collect(Collectors.toSet());
@@ -1102,7 +1097,7 @@ public class ApkSigningBlockUtils {
         if (bestSigAlgorithmOnSdkVersion.isEmpty()) {
             throw new NoSupportedSignaturesException("No supported signature");
         }
-        return StreamSupport.stream(bestSigAlgorithmOnSdkVersion.values())
+        return bestSigAlgorithmOnSdkVersion.values().stream()
                 .sorted((sig1, sig2) -> Integer.compare(
                         sig1.algorithm.getId(), sig2.algorithm.getId()))
                 .collect(Collectors.toList());

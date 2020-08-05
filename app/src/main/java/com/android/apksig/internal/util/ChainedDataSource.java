@@ -25,7 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import java9.util.stream.Stream;
+import java.util.stream.Stream;
 
 /** Pseudo {@link DataSource} that chains the given {@link DataSource} as a continuous one. */
 public class ChainedDataSource implements DataSource {
