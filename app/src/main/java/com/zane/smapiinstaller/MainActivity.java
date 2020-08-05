@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                     DialogUtils.showConfirmDialog(toolbar, R.string.settings_check_for_updates,
                             MainActivity.this.getString(R.string.app_update_detected, dto.getVersionName()), (dialog, which) -> {
                                 if (which == DialogAction.POSITIVE) {
-                                    CommonLogic.openInPlayStore(MainActivity.this);
+                                    CommonLogic.openUrl(MainActivity.this, Constants.RELEASE_URL);
                                 } else {
                                     ConfigUtils.saveConfig(application, appConfig);
                                 }

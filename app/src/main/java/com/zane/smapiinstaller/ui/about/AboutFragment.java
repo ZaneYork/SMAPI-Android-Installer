@@ -40,10 +40,10 @@ public class AboutFragment extends Fragment {
 
     @OnClick(R.id.button_release)
     void release() {
-        CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, "https://github.com/ZaneYork/SMAPI-Android-Installer/releases"));
+        CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, Constants.RELEASE_URL));
     }
 
-    @OnClick(R.id.button_gplay)
+//    @OnClick(R.id.button_gplay)
     void gplay() {
         CommonLogic.openInPlayStore(this.getActivity());
     }
