@@ -1,5 +1,5 @@
 {
-  "version": 24,
+  "version": 25,
   "contents": [
     {
       "type": "COMPAT",
@@ -14,16 +14,16 @@
       "name": "SMAPI สำหรับ Galaxy Store",
       "assetPath": "compat/samsung_138/",
       "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.138 -  ล่าสุด, SMAPI 3.6.2",
-      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138_18.zip",
-      "hash": "9def0e6f711c46e50cd962d10aa0ccf6014026a7cc544be42922ac9b49172a38"
+      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138_19.zip",
+      "hash": "3a211934a2627b306c4e75e538578e61ab7693e6b0168cc4ada9f87327c6117b"
     },
     {
       "type": "COMPAT",
       "name": "SMAPI สำหรับ Amazon Store",
       "assetPath": "compat/amazon_138/",
       "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.138 - ล่าสุด, SMAPI 3.6.2",
-      "url": "http://zaneyork.cn/download/compat/smapi_amazon_138_8.zip",
-      "hash": "6c56916b7a67ab92465c5b6f9bda583795a2cf0c5434d7591d4f2998277e402d"
+      "url": "http://zaneyork.cn/download/compat/smapi_amazon_138_9.zip",
+      "hash": "a604a8cdf2ff599920bf55a2fac6a4bedf5744f82fff7367c6d4b6c12239c7f1"
     },
     {
       "type": "LOCALE",
