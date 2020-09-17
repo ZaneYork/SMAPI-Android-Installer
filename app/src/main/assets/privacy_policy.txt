@@ -32,8 +32,6 @@ The only official channel for distribution of this app are:
 <br>
 * <a href="https://github.com/ZaneYork/SMAPI-Android-Installer/releases">GitHub</a>
 <br>
-* <s>Google Play Store</s>
-<br>
 Any other mode of distribution is not official and thus, is not maintained by the developer.
 <br>
 This privacy policy is effective to distribution made on official channel only.

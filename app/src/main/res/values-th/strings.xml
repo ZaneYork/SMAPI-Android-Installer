@@ -61,7 +61,7 @@
     <string name="settings_verbose_logging">บันทึกอย่างละเอียด</string>
     <string name="signing_package">กำลังลงทะเบียนแอป</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
-    <string name="smapi_version">เวอร์ชั่น SMAPI: 3.6.2</string>
+    <string name="smapi_version">เวอร์ชั่น SMAPI: 3.7.3</string>
     <string name="text_install_tip1">หมายเหตุ: ต้องการเกมเวอร์ชั่น 1.4.5.138 หรือใหม่กว่า</string>
     <string name="text_install_tip2">ต้องการเกมหลักเมื่อทำการอัปเดต / ติดตั้ง</string>
     <string name="unpacking_smapi_files">กำลังแกะกล่อง</string>
