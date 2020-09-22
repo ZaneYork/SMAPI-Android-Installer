@@ -1,35 +1,35 @@
 {
-  "version": 26,
+  "version": 27,
   "contents": [
     {
       "type": "COMPAT",
       "name": "SMAPI สำหรับ 1.4.5.137",
       "assetPath": "compat/137/",
       "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.128 - 1.4.5.137, SMAPI 3.3.2.0",
-      "url": "http://zaneyork.cn/download/compat/smapi_137.zip",
+      "url": "http://zaneyork.cn/dl/compat/smapi_137.zip",
       "hash": "bd16e8e4cb52d636e24c6a2d2309b66a60e492d2b97c1b8f6a519c04ac42ebdc"
     },
     {
       "type": "COMPAT",
       "name": "SMAPI สำหรับ Galaxy Store",
       "assetPath": "compat/samsung_138/",
-      "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.138 -  ล่าสุด, SMAPI 3.7.3",
-      "url": "http://zaneyork.cn/download/compat/smapi_samsung_138_20.zip",
-      "hash": "9c7853457db5d15bae69453d283eddb5aef835c5548f2db4b7ab170a6a32362a"
+      "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.138 -  ล่าสุด, SMAPI 3.7.3.2",
+      "url": "http://zaneyork.cn/dl/compat/smapi_samsung_138_21.zip",
+      "hash": "a77e8d35e0d1118bd03acda038ba00c4e13adc5eb73ebf8c200dfacdf85ef0a1"
     },
     {
       "type": "COMPAT",
       "name": "SMAPI สำหรับ Amazon Store",
       "assetPath": "compat/amazon_138/",
-      "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.138 - ล่าสุด, SMAPI 3.7.3",
-      "url": "http://zaneyork.cn/download/compat/smapi_amazon_138_10.zip",
-      "hash": "8f79648f6727711ae8bfc74231348ad24df96be65ea21e1c35beeb92db9fdb1c"
+      "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.138 - ล่าสุด, SMAPI 3.7.3.2",
+      "url": "http://zaneyork.cn/dl/compat/smapi_amazon_138_11.zip",
+      "hash": "f792ea943d2892b9c6c1116eec05916577f5f0385730a61a3d80d5d5b65b6c7d"
     },
     {
       "type": "LOCALE",
       "name": "ภาษาจีนตัวย่อ เวอร์ชั่น v2.5.1",
       "description": "แพคเกจภาษาจีนตัวย่อ โดย Wabi-Sabi",
-      "url": "http://zaneyork.cn/download/locale/locale_pack_zh_2.5.1.zip",
+      "url": "http://zaneyork.cn/dl/locale/locale_pack_zh_2.5.1.zip",
       "hash": "4924ba7022c5604e7bc46ee2aad27d4f285c299a3939f3d2817afc10e2e73d77"
     }
   ]

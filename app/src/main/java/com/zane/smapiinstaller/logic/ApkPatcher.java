@@ -279,7 +279,12 @@ public class ApkPatcher {
                         break;
                     case "label":
                         if (strObj.contains(ManifestPatchConstants.APP_NAME)) {
-                            attr.obj = context.getString(R.string.smapi_game_name);
+                            if(StringUtils.isBlank(Constants.PATCHED_APP_NAME)) {
+                                attr.obj = context.getString(R.string.smapi_game_name);
+                            }
+                            else {
+                                attr.obj = Constants.PATCHED_APP_NAME;
+                            }
                         }
                         break;
                     case "authorities":

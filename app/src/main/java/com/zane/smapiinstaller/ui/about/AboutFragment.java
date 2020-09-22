@@ -114,7 +114,7 @@ public class AboutFragment extends Fragment {
                 }
                 break;
             case 4:
-                CommonLogic.openUrl(context, "http://zaneyork.cn/download/list.html");
+                CommonLogic.openUrl(context, "http://zaneyork.cn/dl/list.html");
                 break;
             default:
                 break;

@@ -30,9 +30,9 @@
             android:title="@string/settings_disable_mono_mod"
             app:showAsAction="never" />
         <item
-            android:id="@+id/settings_rewrite_in_parallel"
+            android:id="@+id/settings_rewrite_missing"
             android:orderInCategory="104"
-            android:title="@string/settings_rewrite_in_parallel"
+            android:title="@string/settings_rewrite_missing"
             app:showAsAction="never" />
         <item
             android:id="@+id/settings_advanced_mode"
@@ -46,9 +46,9 @@
         android:title="@string/settings_set_mod_path"
         app:showAsAction="never" />
     <item
-        android:id="@+id/settings_set_max_log_size"
+        android:id="@+id/settings_set_app_name"
         android:orderInCategory="111"
-        android:title="@string/settings_set_max_log_size"
+        android:title="@string/settings_set_app_name"
         app:showAsAction="never" />
     <item
         android:id="@+id/settings_language"

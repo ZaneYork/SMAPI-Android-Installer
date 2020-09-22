@@ -107,17 +107,7 @@ public class DialogUtils {
      * @param callback 回调
      */
     public static void showConfirmDialog(View view, int title, int message, BiConsumer<MaterialDialog, DialogAction> callback) {
-        CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
-            MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(message, null, null).positiveButton(R.string.confirm, null, dialog -> {
-                callback.accept(dialog, DialogAction.POSITIVE);
-                return null;
-            }).negativeButton(R.string.cancel, null, dialog -> {
-                callback.accept(dialog, DialogAction.NEGATIVE);
-                return null;
-            });
-            DialogUtils.setCurrentDialog(materialDialog);
-            materialDialog.show();
-        });
+        showConfirmDialog(CommonLogic.getActivityFromView(view), title, message, callback);
     }
     public static void showConfirmDialog(Activity context, int title, int message, BiConsumer<MaterialDialog, DialogAction> callback) {
         CommonLogic.runOnUiThread(context, (activity) -> {
@@ -309,11 +299,15 @@ public class DialogUtils {
      * @param callback 回调
      */
     public static void showInputDialog(View view, int title, int content, String hint, String prefill, BiConsumer<MaterialDialog, CharSequence> callback) {
+        showInputDialog(view, title, content, hint, prefill, false, callback);
+    }
+
+    public static void showInputDialog(View view, int title, int content, String hint, String prefill, boolean allowEmpty, BiConsumer<MaterialDialog, CharSequence> callback) {
         CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
             MaterialDialog dialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null).message(content, null, null);
             dialog = DialogInputExtKt.input(dialog, hint, null, prefill, null,
                     InputType.TYPE_CLASS_TEXT,
-                    null, true, false, (materialDialog, text) -> {
+                    null, true, allowEmpty, (materialDialog, text) -> {
                         callback.accept(materialDialog, text);
                         return null;
                     });

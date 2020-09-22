@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.google.common.io.Files;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.constant.AppConfigKey;
+import com.zane.smapiinstaller.constant.AppConfigKeyConstants;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.logic.ApkPatcher;
@@ -65,7 +65,7 @@ public class InstallFragment extends Fragment {
         root = inflater.inflate(R.layout.fragment_install, container, false);
         ButterKnife.bind(this, root);
         context = this.getActivity();
-        if (Boolean.parseBoolean(ConfigUtils.getConfig((MainApplication) context.getApplication(), AppConfigKey.ADVANCED_MODE, "false").getValue())) {
+        if (Boolean.parseBoolean(ConfigUtils.getConfig((MainApplication) context.getApplication(), AppConfigKeyConstants.ADVANCED_MODE, "false").getValue())) {
             installButton.setVisibility(View.INVISIBLE);
             layoutAdvInstall.setVisibility(View.VISIBLE);
         }
@@ -87,11 +87,11 @@ public class InstallFragment extends Fragment {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             DialogUtils.showConfirmDialog(root, R.string.confirm, R.string.android_version_confirm, ((dialog, which) -> {
                 if (which == DialogAction.POSITIVE) {
-                    installLogic();
+                    installLogic(false);
                 }
             }));
         } else {
-            installLogic();
+            installLogic(false);
         }
     }
 
@@ -102,51 +102,7 @@ public class InstallFragment extends Fragment {
 
     @OnClick(R.id.button_adv_install)
     void advInstall() {
-        if (task != null) {
-            task.interrupt();
-        }
-        task = new Thread(() -> CommonLogic.showProgressDialog(root, context, (dialog)->{
-            ApkPatcher patcher = new ApkPatcher(context);
-            patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(root, dialog, null, progress));
-            DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
-            String path = patcher.extract(1);
-            if (path == null) {
-                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
-                return;
-            }
-            DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, null);
-            if (!CommonLogic.unpackSmapiFiles(context, path, false)) {
-                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
-                return;
-            }
-            ModAssetsManager modAssetsManager = new ModAssetsManager(root);
-            DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 6);
-            modAssetsManager.installDefaultMods();
-            DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 8);
-            if (!patcher.patch(path, true)) {
-                int target = patcher.getSwitchAction().getAndSet(0);
-                if (target == R.string.menu_download) {
-                    DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
-                        if (which == DialogAction.POSITIVE) {
-                            NavController controller = Navigation.findNavController(installButton);
-                            controller.navigate(MainTabsFragmentDirections.actionNavMainToNavDownload());
-                        }
-                    });
-                } else {
-                    DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)));
-                }
-                return;
-            }
-            DialogUtils.setProgressDialogState(root, dialog, R.string.signing_package, null);
-            String signPath = patcher.sign(path);
-            if (signPath == null) {
-                DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
-                return;
-            }
-            DialogUtils.setProgressDialogState(root, dialog, R.string.installing_package, null);
-            patcher.install(signPath);
-        }));
-        task.start();
+        installLogic(true);
     }
 
     /**
@@ -171,7 +127,7 @@ public class InstallFragment extends Fragment {
     /**
      * 安装逻辑
      */
-    private void installLogic() {
+    private void installLogic(boolean isAdv) {
         if (task != null) {
             task.interrupt();
         }
@@ -179,7 +135,7 @@ public class InstallFragment extends Fragment {
             ApkPatcher patcher = new ApkPatcher(context);
             patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(root, dialog, null, progress));
             DialogUtils.setProgressDialogState(root, dialog, R.string.extracting_package, null);
-            String path = patcher.extract();
+            String path = patcher.extract(isAdv ? 1 : -1);
             if (path == null) {
                 DialogUtils.showAlertDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
                 return;
@@ -193,7 +149,7 @@ public class InstallFragment extends Fragment {
             DialogUtils.setProgressDialogState(root, dialog, R.string.unpacking_smapi_files, 6);
             modAssetsManager.installDefaultMods();
             DialogUtils.setProgressDialogState(root, dialog, R.string.patching_package, 8);
-            if (!patcher.patch(path)) {
+            if (!patcher.patch(path, isAdv)) {
                 int target = patcher.getSwitchAction().getAndSet(0);
                 if (target == R.string.menu_download) {
                     DialogUtils.showConfirmDialog(root, R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {

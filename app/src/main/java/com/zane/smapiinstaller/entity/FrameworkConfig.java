@@ -38,16 +38,10 @@ public class FrameworkConfig {
     private boolean DisableMonoMod = false;
 
     /**
-     * 是否启用多线程重写
+     * 是否启用重写丢失的引用点
      */
-    @JsonProperty("RewriteInParallel")
-    private boolean RewriteInParallel = false;
-
-    /**
-     * 最大日志大小
-     */
-    @JsonProperty("MaxLogSize")
-    private int MaxLogSize = Integer.MAX_VALUE;
+    @JsonProperty("RewriteMissing")
+    private boolean RewriteMissing = false;
 
     /**
      * Mod存放位置

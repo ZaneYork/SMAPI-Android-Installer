@@ -15,7 +15,7 @@ import com.lzy.okgo.model.Response;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.DialogAction;
-import com.zane.smapiinstaller.constant.DownloadableContentTypes;
+import com.zane.smapiinstaller.constant.DownloadableContentTypeConstants;
 import com.zane.smapiinstaller.entity.DownloadableContent;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
@@ -141,7 +141,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
         void downloadContent() {
             Context context = itemView.getContext();
             ModManifestEntry modManifestEntry = null;
-            if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypes.LOCALE)) {
+            if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypeConstants.LOCALE)) {
                 modManifestEntry = ModAssetsManager.findFirstModIf(mod -> StringUtils.equals(mod.getUniqueID(), "ZaneYork.CustomLocalization") || StringUtils.equals(mod.getUniqueID(), "SMAPI.CustomLocalization"));
                 if (modManifestEntry == null) {
                     DialogUtils.showAlertDialog(itemView, R.string.error, String.format(context.getString(R.string.error_depends_on_mod), context.getString(R.string.locale_pack), "ZaneYork.CustomLocalization"));
@@ -204,7 +204,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
 
         private void unpackLogic(Context context, File downloadedFile, ModManifestEntry finalModManifestEntry) {
             try {
-                if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypes.LOCALE)) {
+                if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypeConstants.LOCALE)) {
                     if (finalModManifestEntry != null) {
                         ZipUtil.unpack(downloadedFile, new File(finalModManifestEntry.getAssetPath()));
                     }

@@ -60,7 +60,7 @@
     <string name="settings_verbose_logging">Verbose Logging</string>
     <string name="signing_package">Signing</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
-    <string name="smapi_version">SMAPI Version: 3.7.3</string>
+    <string name="smapi_version">SMAPI Version: 3.7.3.2</string>
     <string name="text_install_tip1">Notes: Game version 1.4.5.138 or later is required.</string>
     <string name="text_install_tip2">The base game is required when updating/installing.</string>
     <string name="unpacking_smapi_files">Unpacking</string>
@@ -86,4 +86,6 @@
     <string name="error_patch_crc_incorrect">Patch %1$s failed: CRC (%2$s))</string>
     <string name="settings_rewrite_in_parallel">Rewrite in Parallel</string>
     <string name="request_unknown_source_permission">Needs to switch unknown source permission on to install mod framework, open settings?</string>
+    <string name="settings_rewrite_missing">Rewrite Missing</string>
+    <string name="settings_set_app_name">Patched App Name</string>
 </resources>

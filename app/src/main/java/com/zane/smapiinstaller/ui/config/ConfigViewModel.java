@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.hjq.language.LanguagesManager;
 import com.zane.smapiinstaller.MainApplication;
-import com.zane.smapiinstaller.constant.AppConfigKey;
+import com.zane.smapiinstaller.constant.AppConfigKeyConstants;
 import com.zane.smapiinstaller.entity.AppConfig;
 import com.zane.smapiinstaller.entity.DaoSession;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
@@ -53,7 +53,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
         translateLogic(root);
         MainApplication app = CommonLogic.getApplicationFromView(root);
         if (null != app) {
-            AppConfig appConfig = ConfigUtils.getConfig(app, AppConfigKey.MOD_LIST_SORT_BY, sortBy);
+            AppConfig appConfig = ConfigUtils.getConfig(app, AppConfigKeyConstants.MOD_LIST_SORT_BY, sortBy);
             sortBy = appConfig.getValue();
         }
         sortLogic(sortBy);
@@ -65,7 +65,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
             return;
         }
         this.sortBy = sortBy;
-        AppConfig appConfig = new AppConfig(null, AppConfigKey.MOD_LIST_SORT_BY, sortBy);
+        AppConfig appConfig = new AppConfig(null, AppConfigKeyConstants.MOD_LIST_SORT_BY, sortBy);
         ConfigUtils.saveConfig(app, appConfig);
         sortLogic(appConfig.getValue());
     }
@@ -110,7 +110,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
         MainApplication app = CommonLogic.getApplicationFromView(root);
         if (null != app) {
             DaoSession daoSession = app.getDaoSession();
-            AppConfig activeTranslator = ConfigUtils.getConfig(app, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
+            AppConfig activeTranslator = ConfigUtils.getConfig(app, AppConfigKeyConstants.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
             if (!StringUtils.equals(activeTranslator.getValue(), TranslateUtil.NONE)) {
                 String translator = activeTranslator.getValue();
                 List<String> descriptions = this.modList.stream().map(ModManifestEntry::getDescription).filter(Objects::nonNull).collect(Collectors.toList());

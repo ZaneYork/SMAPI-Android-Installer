@@ -14,7 +14,12 @@ public class ConfigUtils {
         AppConfigDao appConfigDao = daoSession.getAppConfigDao();
         AppConfig appConfig = appConfigDao.queryBuilder().where(AppConfigDao.Properties.Name.eq(key)).build().unique();
         if(appConfig == null) {
-            appConfig = new AppConfig(null, key, String.valueOf(defaultValue));
+            if(defaultValue != null){
+                appConfig = new AppConfig(null, key, String.valueOf(defaultValue));
+            }
+            else {
+                appConfig = new AppConfig(null, key, null);
+            }
         }
         return appConfig;
     }

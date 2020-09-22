@@ -20,7 +20,7 @@ import com.lzy.okgo.model.Response;
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.Crashes;
-import com.zane.smapiinstaller.constant.AppConfigKey;
+import com.zane.smapiinstaller.constant.AppConfigKeyConstants;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.dto.AppUpdateCheckResultDto;
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         instance = this;
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        AppConfig appConfig = ConfigUtils.getConfig((MainApplication) this.getApplication(), AppConfigKey.PRIVACY_POLICY_CONFIRM, false);
+        AppConfig appConfig = ConfigUtils.getConfig((MainApplication) this.getApplication(), AppConfigKeyConstants.PRIVACY_POLICY_CONFIRM, false);
         if (Boolean.parseBoolean(appConfig.getValue())) {
             requestPermissions();
         } else {
@@ -152,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
                     buttonLaunch.setVisibility(View.VISIBLE);
             }
         });
+        AppConfig appConfig = ConfigUtils.getConfig((MainApplication) this.getApplication(), AppConfigKeyConstants.IGNORE_UPDATE_VERSION_CODE, Constants.PATCHED_APP_NAME);
+        Constants.PATCHED_APP_NAME = appConfig.getValue();
         checkAppUpdate();
     }
 
@@ -162,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Response<AppUpdateCheckResultDto> response) {
                 AppUpdateCheckResultDto dto = response.body();
                 if (dto != null && CommonLogic.getVersionCode(MainActivity.this) < dto.getVersionCode()) {
-                    AppConfig appConfig = ConfigUtils.getConfig(application, AppConfigKey.IGNORE_UPDATE_VERSION_CODE, dto.getVersionCode());
+                    AppConfig appConfig = ConfigUtils.getConfig(application, AppConfigKeyConstants.IGNORE_UPDATE_VERSION_CODE, dto.getVersionCode());
                     if (StringUtils.equals(appConfig.getValue(), String.valueOf(dto.getVersionCode()))) {
                         return;
                     }
@@ -205,8 +207,8 @@ public class MainActivity extends AppCompatActivity {
         }
         menu.findItem(R.id.settings_developer_mode).setChecked(config.isDeveloperMode());
         menu.findItem(R.id.settings_disable_mono_mod).setChecked(config.isDisableMonoMod());
-        menu.findItem(R.id.settings_rewrite_in_parallel).setChecked(config.isRewriteInParallel());
-        menu.findItem(R.id.settings_advanced_mode).setChecked(Boolean.parseBoolean(ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKey.ADVANCED_MODE, "false").getValue()));
+        menu.findItem(R.id.settings_rewrite_missing).setChecked(config.isRewriteMissing());
+        menu.findItem(R.id.settings_advanced_mode).setChecked(Boolean.parseBoolean(ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKeyConstants.ADVANCED_MODE, "false").getValue()));
         Constants.MOD_PATH = config.getModsPath();
         return super.onPrepareOptionsMenu(menu);
     }
@@ -235,9 +237,18 @@ public class MainActivity extends AppCompatActivity {
             case R.id.settings_disable_mono_mod:
                 config.setDisableMonoMod(item.isChecked());
                 break;
-            case R.id.settings_rewrite_in_parallel:
-                config.setRewriteInParallel(item.isChecked());
+            case R.id.settings_rewrite_missing:
+                config.setRewriteMissing(item.isChecked());
                 break;
+            case R.id.settings_set_app_name:
+                DialogUtils.showInputDialog(toolbar, R.string.input, R.string.settings_set_app_name, Constants.PATCHED_APP_NAME, Constants.PATCHED_APP_NAME, true, (dialog, input) -> {
+                    String appName = input.toString();
+                    AppConfig appConfig = ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKeyConstants.IGNORE_UPDATE_VERSION_CODE, appName);
+                    appConfig.setValue(appName);
+                    ConfigUtils.saveConfig((MainApplication) getApplication(), appConfig);
+                    Constants.PATCHED_APP_NAME = appName;
+                });
+                return true;
             case R.id.settings_set_mod_path:
                 DialogUtils.showInputDialog(toolbar, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {
                     if (StringUtils.isNoneBlank(input)) {
@@ -253,22 +264,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 return true;
-            case R.id.settings_set_max_log_size:
-                DialogUtils.showInputDialog(toolbar, R.string.input, R.string.settings_set_max_log_size, String.valueOf(config.getMaxLogSize()), String.valueOf(config.getMaxLogSize()), (dialog, input) -> {
-                    if (StringUtils.isNoneBlank(input)) {
-                        try {
-                            int size = Integer.parseInt(input.toString());
-                            config.setMaxLogSize(size);
-                            manager.flushConfig();
-                        } catch (Exception ignored) {
-
-                        }
-                    } else {
-                        config.setMaxLogSize(Integer.MAX_VALUE);
-                        manager.flushConfig();
-                    }
-                });
-                return true;
             case R.id.settings_language:
                 selectLanguageLogic();
                 return true;
@@ -279,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
                 checkModUpdateLogic();
                 return true;
             case R.id.settings_advanced_mode:
-                AppConfig appConfig = ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKey.ADVANCED_MODE, "false");
+                AppConfig appConfig = ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKeyConstants.ADVANCED_MODE, "false");
                 appConfig.setValue(String.valueOf(item.isChecked()));
                 ConfigUtils.saveConfig((MainApplication) getApplication(), appConfig);
                 startActivity(new Intent(this, MainActivity.class));
@@ -306,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void selectTranslateServiceLogic() {
         MainApplication application = (MainApplication) this.getApplication();
-        AppConfig activeTranslator = ConfigUtils.getConfig(application, AppConfigKey.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
+        AppConfig activeTranslator = ConfigUtils.getConfig(application, AppConfigKeyConstants.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
         int index = getTranslateServiceIndex(activeTranslator);
         DialogUtils.showSingleChoiceDialog(toolbar, R.string.settings_translation_service, R.array.translators, index, (dialog, position) -> {
             switch (position) {
