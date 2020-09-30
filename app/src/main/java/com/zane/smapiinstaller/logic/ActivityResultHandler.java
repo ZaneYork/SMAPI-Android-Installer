@@ -6,6 +6,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.function.BiConsumer;
 
+/**
+ * @author Zane
+ */
 public class ActivityResultHandler {
     public static int REQUEST_CODE_APP_INSTALL = 1001;
 

@@ -8,10 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
-import com.google.common.io.Files;
 import com.hjq.language.LanguagesManager;
-import com.microsoft.appcenter.crashes.Crashes;
-import com.smart.library.util.bspatch.BSPatchUtil;
 
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -310,29 +307,6 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
         try (InputStream inputStream = new FileInputStream(file)) {
             return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
         } catch (IOException ignored) {
-        }
-        return null;
-    }
-
-    public static byte[] patchFile(byte[] originBytes, byte[] patchBytes) {
-        File patch = null;
-        File origin = null;
-        File patched = null;
-        try {
-            patch = File.createTempFile("patch", null);
-            Files.write(patchBytes, patch);
-            origin = File.createTempFile("origin", null);
-            Files.write(originBytes, origin);
-            patched = File.createTempFile("patched", null);
-            if (BSPatchUtil.bspatch(origin.getAbsolutePath(), patched.getAbsolutePath(), patch.getAbsolutePath()) == 0) {
-                return Files.asByteSource(patched).read();
-            }
-        } catch (Exception e) {
-            Crashes.trackError(e);
-        } finally {
-            FileUtils.deleteQuietly(patch);
-            FileUtils.deleteQuietly(origin);
-            FileUtils.deleteQuietly(patched);
         }
         return null;
     }

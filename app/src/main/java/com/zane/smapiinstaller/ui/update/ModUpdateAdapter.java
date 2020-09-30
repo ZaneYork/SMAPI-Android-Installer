@@ -3,11 +3,11 @@ package com.zane.smapiinstaller.ui.update;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.databinding.UpdatableModListItemBinding;
 import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.CommonLogic;
@@ -15,13 +15,10 @@ import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.VersionUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import java.util.Optional;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link ModUpdateCheckResponseDto.UpdateInfo}
@@ -59,20 +56,17 @@ public class ModUpdateAdapter extends RecyclerView.Adapter<ModUpdateAdapter.View
 
     class ViewHolder extends RecyclerView.ViewHolder {
         public ModUpdateCheckResponseDto updateInfo;
-        @BindView(R.id.text_view_mod_name)
-        TextView textModName;
-        @BindView(R.id.text_view_mod_version)
-        TextView textModVersion;
+        private UpdatableModListItemBinding binding;
 
         public void setUpdateInfo(ModUpdateCheckResponseDto updateInfo) {
             this.updateInfo = updateInfo;
             String id = updateInfo.getId();
-            Optional<ModManifestEntry> mod = installedModMap.get(id).stream().sorted((a, b) -> VersionUtil.compareVersion(a.getVersion(), b.getVersion())).findFirst();
+            Optional<ModManifestEntry> mod = installedModMap.get(id).stream().min((a, b) -> VersionUtil.compareVersion(a.getVersion(), b.getVersion()));
             if (mod.isPresent()) {
                 ModManifestEntry modManifestEntry = mod.get();
-                textModName.setText(modManifestEntry.getName());
-                CommonLogic.doOnNonNull(CommonLogic.getActivityFromView(textModName),
-                        activity -> textModVersion.setText(
+                binding.textViewModName.setText(modManifestEntry.getName());
+                CommonLogic.doOnNonNull(CommonLogic.getActivityFromView(binding.textViewModName),
+                        activity -> binding.textViewModVersion.setText(
                                 activity.getString(R.string.mod_version_update_text, modManifestEntry.getVersion(), updateInfo.getSuggestedUpdate().getVersion())
                         ));
             }
@@ -80,12 +74,12 @@ public class ModUpdateAdapter extends RecyclerView.Adapter<ModUpdateAdapter.View
 
         public ViewHolder(View view) {
             super(view);
-            ButterKnife.bind(this, itemView);
+            binding = UpdatableModListItemBinding.bind(view);
+            binding.buttonUpdateMod.setOnClickListener(v -> onUpdateClick());
         }
 
-        @OnClick(R.id.button_update_mod)
         void onUpdateClick() {
-            CommonLogic.doOnNonNull(CommonLogic.getActivityFromView(textModName), context -> CommonLogic.openUrl(context, updateInfo.getSuggestedUpdate().getUrl()));
+            CommonLogic.doOnNonNull(CommonLogic.getActivityFromView(binding.textViewModName), context -> CommonLogic.openUrl(context, updateInfo.getSuggestedUpdate().getUrl()));
         }
     }
 }

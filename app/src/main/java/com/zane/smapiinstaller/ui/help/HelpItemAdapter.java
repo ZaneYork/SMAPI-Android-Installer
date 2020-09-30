@@ -5,17 +5,15 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.databinding.HelpListItemBinding;
 import com.zane.smapiinstaller.entity.HelpItem;
 
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * @author Zane
@@ -52,26 +50,21 @@ public class HelpItemAdapter extends RecyclerView.Adapter<HelpItemAdapter.ViewHo
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.text_item_title)
-        TextView textTitle;
-        @BindView(R.id.text_item_author)
-        TextView textAuthor;
-        @BindView(R.id.text_item_content)
-        TextView textContent;
+        private HelpListItemBinding binding;
 
         public ViewHolder(View view) {
             super(view);
-            ButterKnife.bind(this, itemView);
+            binding = HelpListItemBinding.bind(view);
         }
         void setHelpItem(HelpItem item) {
-            textTitle.setText(item.getTitle());
-            textAuthor.setText(item.getAuthor());
+            binding.textItemTitle.setText(item.getTitle());
+            binding.textItemAuthor.setText(item.getAuthor());
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                textContent.setText(Html.fromHtml(item.getContent(), Html.FROM_HTML_MODE_COMPACT));
+                binding.textItemContent.setText(Html.fromHtml(item.getContent(), Html.FROM_HTML_MODE_COMPACT));
             } else {
-                textContent.setText(Html.fromHtml(item.getContent()));
+                binding.textItemContent.setText(Html.fromHtml(item.getContent()));
             }
-            textContent.setMovementMethod(LinkMovementMethod.getInstance());
+            binding.textItemContent.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 }

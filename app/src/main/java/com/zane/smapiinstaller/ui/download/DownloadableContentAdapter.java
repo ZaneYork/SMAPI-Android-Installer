@@ -4,8 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.lzy.okgo.OkGo;
@@ -16,6 +14,7 @@ import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.constant.DownloadableContentTypeConstants;
+import com.zane.smapiinstaller.databinding.DownloadContentItemBinding;
 import com.zane.smapiinstaller.entity.DownloadableContent;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
@@ -33,9 +32,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link DownloadableContent}
@@ -74,50 +70,43 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.text_item_type)
-        TextView typeTextView;
-        @BindView(R.id.text_item_name)
-        TextView nameTextView;
-        @BindView(R.id.text_item_description)
-        TextView descriptionTextView;
-        @BindView(R.id.button_remove_content)
-        Button buttonRemove;
-        @BindView(R.id.button_download_content)
-        Button buttonDownload;
+        private DownloadContentItemBinding binding;
+
         private final AtomicBoolean downloading = new AtomicBoolean(false);
 
         public DownloadableContent downloadableContent;
 
         public void setDownloadableContent(DownloadableContent downloadableContent) {
             this.downloadableContent = downloadableContent;
-            typeTextView.setText(downloadableContent.getType());
-            nameTextView.setText(downloadableContent.getName());
-            descriptionTextView.setText(downloadableContent.getDescription());
+            binding.textItemType.setText(downloadableContent.getType());
+            binding.textItemName.setText(downloadableContent.getName());
+            binding.textItemDescription.setText(downloadableContent.getDescription());
             if (StringUtils.isNoneBlank(downloadableContent.getAssetPath())) {
                 File contentFile = new File(itemView.getContext().getFilesDir(), downloadableContent.getAssetPath());
                 if (contentFile.exists()) {
                     Context context = itemView.getContext();
                     File file = new File(context.getCacheDir(), downloadableContent.getName() + ".zip");
                     if (!file.exists() || !StringUtils.equalsIgnoreCase(FileUtils.getFileHash(file), downloadableContent.getHash())) {
-                        buttonRemove.setVisibility(View.VISIBLE);
-                        buttonDownload.setVisibility(View.VISIBLE);
+                        binding.buttonRemoveContent.setVisibility(View.VISIBLE);
+                        binding.buttonDownloadContent.setVisibility(View.VISIBLE);
                         return;
                     }
-                    buttonRemove.setVisibility(View.VISIBLE);
-                    buttonDownload.setVisibility(View.INVISIBLE);
+                    binding.buttonRemoveContent.setVisibility(View.VISIBLE);
+                    binding.buttonDownloadContent.setVisibility(View.INVISIBLE);
                     return;
                 }
             }
-            buttonRemove.setVisibility(View.INVISIBLE);
-            buttonDownload.setVisibility(View.VISIBLE);
+            binding.buttonRemoveContent.setVisibility(View.INVISIBLE);
+            binding.buttonDownloadContent.setVisibility(View.VISIBLE);
         }
 
         public ViewHolder(View view) {
             super(view);
-            ButterKnife.bind(this, itemView);
+            binding = DownloadContentItemBinding.bind(view);
+            binding.buttonRemoveContent.setOnClickListener(v -> removeContent());
+            binding.buttonDownloadContent.setOnClickListener(v -> downloadContent());
         }
 
-        @OnClick(R.id.button_remove_content)
         void removeContent() {
             if (StringUtils.isNoneBlank(downloadableContent.getAssetPath())) {
                 File contentFile = new File(itemView.getContext().getFilesDir(), downloadableContent.getAssetPath());
@@ -126,8 +115,8 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                         if (which == DialogAction.POSITIVE) {
                             try {
                                 FileUtils.forceDelete(contentFile);
-                                buttonDownload.setVisibility(View.VISIBLE);
-                                buttonRemove.setVisibility(View.INVISIBLE);
+                                binding.buttonDownloadContent.setVisibility(View.VISIBLE);
+                                binding.buttonRemoveContent.setVisibility(View.INVISIBLE);
                             } catch (IOException e) {
                                 DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
                             }
@@ -137,7 +126,6 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
             }
         }
 
-        @OnClick(R.id.button_download_content)
         void downloadContent() {
             Context context = itemView.getContext();
             ModManifestEntry modManifestEntry = null;
@@ -212,8 +200,8 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
                     ZipUtil.unpack(downloadedFile, new File(context.getFilesDir(), downloadableContent.getAssetPath()));
                 }
                 DialogUtils.showAlertDialog(itemView, R.string.info, R.string.download_unpack_success);
-                buttonDownload.setVisibility(View.INVISIBLE);
-                buttonRemove.setVisibility(View.VISIBLE);
+                binding.buttonDownloadContent.setVisibility(View.INVISIBLE);
+                binding.buttonRemoveContent.setVisibility(View.VISIBLE);
             } catch (Exception e) {
                 DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
             }

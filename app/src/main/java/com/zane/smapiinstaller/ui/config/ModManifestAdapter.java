@@ -4,13 +4,12 @@ import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.zane.smapiinstaller.MobileNavigationDirections;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
+import com.zane.smapiinstaller.databinding.ModListItemBinding;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
@@ -21,15 +20,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import androidx.annotation.NonNull;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import java.util.function.Predicate;
 
 /**
  * @author Zane
@@ -38,23 +34,23 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
     private ConfigViewModel model;
     private List<ModManifestEntry> modList;
 
-    public ModManifestAdapter(ConfigViewModel model, List<ModManifestEntry> modList){
-        this.model=model;
+    public ModManifestAdapter(ConfigViewModel model, List<ModManifestEntry> modList) {
+        this.model = model;
         this.modList = modList;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.mod_list_item,parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.mod_list_item, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ModManifestEntry mod = modList.get(position);
-        holder.modName.setText(mod.getName());
-        holder.modDescription.setText(StringUtils.firstNonBlank(mod.getTranslatedDescription(), mod.getDescription()));
+        holder.binding.textViewModName.setText(mod.getName());
+        holder.binding.textViewModDescription.setText(StringUtils.firstNonBlank(mod.getTranslatedDescription(), mod.getDescription()));
         holder.setModPath(mod.getAssetPath());
     }
 
@@ -68,37 +64,35 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         notifyDataSetChanged();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder {
+        private ModListItemBinding binding;
         private String modPath;
+
         void setModPath(String modPath) {
             this.modPath = modPath;
             File file = new File(modPath, "config.json");
-            if(!file.exists()) {
-                configModButton.setVisibility(View.INVISIBLE);
-            }
-            else {
-                configModButton.setVisibility(View.VISIBLE);
+            if (!file.exists()) {
+                binding.buttonConfigMod.setVisibility(View.INVISIBLE);
+            } else {
+                binding.buttonConfigMod.setVisibility(View.VISIBLE);
             }
             setStrike();
         }
-        @BindView(R.id.button_config_mod)
-        Button configModButton;
-        @BindView(R.id.text_view_mod_name)
-        TextView modName;
-        @BindView(R.id.text_view_mod_description)
-        TextView modDescription;
-        ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
+
+        ViewHolder(@NonNull View view) {
+            super(view);
+            binding = ModListItemBinding.bind(view);
+            binding.buttonRemoveMod.setOnClickListener(v -> removeMod());
+            binding.buttonDisableMod.setOnClickListener(v -> disableMod());
+            binding.buttonConfigMod.setOnClickListener(v -> configMod());
         }
 
         private void setStrike() {
             File file = new File(modPath);
-            if(StringUtils.startsWith(file.getName(), Constants.HIDDEN_FILE_PREFIX)) {
-                modName.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
-            }
-            else {
-                modName.getPaint().setFlags(modName.getPaint().getFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            if (StringUtils.startsWith(file.getName(), Constants.HIDDEN_FILE_PREFIX)) {
+                binding.textViewModName.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                binding.textViewModName.getPaint().setFlags(binding.textViewModName.getPaint().getFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
             }
         }
 
@@ -113,8 +107,8 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             return deletedId;
         }
 
-        @OnClick(R.id.button_remove_mod) void removeMod() {
-            DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which)->{
+        void removeMod() {
+            DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which) -> {
                 if (which == DialogAction.POSITIVE) {
                     File file = new File(modPath);
                     if (file.exists()) {
@@ -132,16 +126,16 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
                 }
             });
         }
-        @OnClick(R.id.button_disable_mod) void disableMod() {
+
+        void disableMod() {
             File file = new File(modPath);
-            if(file.exists() && file.isDirectory()) {
-                if(StringUtils.startsWith(file.getName(), Constants.HIDDEN_FILE_PREFIX)) {
+            if (file.exists() && file.isDirectory()) {
+                if (StringUtils.startsWith(file.getName(), Constants.HIDDEN_FILE_PREFIX)) {
                     File newFile = new File(file.getParent(), StringUtils.stripStart(file.getName(), "."));
                     moveMod(file, newFile);
-                }
-                else {
-                    DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_disable_mod, (dialog, which)-> {
-                        if(which == DialogAction.POSITIVE) {
+                } else {
+                    DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_disable_mod, (dialog, which) -> {
+                        if (which == DialogAction.POSITIVE) {
                             File newFile = new File(file.getParent(), "." + file.getName());
                             moveMod(file, newFile);
                         }
@@ -172,9 +166,9 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             }
         }
 
-        @OnClick(R.id.button_config_mod) void configMod() {
+        void configMod() {
             File file = new File(modPath, "config.json");
-            if(file.exists()) {
+            if (file.exists()) {
                 NavController controller = Navigation.findNavController(itemView);
                 MobileNavigationDirections.ActionNavAnyToConfigEditFragment action = ConfigFragmentDirections.actionNavAnyToConfigEditFragment(file.getAbsolutePath());
                 controller.navigate(action);

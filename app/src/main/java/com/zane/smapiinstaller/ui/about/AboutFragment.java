@@ -8,51 +8,49 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.databinding.FragmentAboutBinding;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
 import androidx.fragment.app.Fragment;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * @author Zane
  */
 public class AboutFragment extends Fragment {
 
-    @BindView(R.id.img_heart)
-    ImageView imgHeart;
+    private FragmentAboutBinding binding;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_about, container, false);
-        ButterKnife.bind(this, root);
-        return root;
+        binding = FragmentAboutBinding.inflate(inflater, container, false);
+        binding.buttonRelease.setOnClickListener(v -> release());
+        binding.buttonQqGroup1.setOnClickListener(v -> joinQQ());
+        binding.buttonDonation.setOnClickListener(v -> donation());
+        binding.buttonPrivacyPolicy.setOnClickListener(v -> privacyPolicy());
+        return binding.getRoot();
     }
 
-    @OnClick(R.id.button_release)
-    void release() {
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
+    private void release() {
         CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, Constants.RELEASE_URL));
     }
 
-//    @OnClick(R.id.button_gplay)
-    void gplay() {
-        CommonLogic.openInPlayStore(this.getActivity());
-    }
-
-    @OnClick(R.id.button_qq_group_1)
-    void joinQQ() {
+    private void joinQQ() {
         String baseUrl = "mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26k%3D";
-        DialogUtils.showListItemsDialog(imgHeart, R.string.button_qq_group_text, R.array.qq_group_list, (dialog, position) -> {
-            switch (position){
+        DialogUtils.showListItemsDialog(binding.imgHeart, R.string.button_qq_group_text, R.array.qq_group_list, (dialog, position) -> {
+            switch (position) {
                 case 0:
                     CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "AAflCLHiWw1haM1obu_f-CpGsETxXc6b"));
                     break;
@@ -66,16 +64,14 @@ public class AboutFragment extends Fragment {
         });
     }
 
-    @OnClick(R.id.button_donation)
     void donation() {
-        DialogUtils.showListItemsDialog(imgHeart, R.string.button_donation_text, R.array.donation_methods, (dialog, position) ->
-                CommonLogic.showAnimation(imgHeart, R.anim.heart_beat, (animation) ->
+        DialogUtils.showListItemsDialog(binding.imgHeart, R.string.button_donation_text, R.array.donation_methods, (dialog, position) ->
+                CommonLogic.showAnimation(binding.imgHeart, R.anim.heart_beat, (animation) ->
                         CommonLogic.doOnNonNull(this.getActivity(), (activity) -> listSelectLogic(activity, position))));
     }
 
-    @OnClick(R.id.button_privacy_policy)
-    void privacyPolicy() {
-        CommonLogic.showPrivacyPolicy(imgHeart, (dialog, dialogAction) -> {
+    private void privacyPolicy() {
+        CommonLogic.showPrivacyPolicy(binding.imgHeart, (dialog, dialogAction) -> {
         });
     }
 

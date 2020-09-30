@@ -33,7 +33,9 @@ import com.zane.smapiinstaller.utils.ZipUtils;
 
 import net.fornwall.apksigner.KeyStoreFileManager;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
@@ -52,6 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.Deflater;
 
 import androidx.core.content.FileProvider;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -166,7 +169,7 @@ public class ApkPatcher {
         return patch(apkPath, false);
     }
 
-    public boolean patch(String apkPath, boolean advanced) {
+    public boolean patch(String apkPath, boolean isAdvanced) {
         if (apkPath == null) {
             return false;
         }
@@ -191,38 +194,9 @@ public class ApkPatcher {
             ApkFilesManifest apkFilesManifest = apkFilesManifests.get(0);
             List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             errorMessage.set(null);
-            List<ZipUtils.ZipEntrySource> entries = manifestEntries.stream().map(entry -> {
-                if (entry.isAdvanced() && !advanced) {
-                    return null;
-                }
-                byte[] bytes;
-                if (entry.isExternal()) {
-                    bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
-                } else {
-                    bytes = FileUtils.getAssetBytes(context, entry.getAssetPath());
-                }
-                if (StringUtils.isNoneBlank(entry.getPatchCrc())) {
-                    byte[] originBytes = ZipUtil.unpackEntry(file, entry.getTargetPath());
-                    if (originBytes != null) {
-                        String crc = Integer.toHexString(Hashing.crc32().hashBytes(originBytes).hashCode());
-                        if (StringUtils.equals(crc, entry.getPatchCrc())) {
-                            bytes = FileUtils.patchFile(originBytes, bytes);
-                            if (bytes == null) {
-                                String errorMsg = context.getString(R.string.error_patch_crc_incorrect, entry.getTargetPath(), crc);
-                                errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\n" + errorMsg);
-                                return null;
-                            }
-                        } else if (StringUtils.equals(crc, entry.getPatchedCrc())) {
-                            bytes = originBytes;
-                        } else {
-                            String errorMsg = context.getString(R.string.error_patch_crc_incorrect, entry.getTargetPath(), crc);
-                            errorMessage.set(StringUtils.stripToEmpty(errorMessage.get()) + "\n" + errorMsg);
-                            return null;
-                        }
-                    }
-                }
-                return new ZipUtils.ZipEntrySource(entry.getTargetPath(), bytes, entry.getCompression());
-            }).filter(Objects::nonNull).collect(Collectors.toList());
+            List<ZipUtils.ZipEntrySource> entries = manifestEntries.stream()
+                    .map(entry -> processfileentry(file, apkFilesManifest, entry, isAdvanced))
+                    .filter(Objects::nonNull).collect(Collectors.toList());
             if (errorMessage.get() != null) {
                 return false;
             }
@@ -246,6 +220,23 @@ public class ApkPatcher {
             errorMessage.set(e.getLocalizedMessage());
         }
         return false;
+    }
+
+    @Nullable
+    private ZipUtils.ZipEntrySource processfileentry(File file, ApkFilesManifest apkFilesManifest, ManifestEntry entry, boolean isAdvanced) {
+        if (entry.isAdvanced() && !isAdvanced) {
+            return null;
+        }
+        byte[] bytes;
+        if (entry.isExternal()) {
+            bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
+        } else {
+            bytes = FileUtils.getAssetBytes(context, entry.getAssetPath());
+        }
+        if (StringUtils.isNoneBlank(entry.getPatchCrc())) {
+            throw new NotImplementedException("bs patch mode is not supported anymore.");
+        }
+        return new ZipUtils.ZipEntrySource(entry.getTargetPath(), bytes, entry.getCompression());
     }
 
     /**
@@ -279,10 +270,9 @@ public class ApkPatcher {
                         break;
                     case "label":
                         if (strObj.contains(ManifestPatchConstants.APP_NAME)) {
-                            if(StringUtils.isBlank(Constants.PATCHED_APP_NAME)) {
+                            if (StringUtils.isBlank(Constants.PATCHED_APP_NAME)) {
                                 attr.obj = context.getString(R.string.smapi_game_name);
-                            }
-                            else {
+                            } else {
                                 attr.obj = Constants.PATCHED_APP_NAME;
                             }
                         }
@@ -412,7 +402,7 @@ public class ApkPatcher {
             boolean haveInstallPermission = context.getPackageManager().canRequestPackageInstalls();
             if (!haveInstallPermission) {
                 DialogUtils.showConfirmDialog(MainActivity.instance, R.string.confirm, R.string.request_unknown_source_permission, ((dialog, dialogAction) -> {
-                    if(dialogAction == DialogAction.POSITIVE) {
+                    if (dialogAction == DialogAction.POSITIVE) {
                         Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
                         ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_APP_INSTALL, (resultCode, data) -> this.install(apkPath));
                         MainActivity.instance.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_APP_INSTALL);

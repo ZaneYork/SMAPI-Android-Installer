@@ -6,7 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.databinding.FragmentConfigBinding;
 import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.function.TextChangedWatcher;
 
 import java.util.ArrayList;
 
@@ -14,44 +16,40 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnTextChanged;
 
 /**
  * @author Zane
  */
 public class ConfigFragment extends Fragment {
 
-    @BindView(R.id.view_mod_list)
-    RecyclerView recyclerView;
     private ConfigViewModel configViewModel;
+
+    private FragmentConfigBinding binding;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_config, container, false);
-        ButterKnife.bind(this, root);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
-        configViewModel = new ConfigViewModel(root);
+        binding = FragmentConfigBinding.inflate(inflater, container, false);
+        binding.viewModList.setLayoutManager(new LinearLayoutManager(this.getContext()));
+        configViewModel = new ConfigViewModel(binding.getRoot());
         ModManifestAdapter modManifestAdapter = new ModManifestAdapter(configViewModel, new ArrayList<>(configViewModel.getModList()));
-        recyclerView.setAdapter(modManifestAdapter);
+        binding.viewModList.setAdapter(modManifestAdapter);
         configViewModel.registerOnChangeListener((list) -> {
             modManifestAdapter.setList(new ArrayList<>(list));
             return false;
         });
-        recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
-        return root;
+        binding.viewModList.addItemDecoration(new DividerItemDecoration(binding.viewModList.getContext(), DividerItemDecoration.VERTICAL));
+        binding.buttonSearch.addTextChangedListener((TextChangedWatcher) (s, start, before, count) -> configViewModel.filter(s));
+        binding.buttonSortBy.setOnClickListener(v -> onSortByClick());
+        return binding.getRoot();
     }
 
-    @OnTextChanged(R.id.button_search)
-    void onSearchMod(CharSequence text) {
-        configViewModel.filter(text);
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
-    @OnClick(R.id.button_sort_by)
     void onSortByClick() {
         int index = 0;
         switch (configViewModel.getSortBy()) {
@@ -69,7 +67,7 @@ public class ConfigFragment extends Fragment {
                 break;
             default:
         }
-        DialogUtils.showSingleChoiceDialog(recyclerView, R.string.sort_by, R.array.mod_list_sort_by, index, (dialog, position) -> {
+        DialogUtils.showSingleChoiceDialog(binding.viewModList, R.string.sort_by, R.array.mod_list_sort_by, index, (dialog, position) -> {
             switch (position) {
                 case 0:
                     configViewModel.switchSortBy("Name asc");

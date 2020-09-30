@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.databinding.FragmentModUpdateListBinding;
 import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.JsonUtil;
@@ -25,6 +25,8 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class ModUpdateFragment extends Fragment {
 
+    private FragmentModUpdateListBinding binding;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -35,23 +37,20 @@ public class ModUpdateFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_mod_update_list, container, false);
-
+        binding = FragmentModUpdateListBinding.inflate(inflater, container, false);
         // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        Context context = binding.getRoot().getContext();
+        RecyclerView recyclerView = binding.getRoot();
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-            CommonLogic.doOnNonNull(this.getArguments(), arguments -> {
-                String updateInfoListJson = ModUpdateFragmentArgs.fromBundle(arguments).getUpdateInfoListJson();
-                List<ModUpdateCheckResponseDto> updateInfos = JsonUtil.fromJson(updateInfoListJson, new TypeReference<List<ModUpdateCheckResponseDto>>() {
-                });
-                ModUpdateAdapter adapter = new ModUpdateAdapter(updateInfos);
-                recyclerView.setAdapter(adapter);
+        CommonLogic.doOnNonNull(this.getArguments(), arguments -> {
+            String updateInfoListJson = ModUpdateFragmentArgs.fromBundle(arguments).getUpdateInfoListJson();
+            List<ModUpdateCheckResponseDto> updateInfos = JsonUtil.fromJson(updateInfoListJson, new TypeReference<List<ModUpdateCheckResponseDto>>() {
             });
-            recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
-        }
-        return view;
+            ModUpdateAdapter adapter = new ModUpdateAdapter(updateInfos);
+            recyclerView.setAdapter(adapter);
+        });
+        recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
+        return binding.getRoot();
     }
 }

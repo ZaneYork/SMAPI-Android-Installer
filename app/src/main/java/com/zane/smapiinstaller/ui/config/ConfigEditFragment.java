@@ -7,13 +7,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
+import com.zane.smapiinstaller.databinding.FragmentConfigEditBinding;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
@@ -27,50 +26,40 @@ import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * @author Zane
  */
 public class ConfigEditFragment extends Fragment {
-    @BindView(R.id.edit_text_config_edit)
-    EditText editText;
     private Boolean editable;
     private String configPath;
-    @BindView(R.id.button_config_save)
-    Button buttonConfigSave;
-    @BindView(R.id.button_config_cancel)
-    Button buttonConfigCancel;
-    @BindView(R.id.button_log_parser)
-    Button buttonLogParser;
+
+    private FragmentConfigEditBinding binding;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_config_edit, container, false);
-        ButterKnife.bind(this, root);
+        binding = FragmentConfigEditBinding.inflate(inflater, container, false);
         CommonLogic.doOnNonNull(this.getArguments(), arguments -> {
             ConfigEditFragmentArgs args = ConfigEditFragmentArgs.fromBundle(arguments);
             editable = args.getEditable();
             if (!editable) {
-                editText.setKeyListener(null);
-                buttonConfigSave.setVisibility(View.INVISIBLE);
-                buttonConfigCancel.setVisibility(View.INVISIBLE);
-                buttonLogParser.setVisibility(View.VISIBLE);
+                binding.editTextConfigEdit.setKeyListener(null);
+                binding.buttonConfigSave.setVisibility(View.INVISIBLE);
+                binding.buttonConfigCancel.setVisibility(View.INVISIBLE);
+                binding.buttonLogParser.setVisibility(View.VISIBLE);
             }
             configPath = args.getConfigPath();
             File file = new File(configPath);
             if (file.exists() && file.length() < Constants.TEXT_FILE_OPEN_SIZE_LIMIT) {
                 String fileText = FileUtils.getFileText(file);
                 if (fileText != null) {
-                    editText.setText(fileText);
+                    binding.editTextConfigEdit.setText(fileText);
                 }
             } else {
-                editText.setText("");
-                editText.setKeyListener(null);
-                DialogUtils.showConfirmDialog(root, R.string.error, this.getString(R.string.text_too_large), R.string.open_with, R.string.cancel, ((dialog, which) -> {
+                binding.editTextConfigEdit.setText("");
+                binding.editTextConfigEdit.setKeyListener(null);
+                DialogUtils.showConfirmDialog(binding.getRoot(), R.string.error, this.getString(R.string.text_too_large), R.string.open_with, R.string.cancel, ((dialog, which) -> {
                     if (which == DialogAction.POSITIVE) {
                         Intent intent = new Intent("android.intent.action.VIEW");
                         intent.addCategory("android.intent.category.DEFAULT");
@@ -90,16 +79,23 @@ public class ConfigEditFragment extends Fragment {
                 }));
             }
         });
-        return root;
+        binding.buttonConfigCancel.setOnClickListener(v -> onConfigCancel());
+        binding.buttonConfigSave.setOnClickListener(v -> onConfigSave());
+        return binding.getRoot();
     }
 
-    @OnClick(R.id.button_config_save)
-    void onConfigSave() {
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
+    private void onConfigSave() {
         try {
-            JsonUtil.checkJson(editText.getText().toString());
+            JsonUtil.checkJson(binding.editTextConfigEdit.getText().toString());
             FileOutputStream outputStream = new FileOutputStream(configPath);
             try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream)) {
-                outputStreamWriter.write(editText.getText().toString());
+                outputStreamWriter.write(binding.editTextConfigEdit.getText().toString());
                 outputStreamWriter.flush();
             }
         } catch (Exception e) {
@@ -107,13 +103,11 @@ public class ConfigEditFragment extends Fragment {
         }
     }
 
-    @OnClick(R.id.button_config_cancel)
-    void onConfigCancel() {
+    private void onConfigCancel() {
         CommonLogic.doOnNonNull(getView(), view -> Navigation.findNavController(view).popBackStack());
     }
 
-    @OnClick(R.id.button_log_parser)
-    void onLogParser() {
+    private void onLogParser() {
         CommonLogic.doOnNonNull(getContext(), context -> CommonLogic.openUrl(context, "https://smapi.io/log"));
     }
 }
