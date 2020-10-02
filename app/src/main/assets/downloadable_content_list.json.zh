@@ -1,29 +1,29 @@
 {
-  "version": 27,
+  "version": 29,
   "contents": [
     {
       "type": "COMPAT",
       "name": "SMAPI兼容包 1.4.5.137",
       "assetPath": "compat/137/",
-      "description": "SMAPI兼容包, 适用版本1.4.4.128 - 1.4.5.137, SMAPI 3.7.3.3",
-      "url": "http://zaneyork.cn/dl/compat/smapi_137_2.zip",
-      "hash": "3607a1f0647d49963a9803cc0445bba23a19b3c92c3b747eb12569fdb5d9b95e"
+      "description": "SMAPI兼容包, 适用版本1.4.4.128 - 1.4.5.137, SMAPI 3.7.3.4",
+      "url": "http://zaneyork.cn/dl/compat/smapi_137_201002.zip",
+      "hash": "4f918b158fc705ca7da660cc12e64cb99a1b91004ce4ff1cb3b0a8b7ab755b68"
     },
     {
       "type": "COMPAT",
       "name": "SMAPI三星商店兼容包",
       "assetPath": "compat/samsung_138/",
-      "description": "SMAPI三星商店兼容包， 适用版本1.4.4.138至今, SMAPI 3.7.3.3",
-      "url": "http://zaneyork.cn/dl/compat/smapi_samsung_138_22.zip",
-      "hash": "e17f369ed84b2d30e6f552d27d7a06c7026a5ddf1de4552c86f31bbff6088ed9"
+      "description": "SMAPI三星商店兼容包， 适用版本1.4.4.138至今, SMAPI 3.7.3.4",
+      "url": "http://zaneyork.cn/dl/compat/smapi_samsung_138_201002.zip",
+      "hash": "df4ef4e548554bf71d0f9f4e7e30aa2f10d214830f3f05a696c6e7c3230bf178"
     },
     {
       "type": "COMPAT",
       "name": "SMAPI亚马逊商店兼容包",
       "assetPath": "compat/amazon_138/",
-      "description": "SMAPI亚马逊商店兼容包， 适用版本1.4.4.138至今, SMAPI 3.7.3.3",
-      "url": "http://zaneyork.cn/dl/compat/smapi_amazon_138_12.zip",
-      "hash": "a7746738ee384d2142c2d3075a400d93f95c84bae2d56ce0e84894f24307d7a2"
+      "description": "SMAPI亚马逊商店兼容包， 适用版本1.4.4.138至今, SMAPI 3.7.3.4",
+      "url": "http://zaneyork.cn/dl/compat/smapi_amazon_138_201002.zip",
+      "hash": "553ad98a540a6a612a194804dc952969a1edf1adec2f162b9d893d403a3c2a27"
     },
     {
       "type": "LOCALE",
