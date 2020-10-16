@@ -1,7 +1,5 @@
 package com.zane.smapiinstaller.logic;
 
-import android.os.Environment;
-
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.entity.FrameworkConfig;
 import com.zane.smapiinstaller.utils.FileUtils;
@@ -16,7 +14,7 @@ public class ConfigManager {
     private FrameworkConfig config;
 
     public ConfigManager() {
-        File configFile = new File(Environment.getExternalStorageDirectory(), Constants.CONFIG_PATH);
+        File configFile = new File(FileUtils.getStadewValleyBasePath(), Constants.CONFIG_PATH);
         if(configFile.exists()) {
             config = FileUtils.getFileJson(configFile, FrameworkConfig.class);
         }
@@ -31,7 +29,7 @@ public class ConfigManager {
     }
 
     public void flushConfig() {
-        File configFile = new File(Environment.getExternalStorageDirectory(), Constants.CONFIG_PATH);
+        File configFile = new File(FileUtils.getStadewValleyBasePath(), Constants.CONFIG_PATH);
         FileUtils.writeFileJson(configFile, config);
     }
 }

@@ -2,7 +2,6 @@ package com.zane.smapiinstaller.logic;
 
 import android.app.Activity;
 import android.content.pm.PackageInfo;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -17,16 +16,18 @@ import com.google.common.collect.Queues;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.model.Response;
 import com.microsoft.appcenter.crashes.Crashes;
+import com.zane.smapiinstaller.MobileNavigationDirections;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.dto.ModUpdateCheckRequestDto;
 import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
+import com.zane.smapiinstaller.dto.Tuple2;
 import com.zane.smapiinstaller.entity.ModManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
-import com.zane.smapiinstaller.utils.JsonUtil;
 import com.zane.smapiinstaller.utils.JsonCallback;
+import com.zane.smapiinstaller.utils.JsonUtil;
 import com.zane.smapiinstaller.utils.VersionUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,17 +36,22 @@ import org.zeroturnaround.zip.ZipUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 /**
  * Mod资源管理器
+ *
  * @author Zane
  */
 public class ModAssetsManager {
@@ -68,7 +74,7 @@ public class ModAssetsManager {
      */
     public static ModManifestEntry findFirstModIf(Predicate<ModManifestEntry> filter) {
         ConcurrentLinkedQueue<File> files = Queues.newConcurrentLinkedQueue();
-        files.add(new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH));
+        files.add(new File(FileUtils.getStadewValleyBasePath(), Constants.MOD_PATH));
         do {
             File currentFile = files.poll();
             if (currentFile != null && currentFile.exists()) {
@@ -115,7 +121,7 @@ public class ModAssetsManager {
      */
     public static List<ModManifestEntry> findAllInstalledMods(boolean ignoreDisabledMod) {
         ConcurrentLinkedQueue<File> files = Queues.newConcurrentLinkedQueue();
-        files.add(new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH));
+        files.add(new File(FileUtils.getStadewValleyBasePath(), Constants.MOD_PATH));
         List<ModManifestEntry> mods = new ArrayList<>(30);
         do {
             File currentFile = files.poll();
@@ -162,7 +168,7 @@ public class ModAssetsManager {
         if (modManifestEntries == null) {
             return false;
         }
-        File modFolder = new File(Environment.getExternalStorageDirectory(), Constants.MOD_PATH);
+        File modFolder = new File(FileUtils.getStadewValleyBasePath(), Constants.MOD_PATH);
         ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(), ModManifestEntry::getUniqueID);
         for (ModManifestEntry mod : modManifestEntries) {
             if (installedModMap.containsKey(mod.getUniqueID()) || installedModMap.containsKey(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"))) {
@@ -253,18 +259,28 @@ public class ModAssetsManager {
      * @param returnCallback  回调函数
      */
     private void checkUnsatisfiedDependencies(ImmutableListMultimap<String, ModManifestEntry> installedModMap, Consumer<Boolean> returnCallback) {
-        List<String> dependencyErrors = installedModMap.values().stream()
+        List<Tuple2<String, List<String>>> dependencyErrors = installedModMap.values().stream()
                 .map(mod -> checkModDependencyError(mod, installedModMap))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         if (dependencyErrors.size() > 0) {
             DialogUtils.showConfirmDialog(root, R.string.error,
-                    Joiner.on(";").join(dependencyErrors),
-                    R.string.continue_text, R.string.abort,
+                    dependencyErrors.stream().map(Tuple2::getFirst).collect(Collectors.joining(";")),
+                    R.string.continue_text, R.string.menu_download,
                     ((dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {
                             returnCallback.accept(true);
                         } else {
+                            List<ModUpdateCheckRequestDto.ModInfo> list = dependencyErrors.stream()
+                                    .map(Tuple2::getSecond).flatMap(Collection::stream).distinct()
+                                    .map(item -> {
+                                        ModUpdateCheckRequestDto.ModInfo modInfo = new ModUpdateCheckRequestDto.ModInfo();
+                                        modInfo.setId(item);
+                                        return modInfo;
+                                    })
+                                    .distinct()
+                                    .collect(Collectors.toList());
+                            redirectModDownload(list);
                             returnCallback.accept(false);
                         }
                     }));
@@ -280,22 +296,70 @@ public class ModAssetsManager {
      * @param returnCallback  回调函数
      */
     private void checkContentpacks(ImmutableListMultimap<String, ModManifestEntry> installedModMap, Consumer<Boolean> returnCallback) {
-        List<String> dependencyErrors = installedModMap.values().stream()
+        List<Tuple2<String, String>> dependencyErrors = installedModMap.values().stream()
                 .map(mod -> checkContentPackDependencyError(mod, installedModMap))
                 .filter(Objects::nonNull).collect(Collectors.toList());
         if (!dependencyErrors.isEmpty()) {
             DialogUtils.showConfirmDialog(root, R.string.error,
-                    Joiner.on(";").join(dependencyErrors),
-                    R.string.continue_text, R.string.abort,
+                    dependencyErrors.stream().map(Tuple2::getFirst).collect(Collectors.joining(";")),
+                    R.string.continue_text, R.string.menu_download,
                     ((dialog, which) -> {
                         if (which == DialogAction.POSITIVE) {
                             returnCallback.accept(true);
                         } else {
+                            List<ModUpdateCheckRequestDto.ModInfo> list = dependencyErrors.stream()
+                                    .map(item -> {
+                                        ModUpdateCheckRequestDto.ModInfo modInfo = new ModUpdateCheckRequestDto.ModInfo();
+                                        modInfo.setId(item.getSecond());
+                                        return modInfo;
+                                    })
+                                    .distinct()
+                                    .collect(Collectors.toList());
+                            redirectModDownload(list);
                             returnCallback.accept(false);
                         }
                     }));
         } else {
             returnCallback.accept(true);
+        }
+    }
+
+    private void redirectModDownload(List<ModUpdateCheckRequestDto.ModInfo> list) {
+        ModUpdateCheckRequestDto requestDto = new ModUpdateCheckRequestDto(list);
+        try {
+            requestDto.setIncludeExtendedMetadata(true);
+            OkGo.<List<ModUpdateCheckResponseDto>>post(Constants.UPDATE_CHECK_SERVICE_URL)
+                    .upJson(JsonUtil.toJson(requestDto))
+                    .execute(new JsonCallback<List<ModUpdateCheckResponseDto>>(new TypeReference<List<ModUpdateCheckResponseDto>>() {
+                    }) {
+                        @Override
+                        public void onError(Response<List<ModUpdateCheckResponseDto>> response) {
+                            super.onError(response);
+                        }
+
+                        @Override
+                        public void onSuccess(Response<List<ModUpdateCheckResponseDto>> response) {
+                            List<ModUpdateCheckResponseDto> checkResponseDtos = response.body();
+                            if (checkResponseDtos != null) {
+                                List<ModUpdateCheckResponseDto> list = checkResponseDtos.stream()
+                                        .filter(dto -> dto.getMetadata() != null && dto.getMetadata().getMain() != null && StringUtils.isNoneBlank(dto.getMetadata().getMain().getUrl()))
+                                        .collect(Collectors.toList());
+                                try {
+                                    if (list.size() > 0) {
+                                        for (ModUpdateCheckResponseDto dto : list) {
+                                            dto.setSuggestedUpdate(new ModUpdateCheckResponseDto.UpdateInfo(dto.getMetadata().getMain().getVersion(), dto.getMetadata().getMain().getUrl()));
+                                        }
+                                        NavController controller = Navigation.findNavController(CommonLogic.getActivityFromView(root), R.id.nav_host_fragment);
+                                        controller.navigate(MobileNavigationDirections.actionNavAnyToModUpdateFragment(JsonUtil.toJson(list)));
+                                    }
+                                } catch (Exception e) {
+                                    Crashes.trackError(e);
+                                }
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+            Crashes.trackError(e);
         }
     }
 
@@ -344,13 +408,15 @@ public class ModAssetsManager {
         }
     }
 
-    private String checkModDependencyError(ModManifestEntry mod, ImmutableListMultimap<String, ModManifestEntry> installedModMap) {
+    private Tuple2<String, List<String>> checkModDependencyError(ModManifestEntry mod, ImmutableListMultimap<String, ModManifestEntry> installedModMap) {
         if (mod.getDependencies() != null) {
             List<ModManifestEntry> unsatisfiedDependencies = mod.getDependencies().stream()
                     .filter(dependency -> isDependencyIsExist(dependency, installedModMap))
                     .collect(Collectors.toList());
             if (unsatisfiedDependencies.size() > 0) {
-                return root.getContext().getString(R.string.error_depends_on_mod, mod.getUniqueID(), Joiner.on(",").join(Lists.transform(unsatisfiedDependencies, ModManifestEntry::getUniqueID)));
+                return new Tuple2<>(
+                        root.getContext().getString(R.string.error_depends_on_mod, mod.getUniqueID(), Joiner.on(",").join(Lists.transform(unsatisfiedDependencies, ModManifestEntry::getUniqueID))),
+                        unsatisfiedDependencies.stream().map(ModManifestEntry::getUniqueID).collect(Collectors.toList()));
             }
         }
         return null;
@@ -386,7 +452,7 @@ public class ModAssetsManager {
         return false;
     }
 
-    private String checkContentPackDependencyError(ModManifestEntry mod, ImmutableListMultimap<String, ModManifestEntry> installedModMap) {
+    private Tuple2<String, String> checkContentPackDependencyError(ModManifestEntry mod, ImmutableListMultimap<String, ModManifestEntry> installedModMap) {
         ModManifestEntry dependency = mod.getContentPackFor();
         if (dependency != null) {
             if (dependency.getIsRequired() != null && !dependency.getIsRequired()) {
@@ -403,7 +469,7 @@ public class ModAssetsManager {
                 }
             }
             if (entries.size() != 1) {
-                return root.getContext().getString(R.string.error_depends_on_mod, mod.getUniqueID(), dependency.getUniqueID());
+                return new Tuple2<>(root.getContext().getString(R.string.error_depends_on_mod, mod.getUniqueID(), dependency.getUniqueID()), dependency.getUniqueID());
             }
             String version = entries.get(0).getVersion();
             if (!StringUtils.isBlank(version)) {
@@ -411,7 +477,7 @@ public class ModAssetsManager {
                     return null;
                 }
                 if (VersionUtil.compareVersion(version, dependency.getMinimumVersion()) < 0) {
-                    return root.getContext().getString(R.string.error_depends_on_mod_version, mod.getUniqueID(), dependency.getUniqueID(), dependency.getMinimumVersion());
+                    return new Tuple2<>(root.getContext().getString(R.string.error_depends_on_mod_version, mod.getUniqueID(), dependency.getUniqueID(), dependency.getMinimumVersion()), dependency.getUniqueID());
                 }
             }
             return null;

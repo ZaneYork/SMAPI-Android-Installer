@@ -25,6 +25,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ModUpdateCheckRequestDto {
 
+    public ModUpdateCheckRequestDto(List<ModInfo> mods, SemanticVersion gameVersion) {
+        this.mods = mods;
+        this.gameVersion = gameVersion;
+    }
+
     /**
      * 待检查MOD列表
      */
@@ -37,7 +42,6 @@ public class ModUpdateCheckRequestDto {
     /**
      * 游戏版本
      */
-    @NonNull
     private SemanticVersion gameVersion;
     /**
      * 平台版本

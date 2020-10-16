@@ -7,17 +7,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 
 import com.android.apksig.ApkSigner;
 import com.android.apksig.ApkVerifier;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
-import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.MainActivity;
@@ -25,6 +22,7 @@ import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.constant.ManifestPatchConstants;
+import com.zane.smapiinstaller.dto.Tuple2;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
@@ -47,18 +45,17 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.zip.Deflater;
 
 import androidx.core.content.FileProvider;
-
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import pxb.android.axml.NodeVisitor;
 
 /**
@@ -108,46 +105,44 @@ public class ApkPatcher {
                 String sourceDir = packageInfo.applicationInfo.publicSourceDir;
                 File apkFile = new File(sourceDir);
 
-                File externalFilesDir = Environment.getExternalStorageDirectory();
-                if (externalFilesDir != null) {
-                    File dest = new File(externalFilesDir.getAbsolutePath() + "/SMAPI Installer/");
-                    if (!dest.exists()) {
-                        if (!dest.mkdir()) {
-                            errorMessage.set(String.format(context.getString(R.string.error_failed_to_create_file), dest.getAbsolutePath()));
-                            return null;
-                        }
+                String stadewValleyBasePath = FileUtils.getStadewValleyBasePath();
+                File dest = new File(stadewValleyBasePath + "/SMAPI Installer/");
+                if (!dest.exists()) {
+                    if (!dest.mkdir()) {
+                        errorMessage.set(String.format(context.getString(R.string.error_failed_to_create_file), dest.getAbsolutePath()));
+                        return null;
                     }
-                    File distFile = new File(dest, apkFile.getName());
-                    if (advancedStage == 0) {
-                        AtomicInteger count = new AtomicInteger();
-                        ZipUtil.unpack(apkFile, new File(externalFilesDir.getAbsolutePath() + "/StardewValley/"), name -> {
-                            if (name.startsWith("assets/")) {
-                                int progress = count.incrementAndGet();
-                                if (progress % 30 == 0) {
-                                    emitProgress(progress / 30);
-                                }
-                                return name.replaceFirst("assets/", "");
-                            }
-                            return null;
-                        });
-                        return distFile.getAbsolutePath();
-                    } else if (advancedStage == 1) {
-                        File contentFolder = new File(externalFilesDir.getAbsolutePath() + "/StardewValley/Content");
-                        if (contentFolder.exists()) {
-                            if (!contentFolder.isDirectory()) {
-                                errorMessage.set(context.getString(R.string.error_directory_exists_with_same_filename, contentFolder.getAbsolutePath()));
-                                return null;
-                            }
-                        } else {
-                            extract(0);
-                        }
-                        ZipUtils.removeEntries(sourceDir, "assets/Content", distFile.getAbsolutePath(), (progress) -> emitProgress((int) (progress * 0.05)));
-                    } else {
-                        Files.copy(apkFile, distFile);
-                    }
-                    emitProgress(5);
-                    return distFile.getAbsolutePath();
                 }
+                File distFile = new File(dest, apkFile.getName());
+                if (advancedStage == 0) {
+                    AtomicInteger count = new AtomicInteger();
+                    ZipUtil.unpack(apkFile, new File(stadewValleyBasePath + "/StardewValley/"), name -> {
+                        if (name.startsWith("assets/")) {
+                            int progress = count.incrementAndGet();
+                            if (progress % 30 == 0) {
+                                emitProgress(progress / 30);
+                            }
+                            return name.replaceFirst("assets/", "");
+                        }
+                        return null;
+                    });
+                    return distFile.getAbsolutePath();
+                } else if (advancedStage == 1) {
+                    File contentFolder = new File(stadewValleyBasePath + "/StardewValley/Content");
+                    if (contentFolder.exists()) {
+                        if (!contentFolder.isDirectory()) {
+                            errorMessage.set(context.getString(R.string.error_directory_exists_with_same_filename, contentFolder.getAbsolutePath()));
+                            return null;
+                        }
+                    } else {
+                        extract(0);
+                    }
+                    ZipUtils.removeEntries(sourceDir, "assets/Content", distFile.getAbsolutePath(), (progress) -> emitProgress((int) (progress * 0.05)));
+                } else {
+                    Files.copy(apkFile, distFile);
+                }
+                emitProgress(5);
+                return distFile.getAbsolutePath();
             } catch (PackageManager.NameNotFoundException ignored) {
             } catch (IOException e) {
                 Log.e(TAG, "Extract error", e);
@@ -250,9 +245,9 @@ public class ApkPatcher {
         AtomicReference<String> packageName = new AtomicReference<>();
         AtomicReference<String> versionName = new AtomicReference<>();
         AtomicLong versionCode = new AtomicLong();
-        Predicate<ManifestTagVisitor.AttrArgs> processLogic = (attr) -> {
+        Function<ManifestTagVisitor.AttrArgs, List<ManifestTagVisitor.AttrArgs>> attrProcessLogic = (attr) -> {
             if (attr == null) {
-                return true;
+                return null;
             }
             if (attr.type == NodeVisitor.TYPE_STRING) {
                 String strObj = (String) attr.obj;
@@ -276,6 +271,7 @@ public class ApkPatcher {
                                 attr.obj = Constants.PATCHED_APP_NAME;
                             }
                         }
+//                        return Collections.singletonList(new ManifestTagVisitor.AttrArgs(attr.ns, "requestLegacyExternalStorage", -1, NodeVisitor.TYPE_INT_BOOLEAN, true));
                         break;
                     case "authorities":
                         if (strObj.contains(packageName.get())) {
@@ -296,10 +292,22 @@ public class ApkPatcher {
                     versionCode.set((int) attr.obj);
                 }
             }
-            return true;
+            return null;
         };
+        AtomicReference<Boolean> permissionAppended = new AtomicReference<>(true);
+        Function<ManifestTagVisitor.ChildArgs, List<ManifestTagVisitor.ChildArgs>> childProcessLogic = (child -> {
+            if (!permissionAppended.get() && StringUtils.equals(child.name, "uses-permission")) {
+                permissionAppended.set(true);
+                return Collections.singletonList(new ManifestTagVisitor.ChildArgs(
+                        child.ns, child.name, Collections.singletonList(
+                        new ManifestTagVisitor.AttrArgs(
+                                "http://schemas.android.com/apk/res/android", "name", -1,
+                                NodeVisitor.TYPE_STRING, "android.permission.MANAGE_EXTERNAL_STORAGE"))));
+            }
+            return null;
+        });
         try {
-            byte[] modifyManifest = CommonLogic.modifyManifest(bytes, processLogic);
+            byte[] modifyManifest = CommonLogic.modifyManifest(bytes, attrProcessLogic, childProcessLogic);
             if (StringUtils.endsWith(versionName.get(), ManifestPatchConstants.PATTERN_VERSION_AMAZON)) {
                 packageName.set(ManifestPatchConstants.APP_PACKAGE_NAME + ManifestPatchConstants.PATTERN_VERSION_AMAZON);
             }
@@ -335,56 +343,54 @@ public class ApkPatcher {
      */
     public String sign(String apkPath) {
         try {
-            File externalFilesDir = Environment.getExternalStorageDirectory();
+            String stadewValleyBasePath = FileUtils.getStadewValleyBasePath();
             emitProgress(47);
-            if (externalFilesDir != null) {
-                String signApkPath = externalFilesDir.getAbsolutePath() + "/SMAPI Installer/base_signed.apk";
-                KeyStore ks = new KeyStoreFileManager.JksKeyStore();
-                try (InputStream fis = context.getAssets().open("debug.keystore.dat")) {
-                    ks.load(fis, PASSWORD.toCharArray());
-                }
-                String alias = ks.aliases().nextElement();
-                X509Certificate publicKey = (X509Certificate) ks.getCertificate(alias);
-                PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "android".toCharArray());
-                ApkSigner.SignerConfig signerConfig = new ApkSigner.SignerConfig.Builder("debug", privateKey, Collections.singletonList(publicKey)).build();
-                emitProgress(49);
-                File outputFile = new File(signApkPath);
-                ApkSigner signer = new ApkSigner.Builder(Collections.singletonList(signerConfig))
-                        .setInputApk(new File(apkPath))
-                        .setOutputApk(outputFile)
-                        .setV1SigningEnabled(true)
-                        .setV2SigningEnabled(true).build();
-                long zipOpElapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-                stopwatch.reset();
-                Thread thread = new Thread(() -> {
-                    stopwatch.start();
-                    while (true) {
-                        try {
-                            Thread.sleep(20);
-                            long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-                            double progress = elapsed * 0.98 / zipOpElapsed;
-                            if (progress < 1.0) {
-                                emitProgress((int) (49 + 45 * progress));
-                            }
-                        } catch (InterruptedException ignored) {
-                            return;
-                        }
-                    }
-                });
-                thread.start();
-                signer.sign();
-                FileUtils.forceDelete(new File(apkPath));
-                ApkVerifier.Result result = new ApkVerifier.Builder(outputFile).build().verify();
-                if (thread.isAlive() && !thread.isInterrupted()) {
-                    thread.interrupt();
-                }
-                if (result.containsErrors()) {
-                    errorMessage.set(result.getErrors().stream().map(ApkVerifier.IssueWithParams::toString).collect(Collectors.joining(",")));
-                    return null;
-                }
-                emitProgress(95);
-                return signApkPath;
+            String signApkPath = stadewValleyBasePath + "/SMAPI Installer/base_signed.apk";
+            KeyStore ks = new KeyStoreFileManager.JksKeyStore();
+            try (InputStream fis = context.getAssets().open("debug.keystore.dat")) {
+                ks.load(fis, PASSWORD.toCharArray());
             }
+            String alias = ks.aliases().nextElement();
+            X509Certificate publicKey = (X509Certificate) ks.getCertificate(alias);
+            PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "android".toCharArray());
+            ApkSigner.SignerConfig signerConfig = new ApkSigner.SignerConfig.Builder("debug", privateKey, Collections.singletonList(publicKey)).build();
+            emitProgress(49);
+            File outputFile = new File(signApkPath);
+            ApkSigner signer = new ApkSigner.Builder(Collections.singletonList(signerConfig))
+                    .setInputApk(new File(apkPath))
+                    .setOutputApk(outputFile)
+                    .setV1SigningEnabled(true)
+                    .setV2SigningEnabled(true).build();
+            long zipOpElapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+            stopwatch.reset();
+            Thread thread = new Thread(() -> {
+                stopwatch.start();
+                while (true) {
+                    try {
+                        Thread.sleep(20);
+                        long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+                        double progress = elapsed * 0.98 / zipOpElapsed;
+                        if (progress < 1.0) {
+                            emitProgress((int) (49 + 45 * progress));
+                        }
+                    } catch (InterruptedException ignored) {
+                        return;
+                    }
+                }
+            });
+            thread.start();
+            signer.sign();
+            FileUtils.forceDelete(new File(apkPath));
+            ApkVerifier.Result result = new ApkVerifier.Builder(outputFile).build().verify();
+            if (thread.isAlive() && !thread.isInterrupted()) {
+                thread.interrupt();
+            }
+            if (result.containsErrors()) {
+                errorMessage.set(result.getErrors().stream().map(ApkVerifier.IssueWithParams::toString).collect(Collectors.joining(",")));
+                return null;
+            }
+            emitProgress(95);
+            return signApkPath;
         } catch (Exception e) {
             Log.e(TAG, "Sign error", e);
             errorMessage.set(e.getLocalizedMessage());

@@ -3,7 +3,6 @@ package com.zane.smapiinstaller.ui.install;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +20,7 @@ import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.ui.main.MainTabsFragmentDirections;
 import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.FileUtils;
 
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +55,7 @@ public class InstallFragment extends Fragment {
             binding.layoutAdvInstall.setVisibility(View.VISIBLE);
         }
         try {
-            String firstLine = Files.asCharSource(new File(Environment.getExternalStorageDirectory(), Constants.LOG_PATH), StandardCharsets.UTF_8).readFirstLine();
+            String firstLine = Files.asCharSource(new File(FileUtils.getStadewValleyBasePath(), Constants.LOG_PATH), StandardCharsets.UTF_8).readFirstLine();
             if (StringUtils.isNoneBlank(firstLine)) {
                 String versionString = RegExUtils.removePattern(firstLine, "\\[.+\\]\\s+");
                 versionString = RegExUtils.removePattern(versionString, "\\s+with.+");

@@ -5,8 +5,7 @@ import android.text.Editable;
 /**
  * @author Zane
  */
-@FunctionalInterface
-public interface TextChangedWatcher extends android.text.TextWatcher {
+public abstract class TextChangedWatcher implements android.text.TextWatcher {
     /**
      * Do nothing
      * @param s origin string
@@ -15,7 +14,7 @@ public interface TextChangedWatcher extends android.text.TextWatcher {
      * @param after modified string
      */
     @Override
-    default void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
     /**
      * Text changed event
@@ -24,12 +23,12 @@ public interface TextChangedWatcher extends android.text.TextWatcher {
      * @param count modify count
      */
     @Override
-    void onTextChanged(CharSequence s, int start, int before, int count);
+    public abstract void onTextChanged(CharSequence s, int start, int before, int count);
 
     /**
      * Do nothing
      * @param s target view
      */
     @Override
-    default void afterTextChanged(Editable s) {}
+    public void afterTextChanged(Editable s) {}
 }

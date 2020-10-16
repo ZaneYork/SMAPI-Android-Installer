@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="60dp"
@@ -11,12 +12,10 @@
         app:layout_constraintEnd_toStartOf="@id/guideline_v2"
         app:layout_constraintTop_toBottomOf="@id/guideline_h1"
         app:layout_constraintBottom_toTopOf="@id/guideline_h2">
-        <EditText
-            android:id="@+id/edit_text_config_edit"
+        <WebView
+            android:id="@+id/edit_text_config_webview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:gravity="top|start"/>
+            android:layout_height="wrap_content"/>
     </ScrollView>
 
     <Button

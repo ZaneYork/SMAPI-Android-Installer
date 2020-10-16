@@ -1,7 +1,6 @@
 package com.zane.smapiinstaller.ui.help;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +11,7 @@ import com.zane.smapiinstaller.databinding.FragmentHelpBinding;
 import com.zane.smapiinstaller.entity.HelpItemList;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.UpdatableListManager;
+import com.zane.smapiinstaller.utils.FileUtils;
 
 import java.io.File;
 
@@ -65,7 +65,7 @@ public class HelpFragment extends Fragment {
     private void showLog() {
         CommonLogic.doOnNonNull(this.getView(), view -> {
             NavController controller = Navigation.findNavController(view);
-            File logFile = new File(Environment.getExternalStorageDirectory(), Constants.LOG_PATH);
+            File logFile = new File(FileUtils.getStadewValleyBasePath(), Constants.LOG_PATH);
             if (logFile.exists()) {
                 MobileNavigationDirections.ActionNavAnyToConfigEditFragment action = HelpFragmentDirections.actionNavAnyToConfigEditFragment(logFile.getAbsolutePath());
                 action.setEditable(false);

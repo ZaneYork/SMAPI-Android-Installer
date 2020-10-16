@@ -39,8 +39,13 @@ public class ConfigFragment extends Fragment {
             return false;
         });
         binding.viewModList.addItemDecoration(new DividerItemDecoration(binding.viewModList.getContext(), DividerItemDecoration.VERTICAL));
-        binding.buttonSearch.addTextChangedListener((TextChangedWatcher) (s, start, before, count) -> configViewModel.filter(s));
-        binding.buttonSortBy.setOnClickListener(v -> onSortByClick());
+        binding.buttonSearch.addTextChangedListener(new TextChangedWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                configViewModel.filter(s);
+            }
+        });
+        binding.buttonSortBy.setOnClickListener(this::onSortByClick);
         return binding.getRoot();
     }
 
@@ -50,7 +55,7 @@ public class ConfigFragment extends Fragment {
         binding = null;
     }
 
-    void onSortByClick() {
+    public void onSortByClick(View v) {
         int index = 0;
         switch (configViewModel.getSortBy()) {
             case "Name asc":

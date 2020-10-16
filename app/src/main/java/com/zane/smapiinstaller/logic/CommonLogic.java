@@ -11,7 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -20,7 +19,6 @@ import android.widget.ImageView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
@@ -28,6 +26,7 @@ import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.DialogAction;
+import com.zane.smapiinstaller.dto.Tuple2;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
@@ -43,9 +42,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
 import pxb.android.axml.AxmlWriter;
@@ -196,7 +196,7 @@ public class CommonLogic {
         if (manifestEntries == null) {
             return false;
         }
-        File basePath = new File(Environment.getExternalStorageDirectory() + "/StardewValley/");
+        File basePath = new File(FileUtils.getStadewValleyBasePath() + "/StardewValley/");
         if (!basePath.exists()) {
             if (!basePath.mkdir()) {
                 return false;
@@ -244,18 +244,18 @@ public class CommonLogic {
      * 修改AndroidManifest.xml文件
      *
      * @param bytes        AndroidManifest.xml文件字符数组
-     * @param processLogic 处理逻辑
+     * @param attrProcessLogic 处理逻辑
      * @return 修改后的AndroidManifest.xml文件字符数组
      * @throws IOException 异常
      */
-    public static byte[] modifyManifest(byte[] bytes, Predicate<ManifestTagVisitor.AttrArgs> processLogic) throws IOException {
+    public static byte[] modifyManifest(byte[] bytes, Function<ManifestTagVisitor.AttrArgs, List<ManifestTagVisitor.AttrArgs>> attrProcessLogic, Function<ManifestTagVisitor.ChildArgs, List<ManifestTagVisitor.ChildArgs>> childProcessLogic) throws IOException {
         AxmlReader reader = new AxmlReader(bytes);
         AxmlWriter writer = new AxmlWriter();
         reader.accept(new AxmlVisitor(writer) {
             @Override
             public NodeVisitor child(String ns, String name) {
                 NodeVisitor child = super.child(ns, name);
-                return new ManifestTagVisitor(child, processLogic);
+                return new ManifestTagVisitor(child, attrProcessLogic, childProcessLogic);
             }
         });
         return writer.toByteArray();

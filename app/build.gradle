@@ -5,21 +5,18 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
 
     defaultConfig {
         applicationId "com.zane.smapiinstaller"
         minSdkVersion 19
-        targetSdkVersion 28
-        versionCode 56
-        versionName "1.6.3"
+        targetSdkVersion 30
+        versionCode 58
+        versionName "1.6.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
-        ndk {
-            abiFilters 'armeabi-v7a','arm64-v8a'
-        }
     }
 
     buildTypes {
@@ -53,8 +50,8 @@ android {
         }
     }
 
-    viewBinding {
-        enabled = true
+    buildFeatures {
+        viewBinding true
     }
 }
 

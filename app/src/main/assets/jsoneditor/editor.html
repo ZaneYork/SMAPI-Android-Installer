@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <!-- when using the mode "code", it's important to specify charset utf-8 -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <link href="jsoneditor.min.css" rel="stylesheet" type="text/css">
+    <script src="jsoneditor.min.js"></script>
+    <style type="text/css">
+        @media screen and (min-width: 520px) {
+            .jsoneditor-search input {
+                width: 120px;
+            }
+        }
+        @media screen and (max-width: 490px) {
+            .jsoneditor-search input {
+                width: 90px;
+            }
+        }
+        @media screen and (max-width: 460px) {
+            .jsoneditor-search input {
+                width: 60px;
+            }
+        }
+        @media screen and (max-width: 430px) {
+            .jsoneditor-search input {
+                width: 30px;
+            }
+            #jsoneditor {
+                min-width: 390px;
+            }
+        }
+        @media screen and (max-width: 410px) {
+            .jsoneditor-search input {
+                width: 20px;
+            }
+            #jsoneditor {
+                min-width: 370px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="jsoneditor" style="width: 100%"></div>
+    <script>
+        webObject = { getText: function(){ return '{"Array":[1,2,3],"Boolean":true,"Null":null,"Number":123,"Object":{"a":"b","c":"d"},"String":"Hello World"}'; }, getMode: function(){ return 'tree';}, getLanguage: function(){ return 'zh-CN';}, isEditable: function(){ return true;}, getHeight: function(){ return 400;}, };
+        // create the editor
+        const container = document.getElementById("jsoneditor");
+        container.style.height = webObject.getHeight() + "px";
+        const options = {
+            mode: webObject.getMode(),
+            modes: webObject.getMode() == "text-plain" ? [] : ["code","form","tree","text","preview"],
+            language: webObject.getLanguage(),
+            enableTransform: false,
+            onCreateMenu: function (items, node) {
+                return items.filter(function (item) {
+                    return item.className !== 'jsoneditor-extract';
+                })
+            }
+        };
+        options.onEditable = function() { return webObject.isEditable();};
+
+        const editor = new JSONEditor(container, options);
+
+        // set json
+        var initialJson;
+        if(webObject.getMode() == "text-plain") {
+            initialJson = webObject.getText();
+        }
+        else{
+            initialJson = JSON.parse(webObject.getText());
+        }
+        editor.setSchema(null);
+        editor.set(initialJson);
+        function getJson()
+        {
+            // get json
+            webObject.setText(JSON.stringfy(editor.get()))
+        }
+    </script>
+</body>
+</html>

@@ -70,6 +70,13 @@ public class ModUpdateAdapter extends RecyclerView.Adapter<ModUpdateAdapter.View
                                 activity.getString(R.string.mod_version_update_text, modManifestEntry.getVersion(), updateInfo.getSuggestedUpdate().getVersion())
                         ));
             }
+            else {
+                binding.textViewModName.setText(this.updateInfo.getId());
+                CommonLogic.doOnNonNull(CommonLogic.getActivityFromView(binding.textViewModName),
+                        activity -> binding.textViewModVersion.setText(
+                                activity.getString(R.string.mod_version_update_text, updateInfo.getSuggestedUpdate().getVersion(), updateInfo.getSuggestedUpdate().getVersion())
+                        ));
+            }
         }
 
         public ViewHolder(View view) {

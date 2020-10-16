@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +34,7 @@ import com.zane.smapiinstaller.logic.GameLauncher;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.FileUtils;
 import com.zane.smapiinstaller.utils.JsonCallback;
 import com.zane.smapiinstaller.utils.JsonUtil;
 import com.zane.smapiinstaller.utils.TranslateUtil;
@@ -64,6 +67,27 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
     private void requestPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // 先判断有没有权限
+            if (!Environment.isExternalStorageManager()) {
+                DialogUtils.showConfirmDialog(MainActivity.instance, R.string.confirm, R.string.request_all_files_access_permission, ((dialog, dialogAction) -> {
+                    if (dialogAction == DialogAction.POSITIVE) {
+                        ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION, (resultCode, data) -> {
+                            if (!Environment.isExternalStorageManager()) {
+                                this.finish();
+                            } else {
+                                requestPermissions();
+                            }
+                        });
+                        startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION), ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
+                    }
+                    else {
+                        this.finish();
+                    }
+                }));
+                return;
+            }
+        }
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this,
@@ -235,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                 DialogUtils.showInputDialog(binding.appBarMain.toolbar, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {
                     if (StringUtils.isNoneBlank(input)) {
                         String pathString = input.toString();
-                        File file = new File(Environment.getExternalStorageDirectory(), pathString);
+                        File file = new File(FileUtils.getStadewValleyBasePath(), pathString);
                         if (file.exists() && file.isDirectory()) {
                             Constants.MOD_PATH = pathString;
                             config.setModsPath(pathString);

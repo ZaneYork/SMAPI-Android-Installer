@@ -84,4 +84,5 @@
     <string name="request_unknown_source_permission">需要开启未知源权限以安装Mod框架，是否前往设置开启？</string>
     <string name="settings_rewrite_missing">重写增强</string>
     <string name="settings_set_app_name">设置应用名称</string>
+    <string name="request_all_files_access_permission">安卓11及以后版本需要授权文件管理权限以完成框架安装，是否继续？</string>
 </resources>

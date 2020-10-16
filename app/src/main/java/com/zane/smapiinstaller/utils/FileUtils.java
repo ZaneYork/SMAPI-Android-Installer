@@ -279,7 +279,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @return 移除前缀后的路径
      */
     public static String toPrettyPath(String path) {
-        return StringUtils.removeStart(path, Environment.getExternalStorageDirectory().getAbsolutePath());
+        return StringUtils.removeStart(path, FileUtils.getStadewValleyBasePath());
     }
 
     /**
@@ -309,5 +309,9 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
         } catch (IOException ignored) {
         }
         return null;
+    }
+
+    public static String getStadewValleyBasePath() {
+        return Environment.getExternalStorageDirectory().getAbsolutePath();
     }
 }
