@@ -77,7 +77,7 @@ public class ConfigEditFragment extends Fragment {
                         CommonLogic.doOnNonNull(this.getContext(), (context -> {
                             int height = (int) (binding.scrollView.getMeasuredHeight() / context.getResources().getDisplayMetrics().density * 0.95);
                             String lang = LanguagesManager.getAppLanguage(context).getCountry();
-                            switch (lang){
+                            switch (lang) {
                                 case "zh":
                                     lang = "zh-CN";
                                     break;
@@ -91,10 +91,10 @@ public class ConfigEditFragment extends Fragment {
                                     break;
                             }
                             if (editable) {
-                                webObject = new WebViewObject(fileText, "code", lang, true, height);
+                                webObject = new WebViewObject(fileText, "tree", lang, true, height, this::configSave);
                                 binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
                             } else {
-                                webObject = new WebViewObject(fileText, "text-plain", lang, false, height);
+                                webObject = new WebViewObject(fileText, "text-plain", lang, false, height, null);
                                 binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
                             }
                             String assetText = FileUtils.getAssetText(context, "jsoneditor/editor.html");
@@ -138,20 +138,22 @@ public class ConfigEditFragment extends Fragment {
     }
 
     private void onConfigSave() {
+        binding.editTextConfigWebview.loadUrl("javascript:getJson()");
+    }
+
+    private void configSave(String config) {
         try {
-            if(webObject != null) {
-                binding.editTextConfigWebview.loadUrl("javascript:getJson()");
-                JsonUtil.checkJson(webObject.getText());
-                FileOutputStream outputStream = new FileOutputStream(configPath);
-                try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream)) {
-                    outputStreamWriter.write(webObject.getText());
-                    outputStreamWriter.flush();
-                }
+            JsonUtil.checkJson(config);
+            FileOutputStream outputStream = new FileOutputStream(configPath);
+            try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream)) {
+                outputStreamWriter.write(config);
+                outputStreamWriter.flush();
             }
         } catch (Exception e) {
             DialogUtils.showAlertDialog(getView(), R.string.error, e.getLocalizedMessage());
         }
     }
+
 
     private void onConfigCancel() {
         CommonLogic.doOnNonNull(getView(), view -> Navigation.findNavController(view).popBackStack());

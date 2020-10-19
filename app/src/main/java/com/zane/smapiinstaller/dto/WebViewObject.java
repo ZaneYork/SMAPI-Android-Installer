@@ -2,6 +2,14 @@ package com.zane.smapiinstaller.dto;
 
 import android.webkit.JavascriptInterface;
 
+import com.zane.smapiinstaller.R;
+import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.JsonUtil;
+
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.util.function.Consumer;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +24,7 @@ public class WebViewObject {
     private String language;
     private boolean editable;
     private int height;
+    private Consumer<String> setterCallback;
 
     @JavascriptInterface
     public String getText() {
@@ -25,6 +34,9 @@ public class WebViewObject {
     @JavascriptInterface
     public void setText(String text) {
         this.text = text;
+        if(setterCallback != null) {
+            setterCallback.accept(text);
+        }
     }
 
     @JavascriptInterface
