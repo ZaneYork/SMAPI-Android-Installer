@@ -5,9 +5,12 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 import com.hjq.language.LanguagesManager;
 
 import org.apache.commons.io.input.BOMInputStream;
@@ -21,6 +24,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * 文件工具类
@@ -36,7 +43,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      */
     public static String getFileText(File file) {
         try {
-            InputStream inputStream = new FileInputStream(file);
+            InputStream inputStream = new BOMInputStream(new FileInputStream(file));
             try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
                 return CharStreams.toString(reader);
             }
@@ -313,5 +320,13 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
 
     public static String getStadewValleyBasePath() {
         return Environment.getExternalStorageDirectory().getAbsolutePath();
+    }
+
+    public static List<String> listAll(String basePath, Predicate<File> filter) {
+        return Lists.newArrayList(
+                Iterables.transform(
+                        Iterables.filter(Files.fileTraverser().breadthFirst(new File(basePath)), filter::test),
+                        File::getAbsolutePath)
+        );
     }
 }

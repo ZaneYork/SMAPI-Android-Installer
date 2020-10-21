@@ -24,6 +24,7 @@ public class WebViewObject {
     private String language;
     private boolean editable;
     private int height;
+    private int width;
     private Consumer<String> setterCallback;
 
     @JavascriptInterface
@@ -47,6 +48,11 @@ public class WebViewObject {
     @JavascriptInterface
     public int getHeight() {
         return height;
+    }
+
+    @JavascriptInterface
+    public int getWidth() {
+        return width;
     }
 
     @JavascriptInterface

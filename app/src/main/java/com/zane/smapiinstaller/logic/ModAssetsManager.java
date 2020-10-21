@@ -171,15 +171,35 @@ public class ModAssetsManager {
         File modFolder = new File(FileUtils.getStadewValleyBasePath(), Constants.MOD_PATH);
         ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(), ModManifestEntry::getUniqueID);
         for (ModManifestEntry mod : modManifestEntries) {
-            if (installedModMap.containsKey(mod.getUniqueID()) || installedModMap.containsKey(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"))) {
+            if (installedModMap.containsKey(mod.getUniqueID())) {
                 ImmutableList<ModManifestEntry> installedMods = installedModMap.get(mod.getUniqueID());
                 if (installedMods.size() > 1) {
                     DialogUtils.showAlertDialog(root, R.string.error,
                             String.format(context.getString(R.string.duplicate_mod_found),
                                     installedMods.stream().map(item -> FileUtils.toPrettyPath(item.getAssetPath())).collect(Collectors.joining(","))));
                     return false;
-                } else if (installedMods.size() == 0) {
-                    installedMods = installedModMap.get(mod.getUniqueID().replace("ZaneYork.CustomLocalization", "SMAPI.CustomLocalization"));
+                }
+                if (mod.getCleanInstall() != null && mod.getCleanInstall()) {
+                    // Delete origin version with different Unique ID
+                    if(mod.getOriginUniqueId() != null) {
+                        installedModMap.keys().stream().filter(id -> mod.getOriginUniqueId().contains(id)).map(installedModMap::get).forEach(list -> {
+                            for (ModManifestEntry entry : list) {
+                                try {
+                                    FileUtils.deleteDirectory(new File(entry.getAssetPath()));
+                                } catch (IOException e) {
+                                    Log.e(TAG, "Install Mod Error", e);
+                                }
+                            }
+                        });
+                    }
+                    // Delete old version
+                    if(installedMods.size() > 0 && mod.getVersion() != null && VersionUtil.compareVersion(installedMods.get(0).getVersion(), mod.getVersion()) < 0) {
+                        try {
+                            FileUtils.deleteDirectory(new File(installedMods.get(0).getAssetPath()));
+                        } catch (IOException e) {
+                            Log.e(TAG, "Install Mod Error", e);
+                        }
+                    }
                 }
                 if (installedMods.size() > 0) {
                     try {
@@ -187,13 +207,13 @@ public class ModAssetsManager {
                     } catch (IOException e) {
                         Log.e(TAG, "Install Mod Error", e);
                     }
+                    continue;
                 }
-            } else {
-                try {
-                    ZipUtil.unpack(context.getAssets().open(mod.getAssetPath()), modFolder);
-                } catch (IOException e) {
-                    Log.e(TAG, "Install Mod Error", e);
-                }
+            }
+            try {
+                ZipUtil.unpack(context.getAssets().open(mod.getAssetPath()), modFolder);
+            } catch (IOException e) {
+                Log.e(TAG, "Install Mod Error", e);
             }
         }
         return true;

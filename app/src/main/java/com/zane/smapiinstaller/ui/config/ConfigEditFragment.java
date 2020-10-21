@@ -1,6 +1,8 @@
 package com.zane.smapiinstaller.ui.config;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -8,11 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hjq.language.LanguagesManager;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
@@ -28,7 +28,6 @@ import com.zane.smapiinstaller.utils.JsonUtil;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
@@ -40,6 +39,7 @@ import androidx.navigation.Navigation;
  */
 public class ConfigEditFragment extends Fragment {
     private Boolean editable;
+    private Boolean virtualKeyboardConfigMode;
     private String configPath;
 
     private FragmentConfigEditBinding binding;
@@ -60,6 +60,7 @@ public class ConfigEditFragment extends Fragment {
         CommonLogic.doOnNonNull(this.getArguments(), arguments -> {
             ConfigEditFragmentArgs args = ConfigEditFragmentArgs.fromBundle(arguments);
             editable = args.getEditable();
+            virtualKeyboardConfigMode = args.getVirtualKeyboardConfigMode();
             if (!editable) {
                 binding.buttonConfigSave.setVisibility(View.INVISIBLE);
                 binding.buttonConfigCancel.setVisibility(View.INVISIBLE);
@@ -75,7 +76,6 @@ public class ConfigEditFragment extends Fragment {
                 if (fileText != null) {
                     binding.scrollView.post(() -> {
                         CommonLogic.doOnNonNull(this.getContext(), (context -> {
-                            int height = (int) (binding.scrollView.getMeasuredHeight() / context.getResources().getDisplayMetrics().density * 0.95);
                             String lang = LanguagesManager.getAppLanguage(context).getCountry();
                             switch (lang) {
                                 case "zh":
@@ -90,17 +90,47 @@ public class ConfigEditFragment extends Fragment {
                                 default:
                                     break;
                             }
-                            if (editable) {
-                                webObject = new WebViewObject(fileText, "tree", lang, true, height, this::configSave);
-                                binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
-                            } else {
-                                webObject = new WebViewObject(fileText, "text-plain", lang, false, height, null);
-                                binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
+                            String assetText;
+                            String baseUrl;
+                            if(!virtualKeyboardConfigMode) {
+                                int height = (int) (binding.scrollView.getMeasuredHeight() / context.getResources().getDisplayMetrics().density * 0.95);
+                                if (editable) {
+                                    try {
+                                        JsonUtil.checkJson(fileText);
+                                        String jsonText = JsonUtil.toJson(JsonUtil.fromJson(fileText, Object.class));
+                                        webObject = new WebViewObject(jsonText, "tree", lang, true, height, 0, this::configSave);
+                                        binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
+                                    } catch (Exception e) {
+                                        DialogUtils.showAlertDialog(getView(), R.string.error, e.getLocalizedMessage());
+                                        return;
+                                    }
+                                } else {
+                                    webObject = new WebViewObject(fileText, "text-plain", lang, false, height, 0, null);
+                                    binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
+                                }
+                                baseUrl = "file:///android_asset/jsoneditor/";
+                                assetText = FileUtils.getAssetText(context, "jsoneditor/editor.html");
+                                Activity activity = CommonLogic.getActivityFromView(binding.editTextConfigWebview);
+                                if(activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
+                                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                                }
                             }
-                            String assetText = FileUtils.getAssetText(context, "jsoneditor/editor.html");
+                            else {
+                                int height = context.getResources().getDisplayMetrics().heightPixels;
+                                int width = context.getResources().getDisplayMetrics().widthPixels;
+                                webObject = new WebViewObject(fileText, "tree", lang, true, height, width, this::configSave);
+                                binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
+                                binding.editTextConfigWebview.setInitialScale(100);
+                                assetText = FileUtils.getAssetText(context, "vkconfig/index.html");
+                                baseUrl = "file:///android_asset/vkconfig/";
+                                Activity activity = CommonLogic.getActivityFromView(binding.editTextConfigWebview);
+                                if(activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE){
+                                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                                }
+                            }
                             if (assetText != null) {
                                 binding.editTextConfigWebview.loadDataWithBaseURL(
-                                        "file:///android_asset/jsoneditor/",
+                                        baseUrl,
                                         assetText,
                                         "text/html",
                                         "utf-8", "");

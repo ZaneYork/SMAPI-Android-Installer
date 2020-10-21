@@ -24,6 +24,7 @@
         android:name="com.zane.smapiinstaller.ui.config.ConfigEditFragment"
         android:label="@string/menu_config_edit" >
         <argument android:name="configPath" app:argType="string"/>
+        <argument android:name="virtualKeyboardConfigMode" android:defaultValue="false" app:argType="boolean"/>
         <argument android:name="editable" android:defaultValue="true" app:argType="boolean"/>
     </fragment>
     <fragment

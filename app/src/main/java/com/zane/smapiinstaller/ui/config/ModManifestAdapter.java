@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.navigation.NavController;
@@ -51,7 +52,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         ModManifestEntry mod = modList.get(position);
         holder.binding.textViewModName.setText(mod.getName());
         holder.binding.textViewModDescription.setText(StringUtils.firstNonBlank(mod.getTranslatedDescription(), mod.getDescription()));
-        holder.setModPath(mod.getAssetPath());
+        holder.setModInfo(mod);
     }
 
     @Override
@@ -66,12 +67,22 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
 
     class ViewHolder extends RecyclerView.ViewHolder {
         private ModListItemBinding binding;
-        private String modPath;
+        private ModManifestEntry modInfo;
+        private List<String> configList;
 
-        void setModPath(String modPath) {
-            this.modPath = modPath;
-            File file = new File(modPath, "config.json");
-            if (!file.exists()) {
+        void setModInfo(ModManifestEntry modInfo) {
+            this.modInfo = modInfo;
+            File file = new File(modInfo.getAssetPath(), "config.json");
+            configList = FileUtils.listAll(modInfo.getAssetPath(), (f) ->
+                    !StringUtils.equals(f.getAbsolutePath(), file.getAbsolutePath())
+                            && f.getName().endsWith(".json")
+                            && !f.getName().startsWith(".")
+                            && !StringUtils.equals(f.getName(), "manifest.json")
+            );
+            if (file.exists()) {
+                configList.add(0, file.getAbsolutePath());
+            }
+            if (configList.size() == 0) {
                 binding.buttonConfigMod.setVisibility(View.INVISIBLE);
             } else {
                 binding.buttonConfigMod.setVisibility(View.VISIBLE);
@@ -88,7 +99,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         }
 
         private void setStrike() {
-            File file = new File(modPath);
+            File file = new File(modInfo.getAssetPath());
             if (StringUtils.startsWith(file.getName(), Constants.HIDDEN_FILE_PREFIX)) {
                 binding.textViewModName.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
             } else {
@@ -110,12 +121,12 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         void removeMod() {
             DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which) -> {
                 if (which == DialogAction.POSITIVE) {
-                    File file = new File(modPath);
+                    File file = new File(modInfo.getAssetPath());
                     if (file.exists()) {
                         try {
                             FileUtils.forceDelete(file);
-                            model.removeAll(entry -> StringUtils.equals(entry.getAssetPath(), modPath));
-                            List<Integer> removed = removeAll(entry -> StringUtils.equals(entry.getAssetPath(), modPath));
+                            model.removeAll(entry -> StringUtils.equals(entry.getAssetPath(), modInfo.getAssetPath()));
+                            List<Integer> removed = removeAll(entry -> StringUtils.equals(entry.getAssetPath(), modInfo.getAssetPath()));
                             for (int idx : removed) {
                                 notifyItemRemoved(idx);
                             }
@@ -128,7 +139,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         }
 
         void disableMod() {
-            File file = new File(modPath);
+            File file = new File(modInfo.getAssetPath());
             if (file.exists() && file.isDirectory()) {
                 if (StringUtils.startsWith(file.getName(), Constants.HIDDEN_FILE_PREFIX)) {
                     File newFile = new File(file.getParent(), StringUtils.stripStart(file.getName(), "."));
@@ -156,7 +167,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         private void moveMod(File file, File newFile) {
             try {
                 FileUtils.moveDirectory(file, newFile);
-                Integer idx = findFirst(mod -> StringUtils.equalsIgnoreCase(mod.getAssetPath(), modPath));
+                Integer idx = findFirst(mod -> StringUtils.equalsIgnoreCase(mod.getAssetPath(), modInfo.getAssetPath()));
                 if (idx != null) {
                     modList.get(idx).setAssetPath(newFile.getAbsolutePath());
                     notifyItemChanged(idx);
@@ -167,10 +178,30 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
         }
 
         void configMod() {
-            File file = new File(modPath, "config.json");
-            if (file.exists()) {
-                NavController controller = Navigation.findNavController(itemView);
-                MobileNavigationDirections.ActionNavAnyToConfigEditFragment action = ConfigFragmentDirections.actionNavAnyToConfigEditFragment(file.getAbsolutePath());
+            if (configList.size() > 0) {
+                if (configList.size() > 1) {
+                    List<String> selections = configList.stream().map(path -> StringUtils.removeStart(path, modInfo.getAssetPath())).collect(Collectors.toList());
+                    DialogUtils.showListItemsDialog(itemView, R.string.menu_config_edit, selections, (materialDialog, index) -> {
+                        navigateToConfigEditor(configList.get(index));
+                    });
+                } else {
+                    navigateToConfigEditor(configList.get(0));
+                }
+            }
+        }
+
+        private void navigateToConfigEditor(String path) {
+            NavController controller = Navigation.findNavController(itemView);
+            MobileNavigationDirections.ActionNavAnyToConfigEditFragment action;
+            action = ConfigFragmentDirections.actionNavAnyToConfigEditFragment(path);
+            if ("VirtualKeyboard".equals(modInfo.getUniqueID()) && path.equals(new File(modInfo.getAssetPath(), "config.json").getAbsolutePath())) {
+                DialogUtils.showListItemsDialog(itemView, R.string.menu_config_edit, R.array.vk_config_mode, ((materialDialog, index) -> {
+                    if (index == 0) {
+                        action.setVirtualKeyboardConfigMode(true);
+                    }
+                    controller.navigate(action);
+                }));
+            } else {
                 controller.navigate(action);
             }
         }

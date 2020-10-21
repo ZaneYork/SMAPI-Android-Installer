@@ -57,6 +57,16 @@ public class ModManifestEntry {
     private Boolean IsRequired;
 
     /**
+     * 是否清理安装
+     */
+    private Boolean CleanInstall;
+
+    /**
+     * 原唯一ID列表
+     */
+    private List<String> OriginUniqueId;
+
+    /**
      * 翻译后的Description
      */
     private transient String translatedDescription;

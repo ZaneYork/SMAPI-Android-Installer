@@ -30,4 +30,8 @@
         <item>日期（正序）</item>
         <item>日期（倒序）</item>
     </string-array>
+    <string-array name="vk_config_mode">
+        <item>圖形</item>
+        <item>文本</item>
+    </string-array>
 </resources>
