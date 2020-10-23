@@ -2,29 +2,21 @@ package com.zane.smapiinstaller.dto;
 
 import android.webkit.JavascriptInterface;
 
-import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.utils.DialogUtils;
-import com.zane.smapiinstaller.utils.JsonUtil;
-
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
 import java.util.function.Consumer;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author Zane
  */
 @AllArgsConstructor
-public class WebViewObject {
+public class KeyboardEditorObject {
     private String text;
-    private String mode;
     private String language;
-    private boolean editable;
     private int height;
     private int width;
+    private float scale;
+    private boolean landscape;
     private Consumer<String> setterCallback;
 
     @JavascriptInterface
@@ -41,11 +33,6 @@ public class WebViewObject {
     }
 
     @JavascriptInterface
-    public boolean isEditable() {
-        return editable;
-    }
-
-    @JavascriptInterface
     public int getHeight() {
         return height;
     }
@@ -56,8 +43,13 @@ public class WebViewObject {
     }
 
     @JavascriptInterface
-    public String getMode() {
-        return mode;
+    public float getScale() {
+        return scale;
+    }
+
+    @JavascriptInterface
+    public boolean isLandscape() {
+        return landscape;
     }
 
     @JavascriptInterface
