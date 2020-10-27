@@ -1,6 +1,8 @@
 package com.zane.smapiinstaller.ui.config;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
@@ -9,8 +11,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.webkit.WebViewAssetLoader;
 
 import com.hjq.language.LanguagesManager;
 import com.zane.smapiinstaller.BuildConfig;
@@ -30,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
@@ -65,81 +73,13 @@ public class ConfigEditFragment extends Fragment {
                 binding.buttonConfigCancel.setVisibility(View.INVISIBLE);
                 binding.buttonLogParser.setVisibility(View.VISIBLE);
             }
-            binding.editTextConfigWebview.getSettings().setJavaScriptEnabled(true);
-            binding.editTextConfigWebview.setWebChromeClient(new WebChromeClient());
-            binding.editTextConfigWebview.setWebViewClient(new WebViewClient());
             configPath = args.getConfigPath();
             File file = new File(configPath);
             if (file.exists() && file.length() < Constants.TEXT_FILE_OPEN_SIZE_LIMIT) {
-                String fileText = FileUtils.getFileText(file);
-                if (fileText != null) {
-                    binding.scrollView.post(() -> {
-                        CommonLogic.doOnNonNull(this.getContext(), (context -> {
-                            String lang = LanguagesManager.getAppLanguage(context).getLanguage();
-                            switch (lang) {
-                                case "zh":
-                                    lang = "zh-CN";
-                                    break;
-                                case "fr":
-                                    lang = "fr-FR";
-                                    break;
-                                case "pt":
-                                    lang = "pt-BR";
-                                    break;
-                                default:
-                                    break;
-                            }
-                            String assetText;
-                            String baseUrl;
-                            if(!virtualKeyboardConfigMode) {
-                                int height = (int) (binding.scrollView.getMeasuredHeight() / context.getResources().getDisplayMetrics().density * 0.95);
-                                JsonEditorObject webObject;
-                                if (editable) {
-                                    try {
-                                        JsonUtil.checkJson(fileText);
-                                        String jsonText = JsonUtil.toJson(JsonUtil.fromJson(fileText, Object.class));
-                                        webObject = new JsonEditorObject(jsonText, "tree", lang, true, height, this::configSave);
-                                        binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
-                                    } catch (Exception e) {
-                                        DialogUtils.showAlertDialog(getView(), R.string.error, e.getLocalizedMessage());
-                                        return;
-                                    }
-                                } else {
-                                    webObject = new JsonEditorObject(fileText, "text-plain", lang, false, height, null);
-                                    binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
-                                }
-                                baseUrl = "file:///android_asset/jsoneditor/";
-                                assetText = FileUtils.getAssetText(context, "jsoneditor/editor.html");
-                                Activity activity = CommonLogic.getActivityFromView(binding.editTextConfigWebview);
-                                if(activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
-                                    activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                                }
-                            }
-                            else {
-                                int height = context.getResources().getDisplayMetrics().heightPixels;
-                                int width = context.getResources().getDisplayMetrics().widthPixels;
-                                boolean landscape = true;
-                                if(height > width) {
-                                    height ^= width; width ^= height; height ^= width;
-                                    landscape = false;
-                                }
-                                int widthDp = (int) (binding.scrollView.getMeasuredWidth() / context.getResources().getDisplayMetrics().density * 0.95);
-                                float scale = widthDp / (float)width;
-                                KeyboardEditorObject webObject = new KeyboardEditorObject(fileText, lang, height, width, scale, landscape, this::configSave);
-                                binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
-                                assetText = FileUtils.getAssetText(context, "vkconfig/index.html");
-                                baseUrl = "file:///android_asset/vkconfig/";
-                            }
-                            if (assetText != null) {
-                                binding.editTextConfigWebview.loadDataWithBaseURL(
-                                        baseUrl,
-                                        assetText,
-                                        "text/html",
-                                        "utf-8", "");
-                            }
-                        }));
-                    });
-                }
+                initAssetWebView();
+                binding.scrollView.post(() -> {
+                    CommonLogic.doOnNonNull(this.getContext(), (context -> onScrollViewRendered(file, context)));
+                });
             } else {
                 DialogUtils.showConfirmDialog(binding.getRoot(), R.string.error, this.getString(R.string.text_too_large), R.string.open_with, R.string.cancel, ((dialog, which) -> {
                     if (which == DialogAction.POSITIVE) {
@@ -161,6 +101,98 @@ public class ConfigEditFragment extends Fragment {
                 }));
             }
         });
+    }
+
+    private void onScrollViewRendered(File file, Context context) {
+        String fileText = FileUtils.getFileText(file);
+        if (fileText != null) {
+            String lang = LanguagesManager.getAppLanguage(context).getLanguage();
+            switch (lang) {
+                case "zh":
+                    lang = "zh-CN";
+                    break;
+                case "fr":
+                    lang = "fr-FR";
+                    break;
+                case "pt":
+                    lang = "pt-BR";
+                    break;
+                default:
+                    break;
+            }
+            if (!virtualKeyboardConfigMode) {
+                loadJsonEditor(context, fileText, lang);
+            } else {
+                loadVirtualKeyboardEditor(context, fileText, lang);
+            }
+        }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private void initAssetWebView() {
+        final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
+                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this.requireContext()))
+                .build();
+        binding.editTextConfigWebview.setWebViewClient(new WebViewClient() {
+            @Override
+            @RequiresApi(21)
+            public WebResourceResponse shouldInterceptRequest(WebView view,
+                                                              WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
+
+            @Override
+            @SuppressWarnings("deprecation") // for API < 21
+            public WebResourceResponse shouldInterceptRequest(WebView view,
+                                                              String url) {
+                return assetLoader.shouldInterceptRequest(Uri.parse(url));
+            }
+        });
+        WebSettings webViewSettings = binding.editTextConfigWebview.getSettings();
+        webViewSettings.setAllowFileAccess(false);
+        webViewSettings.setAllowContentAccess(false);
+        webViewSettings.setJavaScriptEnabled(true);
+    }
+
+    private void loadJsonEditor(Context context, String fileText, String lang) {
+        int height = (int) (binding.scrollView.getMeasuredHeight() / context.getResources().getDisplayMetrics().density * 0.95);
+        JsonEditorObject webObject;
+        if (editable) {
+            try {
+                JsonUtil.checkJson(fileText);
+                String jsonText = JsonUtil.toJson(JsonUtil.fromJson(fileText, Object.class));
+                webObject = new JsonEditorObject(jsonText, "tree", lang, true, height, this::configSave);
+                binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
+            } catch (Exception e) {
+                DialogUtils.showAlertDialog(getView(), R.string.error, e.getLocalizedMessage());
+                return;
+            }
+        } else {
+            webObject = new JsonEditorObject(fileText, "text-plain", lang, false, height, null);
+            binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
+        }
+        Activity activity = CommonLogic.getActivityFromView(binding.editTextConfigWebview);
+        if (activity.getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        String targetUrl = "https://appassets.androidplatform.net/assets/jsoneditor/editor.html";
+        binding.editTextConfigWebview.loadUrl(targetUrl);
+    }
+
+    private void loadVirtualKeyboardEditor(Context context, String fileText, String lang) {
+        int height = context.getResources().getDisplayMetrics().heightPixels;
+        int width = context.getResources().getDisplayMetrics().widthPixels;
+        boolean landscape = true;
+        if (height > width) {
+            height ^= width; width ^= height; height ^= width;
+            landscape = false;
+        }
+        int widthDp = (int) (binding.scrollView.getMeasuredWidth() / context.getResources().getDisplayMetrics().density * 0.95);
+        float scale = widthDp / (float) width;
+        KeyboardEditorObject webObject = new KeyboardEditorObject(fileText, lang, height, width, scale, landscape, this::configSave);
+        binding.editTextConfigWebview.addJavascriptInterface(webObject, "webObject");
+        String targetUrl = "https://appassets.androidplatform.net/assets/vkconfig/index.html";
+        binding.editTextConfigWebview.loadUrl(targetUrl);
     }
 
     @Override
