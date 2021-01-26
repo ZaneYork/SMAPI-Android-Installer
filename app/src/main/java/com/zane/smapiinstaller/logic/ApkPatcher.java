@@ -281,7 +281,7 @@ public class ApkPatcher {
                         }
                     case "name":
                         if (strObj.contains(ManifestPatchConstants.PATTERN_MAIN_ACTIVITY)) {
-                            attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity");
+                            attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "crc64a4555f9f70c213sd.SMainActivity");
                         }
                         break;
                     default:
