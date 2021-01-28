@@ -145,6 +145,7 @@
 -keep class org.bouncycastle.** {*;}
 -keep class org.slf4j.**
 -keep class com.hjq.language.** {*;}
+-keep class net.jpountz.** {*;}
 
 -keepclassmembers class * extends org.greenrobot.greendao.AbstractDao {
 public static java.lang.String TABLENAME;
