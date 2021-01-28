@@ -7,7 +7,7 @@
       "assetPath": "compat/145/",
       "description": "SMAPI compat package for game 1.4.4.138 - 1.4.5.147, SMAPI 3.7.5",
       "url": "http://zaneyork.cn/dl/compat/smapi_145_210128.zip",
-      "hash": "3424287f98e9cfdd2a653e2e06b1b88f2f3080f7e56a976a8de9cc36afdede8a"
+      "hash": "821117db34a78ed955d4f24cb0ed4da9d3c5c9eafd4774d4fadec209505277c9"
     },
     {
       "type": "COMPAT",
@@ -23,7 +23,7 @@
       "assetPath": "compat/samsung_138/",
       "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.138 - 1.4.5.147, SMAPI 3.7.5",
       "url": "http://zaneyork.cn/dl/compat/smapi_samsung_145_210128.zip",
-      "hash": "256d1a4f6ccfcae916f22575f04d8f677e91ae85b24993f010552cffb401e6a0"
+      "hash": "30df6cbabb000034f44eac4bc7489344d1a7f3cc4724f8be0ca61a94a7502825"
     },
     {
       "type": "COMPAT",
@@ -31,7 +31,7 @@
       "assetPath": "compat/amazon_138/",
       "description": "แพคเกจแอพลิเคชั่น SMAPI สำหรับเกม Stardew Valley เวอร์ชั่น 1.4.4.138 - 1.4.5.147, SMAPI 3.7.5",
       "url": "http://zaneyork.cn/dl/compat/smapi_amazon_145_210128.zip",
-      "hash": "3e461ae9dcb6269340bfc923b720dd9f0f9c724acb66807b68571779e575c4e3"
+      "hash": "7540a006cfa262dd2fca4f2e51b2fffff8b6e045602b3cc11a2f9061dcdabddd"
     },
     {
       "type": "LOCALE",
