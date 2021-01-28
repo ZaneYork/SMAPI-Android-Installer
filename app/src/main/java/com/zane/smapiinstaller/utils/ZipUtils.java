@@ -7,21 +7,38 @@ import com.google.common.collect.Sets;
 import net.fornwall.apksigner.zipio.ZioEntry;
 import net.fornwall.apksigner.zipio.ZipInput;
 import net.fornwall.apksigner.zipio.ZipOutput;
+import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4FastDecompressor;
+
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author Zane
  */
 public class ZipUtils {
+
+    public static byte[] decompressXALZ(byte[] bytes){
+        if("XALZ".equals(new String(ByteUtils.subArray(bytes, 0, 4), StandardCharsets.ISO_8859_1))) {
+            LZ4Factory factory = LZ4Factory.fastestInstance();
+            LZ4FastDecompressor lz4FastDecompressor = factory.fastDecompressor();
+            byte[] length = ByteUtils.subArray(bytes, 8, 12);
+            int len = (length[0] & 0xff) | ((length[1] & 0xff) << 8) | ((length[2] & 0xff) << 16) | ((length[3] & 0xff) << 24);
+            bytes = lz4FastDecompressor.decompress(bytes, 12, len);
+        }
+        return bytes;
+    }
 
     public static void addOrReplaceEntries(String inputZipFilename, List<ZipEntrySource> entrySources, String outputZipFilename, Consumer<Integer> progressCallback) throws IOException {
         File inFile = new File(inputZipFilename).getCanonicalFile();
@@ -94,6 +111,7 @@ public class ZipUtils {
 
     @Data
     @AllArgsConstructor
+    @EqualsAndHashCode(of = "path")
     public static class ZipEntrySource {
         private String path;
         private byte[] data;

@@ -124,7 +124,7 @@ public class InstallFragment extends Fragment {
                 return;
             }
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.unpacking_smapi_files, null);
-            if (!CommonLogic.unpackSmapiFiles(context, path, false)) {
+            if (!CommonLogic.unpackSmapiFiles(context, path, false, patcher.getGamePackageName(), patcher.getGameVersionCode())) {
                 DialogUtils.showAlertDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
                 return;
             }

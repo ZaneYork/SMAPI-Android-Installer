@@ -1,43 +1,33 @@
 [
   {
-    "targetPath": "smapi-internal/0Harmony.dll",
-    "assetPath": "smapi/0Harmony.dll",
+    "targetPath": "smapi-internal/",
+    "assetPath": "smapi/*.json",
     "origin": 0
   },
   {
-    "targetPath": "smapi-internal/config.json",
-    "assetPath": "smapi/config.json",
+    "targetPath": "smapi-internal/i18n/",
+    "assetPath": "smapi/i18n/*.json",
     "origin": 0
   },
   {
-    "targetPath": "smapi-internal/metadata.json",
-    "assetPath": "smapi/metadata.json",
+    "targetPath": "smapi-internal/",
+    "assetPath": "smapi/*.dll",
     "origin": 0
   },
   {
-    "targetPath": "smapi-internal/Mono.Cecil.dll",
-    "assetPath": "smapi/Mono.Cecil.dll",
+    "targetPath": "smapi-internal/Mono.Android.dll",
+    "assetPath": "apk/Mono.Android.dll",
     "origin": 0
   },
   {
     "targetPath": "smapi-internal/MonoGame.Framework.dll",
-    "assetPath": "assemblies/MonoGame.Framework.dll",
-    "origin": 1
-  },
-  {
-    "targetPath": "smapi-internal/MonoMod.RuntimeDetour.dll",
-    "assetPath": "smapi/MonoMod.RuntimeDetour.dll",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/MonoMod.Utils.dll",
-    "assetPath": "smapi/MonoMod.Utils.dll",
+    "assetPath": "apk/MonoGame.Framework.dll",
     "origin": 0
   },
   {
     "targetPath": "smapi-internal/mscorlib.dll",
-    "assetPath": "assemblies/mscorlib.dll",
-    "origin": 1
+    "assetPath": "apk/mscorlib.dll",
+    "origin": 0
   },
   {
     "targetPath": "smapi-internal/Newtonsoft.Json.dll",
@@ -62,17 +52,19 @@
   {
     "targetPath": "smapi-internal/StardewValley.dll",
     "assetPath": "assemblies/StardewValley.dll",
+    "isXALZ": true,
     "origin": 1
   },
   {
     "targetPath": "smapi-internal/StardewValley.GameData.dll",
     "assetPath": "assemblies/StardewValley.GameData.dll",
+    "isXALZ": true,
     "origin": 1
   },
   {
     "targetPath": "smapi-internal/System.Core.dll",
-    "assetPath": "assemblies/System.Core.dll",
-    "origin": 1
+    "assetPath": "apk/System.Core.dll",
+    "origin": 0
   },
   {
     "targetPath": "smapi-internal/System.Data.dll",
@@ -81,13 +73,13 @@
   },
   {
     "targetPath": "smapi-internal/System.dll",
-    "assetPath": "assemblies/System.dll",
-    "origin": 1
+    "assetPath": "apk/System.dll",
+    "origin": 0
   },
   {
     "targetPath": "smapi-internal/System.Net.Http.dll",
-    "assetPath": "assemblies/System.Net.Http.dll",
-    "origin": 1
+    "assetPath": "apk/System.Net.Http.dll",
+    "origin": 0
   },
   {
     "targetPath": "smapi-internal/System.Numerics.dll",
@@ -96,97 +88,22 @@
   },
   {
     "targetPath": "smapi-internal/System.Runtime.Serialization.dll",
-    "assetPath": "assemblies/System.Runtime.Serialization.dll",
-    "origin": 1
-  },
-  {
-    "targetPath": "smapi-internal/System.ServiceModel.Internals.dll",
-    "assetPath": "assemblies/System.ServiceModel.Internals.dll",
-    "origin": 1
-  },
-  {
-    "targetPath": "smapi-internal/System.Xml.dll",
-    "assetPath": "assemblies/System.Xml.dll",
-    "origin": 1
-  },
-  {
-    "targetPath": "smapi-internal/Mono.Android.dll",
-    "assetPath": "assemblies/Mono.Android.dll",
-    "origin": 1
-  },
-  {
-    "targetPath": "smapi-internal/System.Xml.Linq.dll",
-    "assetPath": "smapi/System.Xml.Linq.dll",
+    "assetPath": "apk/System.Runtime.Serialization.dll",
     "origin": 0
   },
   {
-    "targetPath": "smapi-internal/TMXTile.dll",
-    "assetPath": "smapi/TMXTile.dll",
+    "targetPath": "smapi-internal/System.ServiceModel.Internals.dll",
+    "assetPath": "apk/System.ServiceModel.Internals.dll",
+    "origin": 0
+  },
+  {
+    "targetPath": "smapi-internal/System.Xml.dll",
+    "assetPath": "apk/System.Xml.dll",
     "origin": 0
   },
   {
     "targetPath": "smapi-internal/xTile.dll",
-    "assetPath": "assemblies/xTile.dll",
-    "origin": 1
-  },
-  {
-    "targetPath": "smapi-internal/BmFont.dll",
-    "assetPath": "assemblies/BmFont.dll",
-    "origin": 1
-  },
-  {
-    "targetPath": "smapi-internal/i18n/de.json",
-    "assetPath": "smapi/i18n/de.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/default.json",
-    "assetPath": "smapi/i18n/default.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/es.json",
-    "assetPath": "smapi/i18n/es.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/fr.json",
-    "assetPath": "smapi/i18n/fr.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/hu.json",
-    "assetPath": "smapi/i18n/hu.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/it.json",
-    "assetPath": "smapi/i18n/it.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/ja.json",
-    "assetPath": "smapi/i18n/ja.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/pt.json",
-    "assetPath": "smapi/i18n/pt.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/ru.json",
-    "assetPath": "smapi/i18n/ru.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/tr.json",
-    "assetPath": "smapi/i18n/tr.json",
-    "origin": 0
-  },
-  {
-    "targetPath": "smapi-internal/i18n/zh.json",
-    "assetPath": "smapi/i18n/zh.json",
+    "assetPath": "apk/xTile.dll",
     "origin": 0
   }
 ]

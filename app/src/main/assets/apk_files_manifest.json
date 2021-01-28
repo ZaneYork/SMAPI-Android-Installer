@@ -1,5 +1,5 @@
 {
-  "minBuildCode": 138,
+  "minBuildCode": 148,
   "maxBuildCode": null,
   "basePath": "",
   "targetPackageName": [
@@ -45,47 +45,78 @@
       "external": false
     },
     {
-      "targetPath": "assemblies/Newtonsoft.Json.dll",
-      "assetPath": "apk/Newtonsoft.Json.dll",
+      "targetPath": "assemblies/",
+      "assetPath": "apk/*.dll",
       "compression": 0,
       "external": false
     },
     {
-      "targetPath": "assemblies/SMAPI.Toolkit.CoreInterfaces.dll",
-      "assetPath": "apk/SMAPI.Toolkit.CoreInterfaces.dll",
+      "targetPath": "lib/arm64-v8a/",
+      "assetPath": "apk/lib/arm64-v8a/*.so",
+      "compression": 8,
+      "external": false
+    },
+    {
+      "targetPath": "lib/armeabi-v7a/",
+      "assetPath": "apk/lib/armeabi-v7a/*.so",
+      "compression": 8,
+      "external": false
+    },
+    {
+      "targetPath": "lib/x86/",
+      "assetPath": "apk/lib/x86/*.so",
+      "compression": 8,
+      "external": false
+    },
+    {
+      "targetPath": "lib/x86_64/",
+      "assetPath": "apk/lib/x86_64/*.so",
+      "compression": 8,
+      "external": false
+    },
+    {
+      "targetPath": "assemblies/0Harmony.dll",
+      "assetPath": "smapi/0Harmony.dll",
       "compression": 0,
       "external": false
     },
     {
-      "targetPath": "assemblies/SMAPI.Toolkit.dll",
-      "assetPath": "apk/SMAPI.Toolkit.dll",
+      "targetPath": "assemblies/Mono.Cecil.dll",
+      "assetPath": "smapi/Mono.Cecil.dll",
       "compression": 0,
       "external": false
     },
     {
-      "targetPath": "assemblies/StardewModdingAPI.dll",
-      "assetPath": "apk/StardewModdingAPI.dll",
+      "targetPath": "assemblies/MonoMod.RuntimeDetour.dll",
+      "assetPath": "smapi/MonoMod.RuntimeDetour.dll",
       "compression": 0,
       "external": false
     },
     {
-      "targetPath": "assemblies/System.Data.dll",
-      "assetPath": "apk/System.Data.dll",
+      "targetPath": "assemblies/MonoMod.Utils.dll",
+      "assetPath": "smapi/MonoMod.Utils.dll",
       "compression": 0,
       "external": false
     },
     {
-      "targetPath": "assemblies/System.Numerics.dll",
-      "assetPath": "apk/System.Numerics.dll",
+      "targetPath": "assemblies/System.Xml.Linq.dll",
+      "assetPath": "smapi/System.Xml.Linq.dll",
       "compression": 0,
       "external": false
     },
     {
-      "targetPath": "assemblies/MonoGame.Framework.dll",
-      "assetPath": "apk/MonoGame.Framework.dll",
+      "targetPath": "assemblies/TMXTile.dll",
+      "assetPath": "smapi/TMXTile.dll",
       "compression": 0,
-      "external": false,
-      "advanced": true
+      "external": false
+    },
+    {
+      "targetPath": "assemblies/",
+      "assetPath": "assemblies/*.dll",
+      "origin": 1,
+      "isXALZ": true,
+      "compression": 0,
+      "external": false
     }
   ]
 }

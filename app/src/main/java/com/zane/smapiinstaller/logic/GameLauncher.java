@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.view.View;
 
 import com.microsoft.appcenter.crashes.Crashes;
@@ -55,7 +56,14 @@ public class GameLauncher {
                 DialogUtils.showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed);
                 return;
             }
-            if(!CommonLogic.unpackSmapiFiles(context, packageInfo.applicationInfo.publicSourceDir, true)) {
+            long versionCode;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                versionCode = packageInfo.getLongVersionCode();
+            }
+            else {
+                versionCode = packageInfo.versionCode;
+            }
+            if(!CommonLogic.unpackSmapiFiles(context, packageInfo.applicationInfo.publicSourceDir, true, packageInfo.packageName, versionCode)) {
                 DialogUtils.showAlertDialog(root, R.string.error, R.string.error_failed_to_repair);
                 return;
             }

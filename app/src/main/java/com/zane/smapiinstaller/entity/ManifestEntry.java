@@ -1,5 +1,7 @@
 package com.zane.smapiinstaller.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 /**
@@ -43,4 +45,9 @@ public class ManifestEntry {
      * 是否为高级模式补丁
      */
     private boolean advanced;
+    /**
+     * 是否为XALZ压缩格式
+     */
+    @JsonProperty("isXALZ")
+    private boolean isXALZ;
 }

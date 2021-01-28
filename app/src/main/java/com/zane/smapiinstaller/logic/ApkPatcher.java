@@ -14,7 +14,7 @@ import com.android.apksig.ApkSigner;
 import com.android.apksig.ApkVerifier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Iterables;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.MainActivity;
@@ -22,18 +22,16 @@ import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.constant.ManifestPatchConstants;
-import com.zane.smapiinstaller.dto.Tuple2;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
+import com.zane.smapiinstaller.utils.StringUtils;
 import com.zane.smapiinstaller.utils.ZipUtils;
 
 import net.fornwall.apksigner.KeyStoreFileManager;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
@@ -53,8 +51,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.Deflater;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import pxb.android.axml.NodeVisitor;
 
@@ -70,6 +70,10 @@ public class ApkPatcher {
     private static final String TAG = "PATCHER";
 
     private final AtomicReference<String> errorMessage = new AtomicReference<>();
+
+    private final AtomicReference<String> gamePackageName = new AtomicReference<>();
+
+    private final AtomicLong gameVersionCode = new AtomicLong();
 
     private final AtomicInteger switchAction = new AtomicInteger();
 
@@ -103,6 +107,13 @@ public class ApkPatcher {
             try {
                 PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
                 String sourceDir = packageInfo.applicationInfo.publicSourceDir;
+                gamePackageName.set(packageName);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    gameVersionCode.set(packageInfo.getLongVersionCode());
+                }
+                else {
+                    gameVersionCode.set(packageInfo.versionCode);
+                }
                 File apkFile = new File(sourceDir);
 
                 String stadewValleyBasePath = FileUtils.getStadewValleyBasePath();
@@ -190,8 +201,8 @@ public class ApkPatcher {
             List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             errorMessage.set(null);
             List<ZipUtils.ZipEntrySource> entries = manifestEntries.stream()
-                    .map(entry -> processfileentry(file, apkFilesManifest, entry, isAdvanced))
-                    .filter(Objects::nonNull).collect(Collectors.toList());
+                    .map(entry -> processFileEntry(file, apkFilesManifest, entry, isAdvanced))
+                    .filter(Objects::nonNull).flatMap(Stream::of).distinct().collect(Collectors.toList());
             if (errorMessage.get() != null) {
                 return false;
             }
@@ -218,20 +229,58 @@ public class ApkPatcher {
     }
 
     @Nullable
-    private ZipUtils.ZipEntrySource processfileentry(File file, ApkFilesManifest apkFilesManifest, ManifestEntry entry, boolean isAdvanced) {
+    private ZipUtils.ZipEntrySource[] processFileEntry(File apkFile, ApkFilesManifest apkFilesManifest, ManifestEntry entry, boolean isAdvanced) {
         if (entry.isAdvanced() && !isAdvanced) {
             return null;
         }
+        if (entry.getTargetPath().endsWith("/") && entry.getAssetPath().contains("*")) {
+            String path = StringUtils.substringBeforeLast(entry.getAssetPath(), "/");
+            String pattern = StringUtils.substringAfterLast(entry.getAssetPath(), "/");
+            try {
+                if (entry.getOrigin() == 1) {
+                    ArrayList<ZipUtils.ZipEntrySource> list = new ArrayList<>();
+                    ZipUtil.iterate(apkFile, (in, zipEntry) -> {
+                        String entryPath = StringUtils.substringBeforeLast(zipEntry.getName(), "/");
+                        String filename = StringUtils.substringAfterLast(zipEntry.getName(), "/");
+                        if (entryPath.equals(path) && StringUtils.wildCardMatch(filename, pattern)) {
+                            byte[] bytes = ByteStreams.toByteArray(in);
+                            if (entry.isXALZ()) {
+                                bytes = ZipUtils.decompressXALZ(bytes);
+                            }
+                            list.add(new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression()));
+                        }
+                    });
+                    return list.toArray(new ZipUtils.ZipEntrySource[0]);
+                } else {
+                    return Stream.of(context.getAssets().list(path))
+                            .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
+                            .map(filename -> {
+                                byte[] bytes = FileUtils.getAssetBytes(context, path + "/" + filename);
+                                return new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression());
+                            })
+                            .toArray(ZipUtils.ZipEntrySource[]::new);
+                }
+            } catch (IOException ignored) {
+            }
+            return null;
+        }
         byte[] bytes;
-        if (entry.isExternal()) {
-            bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
+        if (entry.getOrigin() == 1) {
+            bytes = ZipUtil.unpackEntry(apkFile, entry.getAssetPath());
+            if (entry.isXALZ()) {
+                bytes = ZipUtils.decompressXALZ(bytes);
+            }
         } else {
-            bytes = FileUtils.getAssetBytes(context, entry.getAssetPath());
+            if (entry.isExternal()) {
+                bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
+            } else {
+                bytes = FileUtils.getAssetBytes(context, entry.getAssetPath());
+            }
+            if (StringUtils.isNoneBlank(entry.getPatchCrc())) {
+                throw new NotImplementedException("bs patch mode is not supported anymore.");
+            }
         }
-        if (StringUtils.isNoneBlank(entry.getPatchCrc())) {
-            throw new NotImplementedException("bs patch mode is not supported anymore.");
-        }
-        return new ZipUtils.ZipEntrySource(entry.getTargetPath(), bytes, entry.getCompression());
+        return new ZipUtils.ZipEntrySource[]{new ZipUtils.ZipEntrySource(entry.getTargetPath(), bytes, entry.getCompression())};
     }
 
     /**
@@ -281,7 +330,12 @@ public class ApkPatcher {
                         }
                     case "name":
                         if (strObj.contains(ManifestPatchConstants.PATTERN_MAIN_ACTIVITY)) {
-                            attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity");
+                            if(versionCode.get() > 147) {
+                                attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "crc648e5438a58262f792.SMainActivity");
+                            }
+                            else {
+                                attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity");
+                            }
                         }
                         break;
                     default:
@@ -311,23 +365,7 @@ public class ApkPatcher {
             if (StringUtils.endsWith(versionName.get(), ManifestPatchConstants.PATTERN_VERSION_AMAZON)) {
                 packageName.set(ManifestPatchConstants.APP_PACKAGE_NAME + ManifestPatchConstants.PATTERN_VERSION_AMAZON);
             }
-            Iterables.removeIf(manifests, manifest -> {
-                if (manifest == null) {
-                    return true;
-                }
-                if (versionCode.get() < manifest.getMinBuildCode()) {
-                    return true;
-                }
-                if (manifest.getMaxBuildCode() != null) {
-                    if (versionCode.get() > manifest.getMaxBuildCode()) {
-                        return true;
-                    }
-                }
-                if (manifest.getTargetPackageName() != null && packageName.get() != null && !manifest.getTargetPackageName().contains(packageName.get())) {
-                    return true;
-                }
-                return false;
-            });
+            CommonLogic.filterManifest(manifests, packageName.get(), versionCode.get());
             return modifyManifest;
         } catch (Exception e) {
             errorMessage.set(e.getLocalizedMessage());
@@ -452,6 +490,14 @@ public class ApkPatcher {
      */
     public AtomicReference<String> getErrorMessage() {
         return errorMessage;
+    }
+
+    public String getGamePackageName() {
+        return gamePackageName.get();
+    }
+
+    public long getGameVersionCode() {
+        return gameVersionCode.get();
     }
 
     public AtomicInteger getSwitchAction() {

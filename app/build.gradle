@@ -12,8 +12,8 @@ android {
         applicationId "com.zane.smapiinstaller"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 60
-        versionName "1.7.0"
+        versionCode 63
+        versionName "3.7.6.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -65,7 +65,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation "androidx.navigation:navigation-fragment:2.3.1"
     implementation "androidx.navigation:navigation-ui:2.3.1"
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
@@ -82,7 +82,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.zeroturnaround/zt-zip
     implementation group: 'org.zeroturnaround', name: 'zt-zip', version: '1.14'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation group: 'commons-io', name: 'commons-io', version: '2.7'
     implementation 'com.lzy.net:okgo:3.0.4'
@@ -90,6 +90,8 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.11.0'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.0'
+    // https://mvnrepository.com/artifact/org.lz4/lz4-java
+    compile group: 'org.lz4', name: 'lz4-java', version: '1.7.1'
 
     implementation 'com.github.didikee:AndroidDonate:0.1.0'
     implementation 'com.hjq:language:3.0'
@@ -106,7 +108,7 @@ dependencies {
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
-    compileOnly 'org.projectlombok:lombok:1.18.12'
-    annotationProcessor 'org.projectlombok:lombok:1.18.12'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.10'
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.0'
 }

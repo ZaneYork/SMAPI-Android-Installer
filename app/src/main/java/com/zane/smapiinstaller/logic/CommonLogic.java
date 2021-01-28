@@ -19,6 +19,7 @@ import android.widget.ImageView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
@@ -26,16 +27,21 @@ import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.DialogAction;
-import com.zane.smapiinstaller.dto.Tuple2;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
+import com.zane.smapiinstaller.utils.StringUtils;
+import com.zane.smapiinstaller.utils.ZipUtils;
 
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -45,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
@@ -188,11 +195,26 @@ public class CommonLogic {
      * @param context   context
      * @param apkPath   安装包路径
      * @param checkMode 是否为校验模式
+     * @param packageName
+     * @param versionCode
      * @return 操作是否成功
      */
-    public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode) {
-        List<ManifestEntry> manifestEntries = FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeReference<List<ManifestEntry>>() {
-        });
+    public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode, String packageName, long versionCode) {
+        List<ApkFilesManifest> apkFilesManifests = CommonLogic.findAllApkFileManifest(context);
+        filterManifest(apkFilesManifests, packageName, versionCode);
+        List<ManifestEntry> manifestEntries = null;
+        ApkFilesManifest apkFilesManifest = null;
+        if(apkFilesManifests.size() > 0) {
+            apkFilesManifest = apkFilesManifests.get(0);
+            String basePath = apkFilesManifest.getBasePath();
+            if(StringUtils.isNoneBlank(basePath)) {
+                manifestEntries = FileUtils.getAssetJson(context, basePath + "smapi_files_manifest.json", new TypeReference<List<ManifestEntry>>() {});
+            }
+        }
+        if(manifestEntries == null) {
+            manifestEntries = FileUtils.getAssetJson(context, "smapi_files_manifest.json", new TypeReference<List<ManifestEntry>>() {
+            });
+        }
         if (manifestEntries == null) {
             return false;
         }
@@ -200,6 +222,16 @@ public class CommonLogic {
         if (!basePath.exists()) {
             if (!basePath.mkdir()) {
                 return false;
+            }
+        }
+        else {
+            if(!checkMode) {
+                File[] oldAssemblies = new File(basePath, "smapi-internal").listFiles((FileFilter) new WildcardFileFilter("*.dll"));
+                if(oldAssemblies != null) {
+                    for (File file : oldAssemblies) {
+                        FileUtils.deleteQuietly(file);
+                    }
+                }
             }
         }
         File noMedia = new File(basePath, ".nomedia");
@@ -213,24 +245,55 @@ public class CommonLogic {
             File targetFile = new File(basePath, entry.getTargetPath());
             switch (entry.getOrigin()) {
                 case 0:
-                    if (!checkMode || !targetFile.exists()) {
-                        try (InputStream inputStream = context.getAssets().open(entry.getAssetPath())) {
-                            if (!targetFile.getParentFile().exists()) {
-                                if (!targetFile.getParentFile().mkdirs()) {
-                                    return false;
-                                }
+                    if(entry.isExternal() && apkFilesManifest != null){
+                        byte[] bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
+                        try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
+                            outputStream.write(bytes);
+                        } catch (IOException ignored) {
+                        }
+                    }
+                    else {
+                        if (entry.getTargetPath().endsWith("/") && entry.getAssetPath().contains("*")) {
+                            String path = StringUtils.substring(entry.getAssetPath(), 0, StringUtils.lastIndexOf(entry.getAssetPath(), "/"));
+                            String pattern = StringUtils.substringAfterLast(entry.getAssetPath(), "/");
+                            try {
+                                Stream.of(context.getAssets().list(path))
+                                        .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
+                                        .forEach(filename -> {
+                                            unpackFile(context, checkMode, path + "/" + filename, new File(basePath, entry.getTargetPath() + filename));
+                                        });
+                            } catch (IOException ignored) {
                             }
-                            try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
-                                ByteStreams.copy(inputStream, outputStream);
-                            }
-                        } catch (IOException e) {
-                            Log.e("COMMON", "Copy Error", e);
+                        } else {
+                            unpackFile(context, checkMode, entry.getAssetPath(), targetFile);
                         }
                     }
                     break;
                 case 1:
                     if (!checkMode || !targetFile.exists()) {
-                        ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath(), targetFile);
+                        if(entry.isXALZ()){
+                            byte[] bytes = ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath());
+                            if (entry.isXALZ()) {
+                                bytes = ZipUtils.decompressXALZ(bytes);
+                            }
+                            FileOutputStream stream = null;
+                            try {
+                                stream = FileUtils.openOutputStream(targetFile);
+                                stream.write(bytes);
+                            } catch (IOException ignore) {
+                            }
+                            finally {
+                                if(stream != null) {
+                                    try {
+                                        stream.close();
+                                    } catch (IOException ignored) {
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath(), targetFile);
+                        }
                     }
                     break;
                 default:
@@ -240,10 +303,47 @@ public class CommonLogic {
         return true;
     }
 
+    public static void filterManifest(List<ApkFilesManifest> manifests, String packageName, long versionCode){
+        Iterables.removeIf(manifests, manifest -> {
+            if (manifest == null) {
+                return true;
+            }
+            if (versionCode < manifest.getMinBuildCode()) {
+                return true;
+            }
+            if (manifest.getMaxBuildCode() != null) {
+                if (versionCode > manifest.getMaxBuildCode()) {
+                    return true;
+                }
+            }
+            if (manifest.getTargetPackageName() != null && packageName != null && !manifest.getTargetPackageName().contains(packageName)) {
+                return true;
+            }
+            return false;
+        });
+    }
+    private static void unpackFile(Context context, boolean checkMode, String assertPath, File targetFile) {
+        if (!checkMode || !targetFile.exists()) {
+            try (InputStream inputStream = context.getAssets().open(assertPath)) {
+                if (!targetFile.getParentFile().exists()) {
+                    if (!targetFile.getParentFile().mkdirs()) {
+                        Log.e("COMMON", "Make dirs error");
+                        return;
+                    }
+                }
+                try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
+                    ByteStreams.copy(inputStream, outputStream);
+                }
+            } catch (IOException e) {
+                Log.e("COMMON", "Copy Error", e);
+            }
+        }
+    }
+
     /**
      * 修改AndroidManifest.xml文件
      *
-     * @param bytes        AndroidManifest.xml文件字符数组
+     * @param bytes            AndroidManifest.xml文件字符数组
      * @param attrProcessLogic 处理逻辑
      * @return 修改后的AndroidManifest.xml文件字符数组
      * @throws IOException 异常
