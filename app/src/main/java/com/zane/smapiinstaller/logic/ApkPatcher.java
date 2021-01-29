@@ -34,6 +34,7 @@ import net.fornwall.apksigner.KeyStoreFileManager;
 import org.apache.commons.lang3.NotImplementedException;
 import org.zeroturnaround.zip.ZipUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -242,7 +243,7 @@ public class ApkPatcher {
                             byte[] bytes = ByteStreams.toByteArray(in);
                             ZipUtils.ZipEntrySource source;
                             if (entry.isXALZ()) {
-                                source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> ZipUtils.decompressXALZ(bytes));
+                                source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> new ByteArrayInputStream(ZipUtils.decompressXALZ(bytes)));
                             } else {
                                 source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression());
                             }
@@ -253,7 +254,13 @@ public class ApkPatcher {
                 } else {
                     return Stream.of(context.getAssets().list(path))
                             .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
-                            .map(filename -> new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> FileUtils.getAssetBytes(context, path + "/" + filename)))
+                            .map(filename -> new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> {
+                                try {
+                                    return FileUtils.getLocalAsset(context, path + "/" + filename);
+                                } catch (IOException ignored) {
+                                }
+                                return null;
+                            }))
                             .toArray(ZipUtils.ZipEntrySource[]::new);
                 }
             } catch (IOException ignored) {
@@ -264,22 +271,25 @@ public class ApkPatcher {
         if (entry.getOrigin() == 1) {
             byte[] unpackEntryBytes = ZipUtil.unpackEntry(apkFile, entry.getAssetPath());
             if (entry.isXALZ()) {
-                source = new ZipUtils.ZipEntrySource(entry.getTargetPath(), entry.getCompression(), () -> ZipUtils.decompressXALZ(unpackEntryBytes));
+                source = new ZipUtils.ZipEntrySource(entry.getTargetPath(), entry.getCompression(), () -> new ByteArrayInputStream(ZipUtils.decompressXALZ(unpackEntryBytes)));
             } else {
                 source = new ZipUtils.ZipEntrySource(entry.getTargetPath(), unpackEntryBytes, entry.getCompression());
             }
         } else {
             source = new ZipUtils.ZipEntrySource(entry.getTargetPath(), entry.getCompression(), () -> {
-                byte[] bytes;
-                if (entry.isExternal()) {
-                    bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
-                } else {
-                    bytes = FileUtils.getAssetBytes(context, entry.getAssetPath());
+                InputStream inputStream = null;
+                try {
+                    if (entry.isExternal()) {
+                        inputStream = FileUtils.getLocalAsset(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
+                    } else {
+                        inputStream = FileUtils.getLocalAsset(context, entry.getAssetPath());
+                    }
+                } catch (IOException ignored) {
                 }
                 if (StringUtils.isNoneBlank(entry.getPatchCrc())) {
                     throw new NotImplementedException("bs patch mode is not supported anymore.");
                 }
-                return bytes;
+                return inputStream;
             });
         }
         return new ZipUtils.ZipEntrySource[]{source};

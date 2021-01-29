@@ -8,13 +8,15 @@ import net.fornwall.apksigner.zipio.ZioEntry;
 import net.fornwall.apksigner.zipio.ZipInput;
 import net.fornwall.apksigner.zipio.ZipOutput;
 import net.jpountz.lz4.LZ4Factory;
-import net.jpountz.lz4.LZ4FastDecompressor;
 
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
+import org.bouncycastle.util.io.Streams;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
@@ -24,21 +26,17 @@ import java.util.function.Supplier;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author Zane
  */
 public class ZipUtils {
 
-    public static byte[] decompressXALZ(byte[] bytes){
-        if("XALZ".equals(new String(ByteUtils.subArray(bytes, 0, 4), StandardCharsets.ISO_8859_1))) {
-            LZ4Factory factory = LZ4Factory.fastestInstance();
-            LZ4FastDecompressor lz4FastDecompressor = factory.fastDecompressor();
+    public static byte[] decompressXALZ(byte[] bytes) {
+        if ("XALZ".equals(new String(ByteUtils.subArray(bytes, 0, 4), StandardCharsets.ISO_8859_1))) {
             byte[] length = ByteUtils.subArray(bytes, 8, 12);
             int len = (length[0] & 0xff) | ((length[1] & 0xff) << 8) | ((length[2] & 0xff) << 16) | ((length[3] & 0xff) << 24);
-            bytes = lz4FastDecompressor.decompress(bytes, 12, len);
+            bytes = LZ4Factory.fastestJavaInstance().fastDecompressor().decompress(bytes, 12, len);
         }
         return bytes;
     }
@@ -61,14 +59,16 @@ public class ZipUtils {
                         ZipEntrySource source = entryMap.get(inEntry.getName());
                         ZioEntry zioEntry = new ZioEntry(inEntry.getName());
                         zioEntry.setCompression(source.getCompressionMethod());
-                        zioEntry.getOutputStream().write(source.getData());
+                        try (InputStream inputStream = source.getDataStream()) {
+                            Streams.pipeAll(inputStream, zioEntry.getOutputStream());
+                        }
                         zipOutput.write(zioEntry);
                         replacedFileSet.add(inEntry.getName());
                     } else {
                         zipOutput.write(inEntry);
                     }
                     index++;
-                    if(index % reportInterval == 0) {
+                    if (index % reportInterval == 0) {
                         progressCallback.accept((int) (index * 95.0 / size));
                     }
                 }
@@ -78,9 +78,11 @@ public class ZipUtils {
                     ZipEntrySource source = entryMap.get(name);
                     ZioEntry zioEntry = new ZioEntry(name);
                     zioEntry.setCompression(source.getCompressionMethod());
-                    zioEntry.getOutputStream().write(source.getData());
+                    try (InputStream inputStream = source.getDataStream()) {
+                        Streams.pipeAll(inputStream, zioEntry.getOutputStream());
+                    }
                     zipOutput.write(zioEntry);
-                    progressCallback.accept(95 + (int)(index * 5.0 / difference.size()));
+                    progressCallback.accept(95 + (int) (index * 5.0 / difference.size()));
                 }
                 progressCallback.accept(100);
             }
@@ -103,7 +105,7 @@ public class ZipUtils {
                         zipOutput.write(inEntry);
                     }
                     index++;
-                    if(index % reportInterval == 0) {
+                    if (index % reportInterval == 0) {
                         progressCallback.accept((int) (index * 100.0 / size));
                     }
                 }
@@ -113,31 +115,23 @@ public class ZipUtils {
     }
 
     @Data
-    @RequiredArgsConstructor
     @AllArgsConstructor
     @EqualsAndHashCode(of = "path")
     public static class ZipEntrySource {
-        @NonNull
         private String path;
-        @NonNull
-        private byte[] data;
-        @NonNull
         private int compressionMethod;
-        private Supplier<byte[]> dataSupplier;
+        private Supplier<InputStream> dataSupplier;
 
-        public ZipEntrySource(@NonNull String path, @NonNull int compressionMethod, Supplier<byte[]> dataSupplier) {
+        public ZipEntrySource(String path, byte[] bytes, int compressionMethod) {
             this.path = path;
             this.compressionMethod = compressionMethod;
-            this.dataSupplier = dataSupplier;
+            this.dataSupplier = () -> new ByteArrayInputStream(bytes);
         }
 
-        private byte[] getData() {
-            if(data != null) {
-                return data;
-            }
+        private InputStream getDataStream() {
             // Optimize: read only once
-            if(dataSupplier != null) {
-                byte[] bytes = dataSupplier.get();
+            if (dataSupplier != null) {
+                InputStream bytes = dataSupplier.get();
                 dataSupplier = null;
                 return bytes;
             }
