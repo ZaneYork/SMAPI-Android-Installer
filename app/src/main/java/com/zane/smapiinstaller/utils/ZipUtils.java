@@ -19,10 +19,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author Zane
@@ -110,11 +113,35 @@ public class ZipUtils {
     }
 
     @Data
+    @RequiredArgsConstructor
     @AllArgsConstructor
     @EqualsAndHashCode(of = "path")
     public static class ZipEntrySource {
+        @NonNull
         private String path;
+        @NonNull
         private byte[] data;
+        @NonNull
         private int compressionMethod;
+        private Supplier<byte[]> dataSupplier;
+
+        public ZipEntrySource(@NonNull String path, @NonNull int compressionMethod, Supplier<byte[]> dataSupplier) {
+            this.path = path;
+            this.compressionMethod = compressionMethod;
+            this.dataSupplier = dataSupplier;
+        }
+
+        private byte[] getData() {
+            if(data != null) {
+                return data;
+            }
+            // Optimize: read only once
+            if(dataSupplier != null) {
+                byte[] bytes = dataSupplier.get();
+                dataSupplier = null;
+                return bytes;
+            }
+            return null;
+        }
     }
 }

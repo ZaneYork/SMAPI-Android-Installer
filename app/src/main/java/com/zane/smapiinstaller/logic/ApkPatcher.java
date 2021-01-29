@@ -110,8 +110,7 @@ public class ApkPatcher {
                 gamePackageName.set(packageName);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     gameVersionCode.set(packageInfo.getLongVersionCode());
-                }
-                else {
+                } else {
                     gameVersionCode.set(packageInfo.versionCode);
                 }
                 File apkFile = new File(sourceDir);
@@ -203,9 +202,6 @@ public class ApkPatcher {
             List<ZipUtils.ZipEntrySource> entries = manifestEntries.stream()
                     .map(entry -> processFileEntry(file, apkFilesManifest, entry, isAdvanced))
                     .filter(Objects::nonNull).flatMap(Stream::of).distinct().collect(Collectors.toList());
-            if (errorMessage.get() != null) {
-                return false;
-            }
             entries.add(new ZipUtils.ZipEntrySource("AndroidManifest.xml", modifiedManifest, Deflater.DEFLATED));
             emitProgress(10);
             String patchedFilename = apkPath + ".patched";
@@ -244,43 +240,49 @@ public class ApkPatcher {
                         String filename = StringUtils.substringAfterLast(zipEntry.getName(), "/");
                         if (entryPath.equals(path) && StringUtils.wildCardMatch(filename, pattern)) {
                             byte[] bytes = ByteStreams.toByteArray(in);
+                            ZipUtils.ZipEntrySource source;
                             if (entry.isXALZ()) {
-                                bytes = ZipUtils.decompressXALZ(bytes);
+                                source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression());
+                            } else {
+                                source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> ZipUtils.decompressXALZ(bytes));
                             }
-                            list.add(new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression()));
+                            list.add(source);
                         }
                     });
                     return list.toArray(new ZipUtils.ZipEntrySource[0]);
                 } else {
                     return Stream.of(context.getAssets().list(path))
                             .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
-                            .map(filename -> {
-                                byte[] bytes = FileUtils.getAssetBytes(context, path + "/" + filename);
-                                return new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression());
-                            })
+                            .map(filename -> new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> FileUtils.getAssetBytes(context, path + "/" + filename)))
                             .toArray(ZipUtils.ZipEntrySource[]::new);
                 }
             } catch (IOException ignored) {
             }
             return null;
         }
-        byte[] bytes;
+        ZipUtils.ZipEntrySource source;
         if (entry.getOrigin() == 1) {
-            bytes = ZipUtil.unpackEntry(apkFile, entry.getAssetPath());
+            byte[] unpackEntryBytes = ZipUtil.unpackEntry(apkFile, entry.getAssetPath());
             if (entry.isXALZ()) {
-                bytes = ZipUtils.decompressXALZ(bytes);
+                source = new ZipUtils.ZipEntrySource(entry.getTargetPath(), entry.getCompression(), () -> ZipUtils.decompressXALZ(unpackEntryBytes));
+            } else {
+                source = new ZipUtils.ZipEntrySource(entry.getTargetPath(), unpackEntryBytes, entry.getCompression());
             }
         } else {
-            if (entry.isExternal()) {
-                bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
-            } else {
-                bytes = FileUtils.getAssetBytes(context, entry.getAssetPath());
-            }
-            if (StringUtils.isNoneBlank(entry.getPatchCrc())) {
-                throw new NotImplementedException("bs patch mode is not supported anymore.");
-            }
+            source = new ZipUtils.ZipEntrySource(entry.getTargetPath(), entry.getCompression(), () -> {
+                byte[] bytes;
+                if (entry.isExternal()) {
+                    bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
+                } else {
+                    bytes = FileUtils.getAssetBytes(context, entry.getAssetPath());
+                }
+                if (StringUtils.isNoneBlank(entry.getPatchCrc())) {
+                    throw new NotImplementedException("bs patch mode is not supported anymore.");
+                }
+                return bytes;
+            });
         }
-        return new ZipUtils.ZipEntrySource[]{new ZipUtils.ZipEntrySource(entry.getTargetPath(), bytes, entry.getCompression())};
+        return new ZipUtils.ZipEntrySource[]{source};
     }
 
     /**
@@ -330,10 +332,9 @@ public class ApkPatcher {
                         }
                     case "name":
                         if (strObj.contains(ManifestPatchConstants.PATTERN_MAIN_ACTIVITY)) {
-                            if(versionCode.get() > 147) {
+                            if (versionCode.get() > 147) {
                                 attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "crc648e5438a58262f792.SMainActivity");
-                            }
-                            else {
+                            } else {
                                 attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity");
                             }
                         }
