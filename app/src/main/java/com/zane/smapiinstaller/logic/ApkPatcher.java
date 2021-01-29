@@ -242,9 +242,9 @@ public class ApkPatcher {
                             byte[] bytes = ByteStreams.toByteArray(in);
                             ZipUtils.ZipEntrySource source;
                             if (entry.isXALZ()) {
-                                source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression());
-                            } else {
                                 source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> ZipUtils.decompressXALZ(bytes));
+                            } else {
+                                source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression());
                             }
                             list.add(source);
                         }
