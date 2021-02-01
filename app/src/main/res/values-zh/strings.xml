@@ -61,7 +61,7 @@
     <string name="signing_package">正在签名安装包</string>
     <string name="smapi_game_name">SMAPI星露谷物语</string>
     <string name="smapi_version">SMAPI版本: 3.7.6</string>
-    <string name="text_install_tip1">注意：需要不低于1.4.5.138版本的游戏本体</string>
+    <string name="text_install_tip1">注意：需要不低于1.4.5.148版本的游戏本体</string>
     <string name="text_install_tip2">更新或安装期间需要安装游戏本体</string>
     <string name="unpacking_smapi_files">正在解包</string>
     <string name="sort_by">排序方式</string>
