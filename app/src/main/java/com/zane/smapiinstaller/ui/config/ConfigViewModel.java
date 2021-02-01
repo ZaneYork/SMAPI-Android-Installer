@@ -4,7 +4,7 @@ import android.view.View;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.hjq.language.LanguagesManager;
+import com.hjq.language.MultiLanguages;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.constant.AppConfigKeyConstants;
 import com.zane.smapiinstaller.entity.AppConfig;
@@ -114,7 +114,7 @@ class ConfigViewModel extends ViewModel implements ListenableObject<List<ModMani
             if (!StringUtils.equals(activeTranslator.getValue(), TranslateUtil.NONE)) {
                 String translator = activeTranslator.getValue();
                 List<String> descriptions = this.modList.stream().map(ModManifestEntry::getDescription).filter(Objects::nonNull).collect(Collectors.toList());
-                String language = LanguagesManager.getAppLanguage(app).getLanguage();
+                String language = MultiLanguages.getAppLanguage().getLanguage();
                 Query<TranslationResult> query = daoSession.getTranslationResultDao().queryBuilder().where(
                         TranslationResultDao.Properties.Origin.in(descriptions),
                         TranslationResultDao.Properties.Locale.eq(language),

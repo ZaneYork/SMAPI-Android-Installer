@@ -3,7 +3,7 @@ package com.zane.smapiinstaller;
 import android.app.Application;
 import android.content.Context;
 
-import com.hjq.language.LanguagesManager;
+import com.hjq.language.MultiLanguages;
 import com.lzy.okgo.OkGo;
 import com.zane.smapiinstaller.entity.DaoMaster;
 import com.zane.smapiinstaller.entity.DaoSession;
@@ -29,7 +29,7 @@ public class MainApplication extends Application {
 //                .addInterceptor(new GzipRequestInterceptor())
                 .build();
         OkGo.getInstance().setOkHttpClient(okHttpClient).init(this);
-        LanguagesManager.init(this);
+        MultiLanguages.init(this);
         // note: DevOpenHelper is for dev only, use a OpenHelper subclass instead
         DbOpenHelper helper = new DbOpenHelper(this, "installer-db");
         Database db = helper.getWritableDb();
@@ -39,7 +39,7 @@ public class MainApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         // 国际化适配（绑定语种）
-        super.attachBaseContext(LanguagesManager.attach(base));
+        super.attachBaseContext(MultiLanguages.attach(base));
         MultiDex.install(this);
     }
 }

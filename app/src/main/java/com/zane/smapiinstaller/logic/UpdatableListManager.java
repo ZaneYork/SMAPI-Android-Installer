@@ -2,7 +2,7 @@ package com.zane.smapiinstaller.logic;
 
 import android.view.View;
 
-import com.hjq.language.LanguagesManager;
+import com.hjq.language.MultiLanguages;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
@@ -41,7 +41,7 @@ public class UpdatableListManager<T extends UpdatableList> implements Listenable
         Boolean updated = updateChecked.get(tClass);
         if(updated == null || !updated) {
             updateChecked.put(tClass, true);
-            String languageSuffix = '.' + LanguagesManager.getAppLanguage(root.getContext()).getLanguage();
+            String languageSuffix = '.' + MultiLanguages.getAppLanguage().getLanguage();
             updateList(root, tClass, updateUrl, filename, languageSuffix);
         }
     }

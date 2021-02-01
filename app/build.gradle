@@ -12,8 +12,8 @@ android {
         applicationId "com.zane.smapiinstaller"
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode 68
-        versionName "3.7.6.6"
+        versionCode 69
+        versionName "3.7.6.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -78,28 +78,28 @@ dependencies {
     implementation 'com.lmntrx.android.library.livin.missme:missme:0.1.5'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     // https://mvnrepository.com/artifact/com.google.guava/guava
-    implementation group: 'com.google.guava', name: 'guava', version: '28.2-android'
+    implementation group: 'com.google.guava', name: 'guava', version: '30.1-android'
     // https://mvnrepository.com/artifact/org.zeroturnaround/zt-zip
     implementation group: 'org.zeroturnaround', name: 'zt-zip', version: '1.14'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation group: 'commons-io', name: 'commons-io', version: '2.7'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
     implementation 'com.lzy.net:okgo:3.0.4'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.11.0'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.0'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.12.1'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.12.1'
     // https://mvnrepository.com/artifact/org.lz4/lz4-pure-java
     implementation group: 'org.lz4', name: 'lz4-pure-java', version: '1.7.0'
 
     implementation 'com.github.didikee:AndroidDonate:0.1.0'
-    implementation 'com.hjq:language:3.0'
+    implementation 'com.hjq:language:6.0'
 
     api 'org.greenrobot:greendao:3.3.0'
     api 'org.greenrobot:greendao-generator:3.3.0'
 
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'com.android.support:multidex:1.0.3'

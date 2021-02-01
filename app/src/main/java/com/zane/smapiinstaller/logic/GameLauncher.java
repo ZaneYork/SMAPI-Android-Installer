@@ -10,7 +10,9 @@ import android.view.View;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.constant.ManifestPatchConstants;
 import com.zane.smapiinstaller.utils.DialogUtils;
+import com.zane.smapiinstaller.utils.StringUtils;
 
 /**
  * 游戏启动器
@@ -63,7 +65,7 @@ public class GameLauncher {
             else {
                 versionCode = packageInfo.versionCode;
             }
-            if(!CommonLogic.unpackSmapiFiles(context, packageInfo.applicationInfo.publicSourceDir, true, packageInfo.packageName, versionCode)) {
+            if(!CommonLogic.unpackSmapiFiles(context, packageInfo.applicationInfo.publicSourceDir, true, CommonLogic.computePackageName(packageInfo), versionCode)) {
                 DialogUtils.showAlertDialog(root, R.string.error, R.string.error_failed_to_repair);
                 return;
             }

@@ -13,7 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.hjq.language.LanguagesManager;
+import com.hjq.language.MultiLanguages;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.model.Response;
@@ -80,8 +80,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                         startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION), ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
-                    }
-                    else {
+                    } else {
                         this.finish();
                     }
                 }));
@@ -150,14 +149,14 @@ public class MainActivity extends AppCompatActivity {
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             currentFragment = destination.getId();
             this.invalidateOptionsMenu();
-            switch (currentFragment) {
-                case R.id.nav_about:
-                case R.id.nav_help:
-                case R.id.config_edit_fragment:
-                    binding.appBarMain.launch.setVisibility(View.INVISIBLE);
-                    break;
-                default:
-                    binding.appBarMain.launch.setVisibility(View.VISIBLE);
+            if (currentFragment == R.id.nav_about
+                    || currentFragment == R.id.nav_help
+                    || currentFragment == R.id.config_edit_fragment
+            ) {
+                binding.appBarMain.launch.setVisibility(View.INVISIBLE);
+            }
+            else {
+                binding.appBarMain.launch.setVisibility(View.VISIBLE);
             }
         });
         AppConfig appConfig = ConfigUtils.getConfig((MainApplication) this.getApplication(), AppConfigKeyConstants.IGNORE_UPDATE_VERSION_CODE, Constants.PATCHED_APP_NAME);
@@ -206,11 +205,7 @@ public class MainActivity extends AppCompatActivity {
         FrameworkConfig config = manager.getConfig();
         menu.findItem(R.id.settings_verbose_logging).setChecked(config.isVerboseLogging());
         menu.findItem(R.id.settings_check_for_updates).setChecked(config.isCheckForUpdates());
-        if (currentFragment != R.id.nav_config) {
-            menu.findItem(R.id.toolbar_update_check).setVisible(false);
-        } else {
-            menu.findItem(R.id.toolbar_update_check).setVisible(true);
-        }
+        menu.findItem(R.id.toolbar_update_check).setVisible(currentFragment == R.id.nav_config);
         menu.findItem(R.id.settings_developer_mode).setChecked(config.isDeveloperMode());
         menu.findItem(R.id.settings_disable_mono_mod).setChecked(config.isDisableMonoMod());
         menu.findItem(R.id.settings_rewrite_missing).setChecked(config.isRewriteMissing());
@@ -222,73 +217,62 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.isCheckable()) {
-            if (item.isChecked()) {
-                item.setChecked(false);
-            } else {
-                item.setChecked(true);
-            }
+            item.setChecked(!item.isChecked());
         }
         ConfigManager manager = new ConfigManager();
         FrameworkConfig config = manager.getConfig();
-        switch (item.getItemId()) {
-            case R.id.settings_verbose_logging:
-                config.setVerboseLogging(item.isChecked());
-                break;
-            case R.id.settings_check_for_updates:
-                config.setCheckForUpdates(item.isChecked());
-                break;
-            case R.id.settings_developer_mode:
-                config.setDeveloperMode(item.isChecked());
-                break;
-            case R.id.settings_disable_mono_mod:
-                config.setDisableMonoMod(item.isChecked());
-                break;
-            case R.id.settings_rewrite_missing:
-                config.setRewriteMissing(item.isChecked());
-                break;
-            case R.id.settings_set_app_name:
-                DialogUtils.showInputDialog(binding.appBarMain.toolbar, R.string.input, R.string.settings_set_app_name, Constants.PATCHED_APP_NAME, Constants.PATCHED_APP_NAME, true, (dialog, input) -> {
-                    String appName = input.toString();
-                    AppConfig appConfig = ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKeyConstants.IGNORE_UPDATE_VERSION_CODE, appName);
-                    appConfig.setValue(appName);
-                    ConfigUtils.saveConfig((MainApplication) getApplication(), appConfig);
-                    Constants.PATCHED_APP_NAME = appName;
-                });
-                return true;
-            case R.id.settings_set_mod_path:
-                DialogUtils.showInputDialog(binding.appBarMain.toolbar, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {
-                    if (StringUtils.isNoneBlank(input)) {
-                        String pathString = input.toString();
-                        File file = new File(FileUtils.getStadewValleyBasePath(), pathString);
-                        if (file.exists() && file.isDirectory()) {
-                            Constants.MOD_PATH = pathString;
-                            config.setModsPath(pathString);
-                            manager.flushConfig();
-                        } else {
-                            DialogUtils.showAlertDialog(binding.drawerLayout, R.string.error, R.string.error_illegal_path);
-                        }
-                    }
-                });
-                return true;
-            case R.id.settings_language:
-                selectLanguageLogic();
-                return true;
-            case R.id.settings_translation_service:
-                selectTranslateServiceLogic();
-                return true;
-            case R.id.toolbar_update_check:
-                checkModUpdateLogic();
-                return true;
-            case R.id.settings_advanced_mode:
-                AppConfig appConfig = ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKeyConstants.ADVANCED_MODE, "false");
-                appConfig.setValue(String.valueOf(item.isChecked()));
+        if (item.getItemId() == R.id.settings_verbose_logging) {
+            config.setVerboseLogging(item.isChecked());
+        } else if (item.getItemId() == R.id.settings_check_for_updates) {
+            config.setCheckForUpdates(item.isChecked());
+        } else if (item.getItemId() == R.id.settings_developer_mode) {
+            config.setDeveloperMode(item.isChecked());
+        } else if (item.getItemId() == R.id.settings_disable_mono_mod) {
+            config.setDisableMonoMod(item.isChecked());
+        } else if (item.getItemId() == R.id.settings_rewrite_missing) {
+            config.setRewriteMissing(item.isChecked());
+        } else if (item.getItemId() == R.id.settings_set_app_name) {
+            DialogUtils.showInputDialog(binding.appBarMain.toolbar, R.string.input, R.string.settings_set_app_name, Constants.PATCHED_APP_NAME, Constants.PATCHED_APP_NAME, true, (dialog, input) -> {
+                String appName = input.toString();
+                AppConfig appConfig = ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKeyConstants.IGNORE_UPDATE_VERSION_CODE, appName);
+                appConfig.setValue(appName);
                 ConfigUtils.saveConfig((MainApplication) getApplication(), appConfig);
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
-                finish();
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
+                Constants.PATCHED_APP_NAME = appName;
+            });
+            return true;
+        } else if (item.getItemId() == R.id.settings_set_mod_path) {
+            DialogUtils.showInputDialog(binding.appBarMain.toolbar, R.string.input, R.string.input_mods_path, Constants.MOD_PATH, Constants.MOD_PATH, (dialog, input) -> {
+                if (StringUtils.isNoneBlank(input)) {
+                    String pathString = input.toString();
+                    File file = new File(FileUtils.getStadewValleyBasePath(), pathString);
+                    if (file.exists() && file.isDirectory()) {
+                        Constants.MOD_PATH = pathString;
+                        config.setModsPath(pathString);
+                        manager.flushConfig();
+                    } else {
+                        DialogUtils.showAlertDialog(binding.drawerLayout, R.string.error, R.string.error_illegal_path);
+                    }
+                }
+            });
+            return true;
+        } else if (item.getItemId() == R.id.settings_language) {
+            selectLanguageLogic();
+            return true;
+        } else if (item.getItemId() == R.id.settings_translation_service) {
+            selectTranslateServiceLogic();
+            return true;
+        } else if (item.getItemId() == R.id.toolbar_update_check) {
+            checkModUpdateLogic();
+            return true;
+        } else if (item.getItemId() == R.id.settings_advanced_mode) {
+            AppConfig appConfig = ConfigUtils.getConfig((MainApplication) getApplication(), AppConfigKeyConstants.ADVANCED_MODE, "false");
+            appConfig.setValue(String.valueOf(item.isChecked()));
+            ConfigUtils.saveConfig((MainApplication) getApplication(), appConfig);
+            startActivity(new Intent(this, MainActivity.class));
+            overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+            finish();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
         manager.flushConfig();
         return true;
@@ -333,34 +317,34 @@ public class MainActivity extends AppCompatActivity {
             boolean restart;
             switch (position) {
                 case 0:
-                    restart = LanguagesManager.setSystemLanguage(this);
+                    restart = MultiLanguages.setSystemLanguage(this);
                     break;
                 case 1:
-                    restart = LanguagesManager.setAppLanguage(this, Locale.ENGLISH);
+                    restart = MultiLanguages.setAppLanguage(this, Locale.ENGLISH);
                     break;
                 case 2:
-                    restart = LanguagesManager.setAppLanguage(this, Locale.SIMPLIFIED_CHINESE);
+                    restart = MultiLanguages.setAppLanguage(this, Locale.SIMPLIFIED_CHINESE);
                     break;
                 case 3:
-                    restart = LanguagesManager.setAppLanguage(this, Locale.TRADITIONAL_CHINESE);
+                    restart = MultiLanguages.setAppLanguage(this, Locale.TRADITIONAL_CHINESE);
                     break;
                 case 4:
-                    restart = LanguagesManager.setAppLanguage(this, Locale.KOREA);
+                    restart = MultiLanguages.setAppLanguage(this, Locale.KOREA);
                     break;
                 case 5:
-                    restart = LanguagesManager.setAppLanguage(this, new Locale("th", ""));
+                    restart = MultiLanguages.setAppLanguage(this, new Locale("th", ""));
                     break;
                 case 6:
-                    restart = LanguagesManager.setAppLanguage(this, new Locale("es", ""));
+                    restart = MultiLanguages.setAppLanguage(this, new Locale("es", ""));
                     break;
                 case 7:
-                    restart = LanguagesManager.setAppLanguage(this, Locale.FRENCH);
+                    restart = MultiLanguages.setAppLanguage(this, Locale.FRENCH);
                     break;
                 case 8:
-                    restart = LanguagesManager.setAppLanguage(this, new Locale("pt", ""));
+                    restart = MultiLanguages.setAppLanguage(this, new Locale("pt", ""));
                     break;
                 case 9:
-                    restart = LanguagesManager.setAppLanguage(this, new Locale("in", ""));
+                    restart = MultiLanguages.setAppLanguage(this, new Locale("in", ""));
                     break;
                 default:
                     return;
@@ -414,7 +398,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void attachBaseContext(Context newBase) {
         // 国际化适配（绑定语种）
-        super.attachBaseContext(LanguagesManager.attach(newBase));
+        super.attachBaseContext(MultiLanguages.attach(newBase));
     }
 
     @Override

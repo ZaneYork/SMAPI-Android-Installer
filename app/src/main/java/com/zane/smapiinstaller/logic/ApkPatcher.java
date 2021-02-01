@@ -108,7 +108,7 @@ public class ApkPatcher {
             try {
                 PackageInfo packageInfo = packageManager.getPackageInfo(packageName, 0);
                 String sourceDir = packageInfo.applicationInfo.publicSourceDir;
-                gamePackageName.set(packageName);
+                gamePackageName.set(CommonLogic.computePackageName(packageInfo));
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     gameVersionCode.set(packageInfo.getLongVersionCode());
                 } else {

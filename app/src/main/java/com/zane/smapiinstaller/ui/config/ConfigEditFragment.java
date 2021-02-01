@@ -19,7 +19,7 @@ import android.webkit.WebViewClient;
 
 import androidx.webkit.WebViewAssetLoader;
 
-import com.hjq.language.LanguagesManager;
+import com.hjq.language.MultiLanguages;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
@@ -106,7 +106,7 @@ public class ConfigEditFragment extends Fragment {
     private void onScrollViewRendered(File file, Context context) {
         String fileText = FileUtils.getFileText(file);
         if (fileText != null) {
-            String lang = LanguagesManager.getAppLanguage(context).getLanguage();
+            String lang = MultiLanguages.getAppLanguage().getLanguage();
             switch (lang) {
                 case "zh":
                     lang = "zh-CN";

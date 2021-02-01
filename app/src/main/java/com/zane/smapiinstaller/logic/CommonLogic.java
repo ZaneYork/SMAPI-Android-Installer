@@ -27,6 +27,7 @@ import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.DialogAction;
+import com.zane.smapiinstaller.constant.ManifestPatchConstants;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
@@ -187,6 +188,14 @@ public class CommonLogic {
             return 1;
         });
         return apkFilesManifests;
+    }
+
+    public static String computePackageName(PackageInfo packageInfo){
+        String packageName = packageInfo.packageName;
+        if (StringUtils.endsWith(packageInfo.versionName, ManifestPatchConstants.PATTERN_VERSION_AMAZON)) {
+            packageName = ManifestPatchConstants.APP_PACKAGE_NAME + ManifestPatchConstants.PATTERN_VERSION_AMAZON;
+        }
+        return packageName;
     }
 
     /**

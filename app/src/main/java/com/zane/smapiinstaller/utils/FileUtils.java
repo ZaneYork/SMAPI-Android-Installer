@@ -11,7 +11,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
-import com.hjq.language.LanguagesManager;
+import com.hjq.language.MultiLanguages;
 
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -78,7 +78,7 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      */
     public static InputStream getLocaledLocalAsset(Context context, String filename) throws IOException {
         try {
-            String language = LanguagesManager.getAppLanguage(context).getLanguage();
+            String language = MultiLanguages.getAppLanguage().getLanguage();
             String localedFilename = filename + '.' + language;
             File file = new File(context.getFilesDir(), localedFilename);
             if (file.exists()) {

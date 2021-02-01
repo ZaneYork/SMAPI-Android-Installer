@@ -1,13 +1,13 @@
 {
-  "version": 33,
+  "version": 34,
   "contents": [
     {
       "type": "COMPAT",
       "name": "SMAPI for 1.4.5.145",
       "assetPath": "compat/145/",
       "description": "SMAPI compat package for game 1.4.5.138 - 1.4.5.147, SMAPI 3.7.5",
-      "url": "http://zaneyork.cn/dl/compat/smapi_145_210128.zip",
-      "hash": "821117db34a78ed955d4f24cb0ed4da9d3c5c9eafd4774d4fadec209505277c9"
+      "url": "http://zaneyork.cn/dl/compat/smapi_145_210201.zip",
+      "hash": "d9f6e3e5161a1236163df8dfe56859cb2701d1847ff2ed04742c925e20c19ed9"
     },
     {
       "type": "COMPAT",
@@ -22,16 +22,16 @@
       "name": "SMAPI untuk Galaxy Store",
       "assetPath": "compat/samsung_138/",
       "description": "Paket kompatibilitas SMAPI untuk versi 1.4.5.138 - 1.4.5.147, SMAPI 3.7.5",
-      "url": "http://zaneyork.cn/dl/compat/smapi_samsung_145_210128.zip",
-      "hash": "30df6cbabb000034f44eac4bc7489344d1a7f3cc4724f8be0ca61a94a7502825"
+      "url": "http://zaneyork.cn/dl/compat/smapi_samsung_145_210201.zip",
+      "hash": "b2a99924b2a6842168df1df4c2c0d934c63bb0010e34dfdc6f4037d4bc091c7a"
     },
     {
       "type": "COMPAT",
       "name": "SMAPI untuk Amazon Store",
       "assetPath": "compat/amazon_138/",
       "description": "Paket kompatibilitas SMAPI untuk versi 1.4.5.138 - 1.4.5.147, SMAPI 3.7.5",
-      "url": "http://zaneyork.cn/dl/compat/smapi_amazon_145_210128.zip",
-      "hash": "7540a006cfa262dd2fca4f2e51b2fffff8b6e045602b3cc11a2f9061dcdabddd"
+      "url": "http://zaneyork.cn/dl/compat/smapi_amazon_145_210201.zip",
+      "hash": "3f0ef36b139750e27ccab165b8fed6cbf58c10cadbf4b5a34436891740ae1f89"
     },
     {
       "type": "LOCAL",
