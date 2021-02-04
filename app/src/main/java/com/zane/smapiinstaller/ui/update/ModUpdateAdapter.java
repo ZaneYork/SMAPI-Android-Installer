@@ -29,7 +29,7 @@ public class ModUpdateAdapter extends RecyclerView.Adapter<ModUpdateAdapter.View
 
     private final ImmutableListMultimap<String, ModManifestEntry> installedModMap;
 
-    private List<ModUpdateCheckResponseDto> updateInfoList;
+    private final List<ModUpdateCheckResponseDto> updateInfoList;
 
     public ModUpdateAdapter(List<ModUpdateCheckResponseDto> items) {
         updateInfoList = items;
@@ -56,7 +56,7 @@ public class ModUpdateAdapter extends RecyclerView.Adapter<ModUpdateAdapter.View
 
     class ViewHolder extends RecyclerView.ViewHolder {
         public ModUpdateCheckResponseDto updateInfo;
-        private UpdatableModListItemBinding binding;
+        private final UpdatableModListItemBinding binding;
 
         public void setUpdateInfo(ModUpdateCheckResponseDto updateInfo) {
             this.updateInfo = updateInfo;

@@ -89,12 +89,9 @@ public class ApkPatcher {
     /**
      * 依次扫描package_names.json文件对应的包名，抽取找到的第一个游戏APK到SMAPI Installer路径
      *
+     * @param advancedStage 0: 初始化，1: 高级安装，-1: 普通安装
      * @return 抽取后的APK文件路径，如果抽取失败返回null
      */
-    public String extract() {
-        return extract(-1);
-    }
-
     public String extract(int advancedStage) {
         emitProgress(0);
         PackageManager packageManager = context.getPackageManager();
@@ -169,12 +166,9 @@ public class ApkPatcher {
      * 将指定APK文件重新打包，添加SMAPI，修改AndroidManifest.xml，同时验证版本是否正确
      *
      * @param apkPath APK文件路径
+     * @param isAdvanced 是否高级模式
      * @return 是否成功打包
      */
-    public boolean patch(String apkPath) {
-        return patch(apkPath, false);
-    }
-
     public boolean patch(String apkPath, boolean isAdvanced) {
         if (apkPath == null) {
             return false;
@@ -230,15 +224,15 @@ public class ApkPatcher {
         if (entry.isAdvanced() && !isAdvanced) {
             return null;
         }
-        if (entry.getTargetPath().endsWith("/") && entry.getAssetPath().contains("*")) {
-            String path = StringUtils.substringBeforeLast(entry.getAssetPath(), "/");
-            String pattern = StringUtils.substringAfterLast(entry.getAssetPath(), "/");
+        if (entry.getTargetPath().endsWith(Constants.FILE_SEPARATOR) && entry.getAssetPath().contains("*")) {
+            String path = StringUtils.substringBeforeLast(entry.getAssetPath(), Constants.FILE_SEPARATOR);
+            String pattern = StringUtils.substringAfterLast(entry.getAssetPath(), Constants.FILE_SEPARATOR);
             try {
                 if (entry.getOrigin() == 1) {
                     ArrayList<ZipUtils.ZipEntrySource> list = new ArrayList<>();
                     ZipUtil.iterate(apkFile, (in, zipEntry) -> {
-                        String entryPath = StringUtils.substringBeforeLast(zipEntry.getName(), "/");
-                        String filename = StringUtils.substringAfterLast(zipEntry.getName(), "/");
+                        String entryPath = StringUtils.substringBeforeLast(zipEntry.getName(), Constants.FILE_SEPARATOR);
+                        String filename = StringUtils.substringAfterLast(zipEntry.getName(), Constants.FILE_SEPARATOR);
                         if (entryPath.equals(path) && StringUtils.wildCardMatch(filename, pattern)) {
                             byte[] bytes = ByteStreams.toByteArray(in);
                             ZipUtils.ZipEntrySource source;
@@ -256,7 +250,7 @@ public class ApkPatcher {
                             .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
                             .map(filename -> new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> {
                                 try {
-                                    return FileUtils.getLocalAsset(context, path + "/" + filename);
+                                    return FileUtils.getLocalAsset(context, path + Constants.FILE_SEPARATOR + filename);
                                 } catch (IOException ignored) {
                                 }
                                 return null;
@@ -342,7 +336,7 @@ public class ApkPatcher {
                         }
                     case "name":
                         if (strObj.contains(ManifestPatchConstants.PATTERN_MAIN_ACTIVITY)) {
-                            if (versionCode.get() > 147) {
+                            if (versionCode.get() > Constants.MONO_10_VERSION_CODE) {
                                 attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "crc648e5438a58262f792.SMainActivity");
                             } else {
                                 attr.obj = strObj.replaceFirst("\\w+\\.MainActivity", "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity");

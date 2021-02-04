@@ -17,6 +17,8 @@ import com.zane.smapiinstaller.databinding.FragmentAboutBinding;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.DialogUtils;
 
+import org.jetbrains.annotations.NotNull;
+
 import androidx.fragment.app.Fragment;
 
 /**
@@ -27,7 +29,7 @@ public class AboutFragment extends Fragment {
     private FragmentAboutBinding binding;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentAboutBinding.inflate(inflater, container, false);
         binding.buttonRelease.setOnClickListener(v -> release());

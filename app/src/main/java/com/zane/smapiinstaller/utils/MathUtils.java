@@ -7,9 +7,9 @@ import java.math.BigInteger;
  */
 public class MathUtils {
 
-    private static int INT_MAX_BIT_VALUE = 31;
+    private static final int INT_MAX_BIT_VALUE = 31;
 
-    private static int LONG_MAX_BIT_VALUE = 63;
+    private static final int LONG_MAX_BIT_VALUE = 63;
 
     /**
      * Returns the value of the {@code long} argument;

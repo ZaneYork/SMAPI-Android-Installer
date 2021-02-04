@@ -12,6 +12,8 @@ import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.utils.JsonUtil;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 import androidx.fragment.app.Fragment;
@@ -35,7 +37,7 @@ public class ModUpdateFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentModUpdateListBinding.inflate(inflater, container, false);
         // Set the adapter

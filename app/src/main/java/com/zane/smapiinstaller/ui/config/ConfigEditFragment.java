@@ -77,9 +77,7 @@ public class ConfigEditFragment extends Fragment {
             File file = new File(configPath);
             if (file.exists() && file.length() < Constants.TEXT_FILE_OPEN_SIZE_LIMIT) {
                 initAssetWebView();
-                binding.scrollView.post(() -> {
-                    CommonLogic.doOnNonNull(this.getContext(), (context -> onScrollViewRendered(file, context)));
-                });
+                binding.scrollView.post(() -> CommonLogic.doOnNonNull(this.getContext(), (context -> onScrollViewRendered(file, context))));
             } else {
                 DialogUtils.showConfirmDialog(binding.getRoot(), R.string.error, this.getString(R.string.text_too_large), R.string.open_with, R.string.cancel, ((dialog, which) -> {
                     if (which == DialogAction.POSITIVE) {

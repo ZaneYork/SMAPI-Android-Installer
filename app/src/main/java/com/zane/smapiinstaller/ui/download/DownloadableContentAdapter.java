@@ -70,7 +70,7 @@ public class DownloadableContentAdapter extends RecyclerView.Adapter<Downloadabl
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        private DownloadContentItemBinding binding;
+        private final DownloadContentItemBinding binding;
 
         private final AtomicBoolean downloading = new AtomicBoolean(false);
 

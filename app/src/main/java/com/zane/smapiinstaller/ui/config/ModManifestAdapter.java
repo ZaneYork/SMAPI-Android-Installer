@@ -32,7 +32,7 @@ import androidx.recyclerview.widget.RecyclerView;
  * @author Zane
  */
 public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.ViewHolder> {
-    private ConfigViewModel model;
+    private final ConfigViewModel model;
     private List<ModManifestEntry> modList;
 
     public ModManifestAdapter(ConfigViewModel model, List<ModManifestEntry> modList) {
@@ -66,7 +66,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        private ModListItemBinding binding;
+        private final ModListItemBinding binding;
         private ModManifestEntry modInfo;
         private List<String> configList;
 
@@ -181,9 +181,7 @@ public class ModManifestAdapter extends RecyclerView.Adapter<ModManifestAdapter.
             if (configList.size() > 0) {
                 if (configList.size() > 1) {
                     List<String> selections = configList.stream().map(path -> StringUtils.removeStart(path, modInfo.getAssetPath())).collect(Collectors.toList());
-                    DialogUtils.showListItemsDialog(itemView, R.string.menu_config_edit, selections, (materialDialog, index) -> {
-                        navigateToConfigEditor(configList.get(index));
-                    });
+                    DialogUtils.showListItemsDialog(itemView, R.string.menu_config_edit, selections, (materialDialog, index) -> navigateToConfigEditor(configList.get(index)));
                 } else {
                     navigateToConfigEditor(configList.get(0));
                 }

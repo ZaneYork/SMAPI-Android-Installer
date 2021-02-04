@@ -50,7 +50,7 @@ public class HelpItemAdapter extends RecyclerView.Adapter<HelpItemAdapter.ViewHo
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        private HelpListItemBinding binding;
+        private final HelpListItemBinding binding;
 
         public ViewHolder(View view) {
             super(view);

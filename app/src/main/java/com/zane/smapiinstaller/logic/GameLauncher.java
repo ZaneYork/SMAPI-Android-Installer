@@ -10,9 +10,7 @@ import android.view.View;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
-import com.zane.smapiinstaller.constant.ManifestPatchConstants;
 import com.zane.smapiinstaller.utils.DialogUtils;
-import com.zane.smapiinstaller.utils.StringUtils;
 
 /**
  * 游戏启动器

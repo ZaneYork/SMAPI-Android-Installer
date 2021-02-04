@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 class MainTabPagerAdapter extends FragmentStateAdapter {
-    private Fragment fragment;
+    private final Fragment fragment;
 
     public MainTabPagerAdapter(Fragment fragment) {
         super(fragment);

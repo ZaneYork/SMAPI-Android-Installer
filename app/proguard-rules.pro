@@ -119,13 +119,12 @@
 }
 
 # For Jackson
--keepattributes Signature
--keepattributes *Annotation*
--keep class sun.misc.Unsafe { *; }
--dontwarn org.codehaus.jackson.**
+-keepattributes *Annotation*,EnclosingMethod,Signature
+-keepnames class com.fasterxml.jackson.** { *; }
 -dontwarn com.fasterxml.jackson.databind.**
--keep class org.codehaus.jackson.** { *;}
--keep class com.fasterxml.jackson.** { *; }
+-keep class org.codehaus.** { *; }
+-keepclassmembers public final enum org.codehaus.jackson.annotate.JsonAutoDetect$Visibility {
+    public static final org.codehaus.jackson.annotate.JsonAutoDetect$Visibility *; }
 
 #okhttp
 -dontwarn okhttp3.**
@@ -139,9 +138,13 @@
 -keep class pxb.android.** { *; }
 -keep class net.fornwall.apksigner.** { *; }
 -keep class com.android.apksig.** { *; }
+
 #Warning:org.bouncycastle.jce.provider.X509LDAPCertStoreSpi: can't find referenced class javax.naming.NamingEnumeration
 -dontwarn javax.naming.**
--keep class org.bouncycastle.** {*;}
+-keep class org.bouncycastle.jcajce.provider.** { *; }
+-keep class org.bouncycastle.jce.provider.** { *; }
+#-keep class org.bouncycastle.** {*;}
+
 -keep class org.slf4j.**
 -keep class com.hjq.language.** {*;}
 -keep class net.jpountz.** {*;}
@@ -158,3 +161,28 @@ public static java.lang.String TABLENAME;
 -dontwarn net.sqlcipher.database.**
 # If you do NOT use RxJava:
 -dontwarn rx.**
+
+-keep class com.sun.org.apache.xml.internal.utils.PrefixResolver
+-keep class java.rmi.Remote
+-keep class java.rmi.server.*
+-keep class javax.annotation.processing.AbstractProcessor
+-keep class javax.el.*
+-keep class javax.servlet.http.*
+-keep class javax.servlet.jsp.el.VariableResolver
+-keep class javax.servlet.jsp.*
+-keep class javax.servlet.jsp.tagext.*
+-keep class javax.servlet.*
+-keep class javax.swing.JTree
+-keep class javax.swing.tree.TreeNode
+-keep class lombok.core.configuration.ConfigurationKey
+-keep class org.apache.tools.ant.Task
+-keep class org.apache.tools.ant.taskdefs.MatchingTask
+-keep class org.apache.xml.utils.PrefixResolver
+-keep class org.jaxen.dom.*
+-keep class org.jaxen.dom4j.Dom4jXPath
+-keep class org.jaxen.jdom.JDOMXPath
+-keep class org.jaxen.*
+-keep class org.jdom.output.XMLOutputter
+-keep class org.python.core.PyObject
+-keep class org.python.util.PythonInterpreter
+-keep class org.zeroturnaround.javarebel.ClassEventListener

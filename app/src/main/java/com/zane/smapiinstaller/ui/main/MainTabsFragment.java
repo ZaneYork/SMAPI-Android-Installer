@@ -47,11 +47,7 @@ public class MainTabsFragment extends Fragment {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
-                if (position >= 3) {
-                    MainActivity.instance.setFloatingBarVisibility(false);
-                } else {
-                    MainActivity.instance.setFloatingBarVisibility(true);
-                }
+                MainActivity.instance.setFloatingBarVisibility(position < 3);
             }
         });
     }

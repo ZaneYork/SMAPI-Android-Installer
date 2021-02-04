@@ -62,7 +62,7 @@ public class Constants {
     /**
      * 文本文件打开大小阈值
      */
-    public static int TEXT_FILE_OPEN_SIZE_LIMIT = 16 * 1024 * 1024;
+    public static final int TEXT_FILE_OPEN_SIZE_LIMIT = 16 * 1024 * 1024;
 
     /**
      * SMAPI版本
@@ -70,9 +70,19 @@ public class Constants {
     public static final String SMAPI_VERSION = "3.7.6";
 
     /**
+     * Mono Android 10 起始版本号
+     */
+    public static final int MONO_10_VERSION_CODE = 148;
+
+    /**
      * 应用名称
      */
     public static String PATCHED_APP_NAME = null;
+
+    /**
+     * Manifest中使用的路径分隔符
+     */
+    public static final String FILE_SEPARATOR = "/";
 
     /**
      * 平台

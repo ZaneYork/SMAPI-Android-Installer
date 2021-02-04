@@ -56,7 +56,7 @@ public class VersionUtil {
      * @return 是否为空版本段
      */
     private static boolean isZero(List<String> versionSections) {
-        return !versionSections.stream().anyMatch(version -> {
+        return versionSections.stream().noneMatch(version -> {
             try {
                 int i = Integer.parseInt(version);
                 if (i == 0) {

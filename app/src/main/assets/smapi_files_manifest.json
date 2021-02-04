@@ -102,8 +102,15 @@
     "origin": 0
   },
   {
+    "targetPath": "smapi-internal/BmFont.dll",
+    "assetPath": "assemblies/BmFont.dll",
+    "isXALZ": true,
+    "origin": 1
+  },
+  {
     "targetPath": "smapi-internal/xTile.dll",
-    "assetPath": "apk/xTile.dll",
-    "origin": 0
+    "assetPath": "assemblies/xTile.dll",
+    "isXALZ": true,
+    "origin": 1
   }
 ]

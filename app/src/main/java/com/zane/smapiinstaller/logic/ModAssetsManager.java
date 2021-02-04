@@ -44,7 +44,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -260,13 +259,7 @@ public class ModAssetsManager {
             DialogUtils.showConfirmDialog(root, R.string.error,
                     root.getContext().getString(R.string.duplicate_mod_found, Joiner.on(";").join(list)),
                     R.string.continue_text, R.string.abort,
-                    ((dialog, which) -> {
-                        if (which == DialogAction.POSITIVE) {
-                            returnCallback.accept(true);
-                        } else {
-                            returnCallback.accept(false);
-                        }
-                    }));
+                    ((dialog, which) -> returnCallback.accept(which == DialogAction.POSITIVE)));
         } else {
             returnCallback.accept(true);
         }
@@ -466,10 +459,7 @@ public class ModAssetsManager {
         if (StringUtils.isBlank(dependency.getMinimumVersion())) {
             return false;
         }
-        if (VersionUtil.compareVersion(version, dependency.getMinimumVersion()) < 0) {
-            return true;
-        }
-        return false;
+        return VersionUtil.compareVersion(version, dependency.getMinimumVersion()) < 0;
     }
 
     private Tuple2<String, String> checkContentPackDependencyError(ModManifestEntry mod, ImmutableListMultimap<String, ModManifestEntry> installedModMap) {

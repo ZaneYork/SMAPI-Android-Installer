@@ -40,9 +40,7 @@ import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -204,8 +202,8 @@ public class CommonLogic {
      * @param context   context
      * @param apkPath   安装包路径
      * @param checkMode 是否为校验模式
-     * @param packageName
-     * @param versionCode
+     * @param packageName 包名
+     * @param versionCode 版本号
      * @return 操作是否成功
      */
     public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode, String packageName, long versionCode) {
@@ -254,62 +252,58 @@ public class CommonLogic {
             File targetFile = new File(basePath, entry.getTargetPath());
             switch (entry.getOrigin()) {
                 case 0:
-                    if(entry.isExternal() && apkFilesManifest != null){
-                        byte[] bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
-                        try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
-                            outputStream.write(bytes);
-                        } catch (IOException ignored) {
-                        }
-                    }
-                    else {
-                        if (entry.getTargetPath().endsWith("/") && entry.getAssetPath().contains("*")) {
-                            String path = StringUtils.substring(entry.getAssetPath(), 0, StringUtils.lastIndexOf(entry.getAssetPath(), "/"));
-                            String pattern = StringUtils.substringAfterLast(entry.getAssetPath(), "/");
-                            try {
-                                Stream.of(context.getAssets().list(path))
-                                        .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
-                                        .forEach(filename -> {
-                                            unpackFile(context, checkMode, path + "/" + filename, new File(basePath, entry.getTargetPath() + filename));
-                                        });
-                            } catch (IOException ignored) {
-                            }
-                        } else {
-                            unpackFile(context, checkMode, entry.getAssetPath(), targetFile);
-                        }
-                    }
+                    unpackFromInstaller(context, checkMode, apkFilesManifest, basePath, entry, targetFile);
                     break;
                 case 1:
-                    if (!checkMode || !targetFile.exists()) {
-                        if(entry.isXALZ()){
-                            byte[] bytes = ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath());
-                            if (entry.isXALZ()) {
-                                bytes = ZipUtils.decompressXALZ(bytes);
-                            }
-                            FileOutputStream stream = null;
-                            try {
-                                stream = FileUtils.openOutputStream(targetFile);
-                                stream.write(bytes);
-                            } catch (IOException ignore) {
-                            }
-                            finally {
-                                if(stream != null) {
-                                    try {
-                                        stream.close();
-                                    } catch (IOException ignored) {
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath(), targetFile);
-                        }
-                    }
+                    unpackFromApk(apkPath, checkMode, entry, targetFile);
                     break;
                 default:
                     break;
             }
         }
         return true;
+    }
+
+    private static void unpackFromApk(String apkPath, boolean checkMode, ManifestEntry entry, File targetFile) {
+        if (!checkMode || !targetFile.exists()) {
+            if(entry.isXALZ()){
+                byte[] bytes = ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath());
+                if (entry.isXALZ()) {
+                    bytes = ZipUtils.decompressXALZ(bytes);
+                }
+                try (FileOutputStream stream = FileUtils.openOutputStream(targetFile)) {
+                    stream.write(bytes);
+                } catch (IOException ignore) {
+                }
+            }
+            else {
+                ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath(), targetFile);
+            }
+        }
+    }
+
+    private static void unpackFromInstaller(Context context, boolean checkMode, ApkFilesManifest apkFilesManifest, File basePath, ManifestEntry entry, File targetFile) {
+        if(entry.isExternal() && apkFilesManifest != null){
+            byte[] bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
+            try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
+                outputStream.write(bytes);
+            } catch (IOException ignored) {
+            }
+        }
+        else {
+            if (entry.getTargetPath().endsWith("/") && entry.getAssetPath().contains("*")) {
+                String path = StringUtils.substring(entry.getAssetPath(), 0, StringUtils.lastIndexOf(entry.getAssetPath(), "/"));
+                String pattern = StringUtils.substringAfterLast(entry.getAssetPath(), "/");
+                try {
+                    Stream.of(context.getAssets().list(path))
+                            .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
+                            .forEach(filename -> unpackFile(context, checkMode, path + "/" + filename, new File(basePath, entry.getTargetPath() + filename)));
+                } catch (IOException ignored) {
+                }
+            } else {
+                unpackFile(context, checkMode, entry.getAssetPath(), targetFile);
+            }
+        }
     }
 
     public static void filterManifest(List<ApkFilesManifest> manifests, String packageName, long versionCode){
@@ -325,10 +319,7 @@ public class CommonLogic {
                     return true;
                 }
             }
-            if (manifest.getTargetPackageName() != null && packageName != null && !manifest.getTargetPackageName().contains(packageName)) {
-                return true;
-            }
-            return false;
+            return manifest.getTargetPackageName() != null && packageName != null && !manifest.getTargetPackageName().contains(packageName);
         });
     }
     private static void unpackFile(Context context, boolean checkMode, String assertPath, File targetFile) {
@@ -398,7 +389,6 @@ public class CommonLogic {
         try {
             PackageManager manager = activity.getPackageManager();
             PackageInfo info = manager.getPackageInfo(activity.getPackageName(), 0);
-            String version = info.versionName;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 return info.getLongVersionCode();
             }
