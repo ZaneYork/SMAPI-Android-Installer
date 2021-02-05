@@ -14,6 +14,7 @@ import com.android.apksig.ApkSigner;
 import com.android.apksig.ApkVerifier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Ticker;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.zane.smapiinstaller.BuildConfig;
@@ -80,7 +81,12 @@ public class ApkPatcher {
 
     private final List<Consumer<Integer>> progressListener = new ArrayList<>();
 
-    private final Stopwatch stopwatch = Stopwatch.createUnstarted();
+    private final Stopwatch stopwatch = Stopwatch.createUnstarted(new Ticker() {
+        @Override
+        public long read() {
+            return android.os.SystemClock.elapsedRealtimeNanos();
+        }
+    });
 
     public ApkPatcher(Context context) {
         this.context = context;
@@ -165,7 +171,7 @@ public class ApkPatcher {
     /**
      * 将指定APK文件重新打包，添加SMAPI，修改AndroidManifest.xml，同时验证版本是否正确
      *
-     * @param apkPath APK文件路径
+     * @param apkPath    APK文件路径
      * @param isAdvanced 是否高级模式
      * @return 是否成功打包
      */
@@ -325,8 +331,8 @@ public class ApkPatcher {
                             } else {
                                 attr.obj = Constants.PATCHED_APP_NAME;
                             }
+//                            return Collections.singletonList(new ManifestTagVisitor.AttrArgs(attr.ns, "requestLegacyExternalStorage", -1, NodeVisitor.TYPE_INT_BOOLEAN, true));
                         }
-//                        return Collections.singletonList(new ManifestTagVisitor.AttrArgs(attr.ns, "requestLegacyExternalStorage", -1, NodeVisitor.TYPE_INT_BOOLEAN, true));
                         break;
                     case "authorities":
                         if (strObj.contains(packageName.get())) {
@@ -357,11 +363,12 @@ public class ApkPatcher {
         Function<ManifestTagVisitor.ChildArgs, List<ManifestTagVisitor.ChildArgs>> childProcessLogic = (child -> {
             if (!permissionAppended.get() && StringUtils.equals(child.name, "uses-permission")) {
                 permissionAppended.set(true);
-                return Collections.singletonList(new ManifestTagVisitor.ChildArgs(
-                        child.ns, child.name, Collections.singletonList(
-                        new ManifestTagVisitor.AttrArgs(
-                                "http://schemas.android.com/apk/res/android", "name", -1,
-                                NodeVisitor.TYPE_STRING, "android.permission.MANAGE_EXTERNAL_STORAGE"))));
+                return Collections.singletonList(
+                        new ManifestTagVisitor.ChildArgs(child.ns, child.name, Collections.singletonList(
+                                new ManifestTagVisitor.AttrArgs(
+                                        "http://schemas.android.com/apk/res/android", "name", -1,
+                                        NodeVisitor.TYPE_STRING, "android.permission.MANAGE_EXTERNAL_STORAGE")))
+                );
             }
             return null;
         });
@@ -453,6 +460,7 @@ public class ApkPatcher {
                 DialogUtils.showConfirmDialog(MainActivity.instance, R.string.confirm, R.string.request_unknown_source_permission, ((dialog, dialogAction) -> {
                     if (dialogAction == DialogAction.POSITIVE) {
                         Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                        intent.setData(Uri.parse("package:" + context.getPackageName()));
                         ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_APP_INSTALL, (resultCode, data) -> this.install(apkPath));
                         MainActivity.instance.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_APP_INSTALL);
                     }

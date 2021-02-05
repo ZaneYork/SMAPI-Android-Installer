@@ -35,6 +35,9 @@ public class ZipUtils {
     private final static String FILE_HEADER_XALZ = "XALZ";
 
     public static byte[] decompressXALZ(byte[] bytes) {
+        if (bytes == null) {
+            return bytes;
+        }
         if (FILE_HEADER_XALZ.equals(new String(ByteUtils.subArray(bytes, 0, 4), StandardCharsets.ISO_8859_1))) {
             byte[] length = ByteUtils.subArray(bytes, 8, 12);
             int len = (length[0] & 0xff) | ((length[1] & 0xff) << 8) | ((length[2] & 0xff) << 16) | ((length[3] & 0xff) << 24);

@@ -1,9 +1,11 @@
 package com.zane.smapiinstaller;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -67,6 +69,20 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
     private void requestPermissions() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            boolean haveInstallPermission = this.getPackageManager().canRequestPackageInstalls();
+            if (!haveInstallPermission) {
+                DialogUtils.showConfirmDialog(MainActivity.instance, R.string.confirm, R.string.request_unknown_source_permission, ((dialog, dialogAction) -> {
+                    if (dialogAction == DialogAction.POSITIVE) {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+                        intent.setData(Uri.parse("package:" + this.getPackageName()));
+                        ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_APP_INSTALL, (resultCode, data) -> this.requestPermissions());
+                        MainActivity.instance.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_APP_INSTALL);
+                    }
+                }));
+                return;
+            }
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // 先判断有没有权限
             if (!Environment.isExternalStorageManager()) {
@@ -79,7 +95,13 @@ public class MainActivity extends AppCompatActivity {
                                 requestPermissions();
                             }
                         });
-                        startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION), ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
+                        try {
+                            Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                            intent.setData(Uri.parse("package:" + this.getPackageName()));
+                            startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
+                        } catch (ActivityNotFoundException ignored){
+                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION), ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
+                        }
                     } else {
                         this.finish();
                     }

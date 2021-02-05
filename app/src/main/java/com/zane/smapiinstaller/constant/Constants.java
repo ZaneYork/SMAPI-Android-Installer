@@ -19,6 +19,10 @@ public class Constants {
      */
     public static final String CONFIG_PATH = "StardewValley/smapi-internal/config.user.json";
     /**
+     * 原始安装包名
+     */
+    public static final String ORIGIN_PACKAGE_NAME_GOOGLE =  "com.chucklefish.stardewvalley";
+    /**
      * 安装包目标包名
      */
     public static final String TARGET_PACKAGE_NAME =  "com.zane.stardewvalley";
