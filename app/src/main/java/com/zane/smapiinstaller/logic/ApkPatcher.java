@@ -12,6 +12,9 @@ import android.util.Log;
 
 import com.android.apksig.ApkSigner;
 import com.android.apksig.ApkVerifier;
+import com.android.apksig.DefaultApkSignerEngine;
+import com.android.apksig.util.DataSinks;
+import com.android.apksig.util.DataSources;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
@@ -23,6 +26,7 @@ import com.zane.smapiinstaller.R;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.constant.ManifestPatchConstants;
+import com.zane.smapiinstaller.dto.Tuple2;
 import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
@@ -39,6 +43,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -46,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -79,7 +85,11 @@ public class ApkPatcher {
 
     private final AtomicInteger switchAction = new AtomicInteger();
 
+    private Tuple2<byte[], Set<String>> originSignInfo = null;
+
     private final List<Consumer<Integer>> progressListener = new ArrayList<>();
+
+    private int lastProgress = -1;
 
     private final Stopwatch stopwatch = Stopwatch.createUnstarted(new Ticker() {
         @Override
@@ -89,6 +99,7 @@ public class ApkPatcher {
     });
 
     public ApkPatcher(Context context) {
+        this.lastProgress = -1;
         this.context = context;
     }
 
@@ -120,14 +131,6 @@ public class ApkPatcher {
                 File apkFile = new File(sourceDir);
 
                 String stadewValleyBasePath = FileUtils.getStadewValleyBasePath();
-                File dest = new File(stadewValleyBasePath + "/SMAPI Installer/");
-                if (!dest.exists()) {
-                    if (!dest.mkdir()) {
-                        errorMessage.set(String.format(context.getString(R.string.error_failed_to_create_file), dest.getAbsolutePath()));
-                        return null;
-                    }
-                }
-                File distFile = new File(dest, apkFile.getName());
                 if (advancedStage == 0) {
                     AtomicInteger count = new AtomicInteger();
                     ZipUtil.unpack(apkFile, new File(stadewValleyBasePath + "/StardewValley/"), name -> {
@@ -140,7 +143,7 @@ public class ApkPatcher {
                         }
                         return null;
                     });
-                    return distFile.getAbsolutePath();
+                    return apkFile.getAbsolutePath();
                 } else if (advancedStage == 1) {
                     File contentFolder = new File(stadewValleyBasePath + "/StardewValley/Content");
                     if (contentFolder.exists()) {
@@ -151,16 +154,11 @@ public class ApkPatcher {
                     } else {
                         extract(0);
                     }
-                    ZipUtils.removeEntries(sourceDir, "assets/Content", distFile.getAbsolutePath(), (progress) -> emitProgress((int) (progress * 0.05)));
-                } else {
-                    Files.copy(apkFile, distFile);
+                    return apkFile.getAbsolutePath();
                 }
                 emitProgress(5);
-                return distFile.getAbsolutePath();
+                return apkFile.getAbsolutePath();
             } catch (PackageManager.NameNotFoundException ignored) {
-            } catch (IOException e) {
-                Log.e(TAG, "Extract error", e);
-                errorMessage.set(e.getLocalizedMessage());
                 return null;
             }
         }
@@ -172,10 +170,11 @@ public class ApkPatcher {
      * 将指定APK文件重新打包，添加SMAPI，修改AndroidManifest.xml，同时验证版本是否正确
      *
      * @param apkPath    APK文件路径
+     * @param targetFile 目标文件
      * @param isAdvanced 是否高级模式
      * @return 是否成功打包
      */
-    public boolean patch(String apkPath, boolean isAdvanced) {
+    public boolean patch(String apkPath, File targetFile, boolean isAdvanced) {
         if (apkPath == null) {
             return false;
         }
@@ -205,17 +204,13 @@ public class ApkPatcher {
                     .filter(Objects::nonNull).flatMap(Stream::of).distinct().collect(Collectors.toList());
             entries.add(new ZipUtils.ZipEntrySource("AndroidManifest.xml", modifiedManifest, Deflater.DEFLATED));
             emitProgress(10);
-            String patchedFilename = apkPath + ".patched";
-            File patchedFile = new File(patchedFilename);
             int baseProgress = 10;
             stopwatch.reset();
             stopwatch.start();
-            ZipUtils.addOrReplaceEntries(apkPath, entries, patchedFilename,
+            originSignInfo = ZipUtils.addOrReplaceEntries(apkPath, entries, targetFile.getAbsolutePath(),
+                    isAdvanced ? (entryName) -> entryName.startsWith("assets/Content") : null,
                     (progress) -> emitProgress((int) (baseProgress + (progress / 100.0) * 35)));
             stopwatch.stop();
-            emitProgress(45);
-            FileUtils.forceDelete(file);
-            FileUtils.moveFile(patchedFile, file);
             emitProgress(46);
             return true;
         } catch (Exception e) {
@@ -403,21 +398,29 @@ public class ApkPatcher {
             String alias = ks.aliases().nextElement();
             X509Certificate publicKey = (X509Certificate) ks.getCertificate(alias);
             PrivateKey privateKey = (PrivateKey) ks.getKey(alias, "android".toCharArray());
-            ApkSigner.SignerConfig signerConfig = new ApkSigner.SignerConfig.Builder("debug", privateKey, Collections.singletonList(publicKey)).build();
             emitProgress(49);
             File outputFile = new File(signApkPath);
-            ApkSigner signer = new ApkSigner.Builder(Collections.singletonList(signerConfig))
-                    .setInputApk(new File(apkPath))
-                    .setOutputApk(outputFile)
-                    .setV1SigningEnabled(true)
-                    .setV2SigningEnabled(true).build();
+            List<DefaultApkSignerEngine.SignerConfig> engineSignerConfigs = Collections.singletonList(
+                    new DefaultApkSignerEngine.SignerConfig.Builder(
+                            "debug",
+                            privateKey,
+                            Collections.singletonList(publicKey))
+                            .build());
+            DefaultApkSignerEngine signerEngine = new DefaultApkSignerEngine.Builder(engineSignerConfigs, 19)
+                            .setV1SigningEnabled(true)
+                            .setV2SigningEnabled(true)
+                            .setV3SigningEnabled(false)
+                            .build();
+            if(originSignInfo != null && originSignInfo.getFirst() != null) {
+                signerEngine.initWith(originSignInfo.getFirst(), originSignInfo.getSecond());
+            }
             long zipOpElapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
             stopwatch.reset();
             Thread thread = new Thread(() -> {
                 stopwatch.start();
                 while (true) {
                     try {
-                        Thread.sleep(20);
+                        Thread.sleep(200);
                         long elapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
                         double progress = elapsed * 0.98 / zipOpElapsed;
                         if (progress < 1.0) {
@@ -429,7 +432,13 @@ public class ApkPatcher {
                 }
             });
             thread.start();
-            signer.sign();
+            try(RandomAccessFile inputApkFile = new RandomAccessFile(apkPath, "r")) {
+                ApkSigner signer = new ApkSigner.Builder(signerEngine)
+                        .setInputApk(DataSources.asDataSource(inputApkFile, 0, inputApkFile.length()))
+                        .setOutputApk(outputFile)
+                        .build();
+                signer.sign();
+            }
             FileUtils.forceDelete(new File(apkPath));
             ApkVerifier.Result result = new ApkVerifier.Builder(outputFile).build().verify();
             if (thread.isAlive() && !thread.isInterrupted()) {
@@ -518,8 +527,11 @@ public class ApkPatcher {
     }
 
     private void emitProgress(int progress) {
-        for (Consumer<Integer> consumer : progressListener) {
-            consumer.accept(progress);
+        if(lastProgress < progress) {
+            lastProgress = progress;
+            for (Consumer<Integer> consumer : progressListener) {
+                consumer.accept(progress);
+            }
         }
     }
 

@@ -119,7 +119,15 @@ public class InstallFragment extends Fragment {
             patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(binding.getRoot(), dialog, null, progress));
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.extracting_package, null);
             String path = patcher.extract(isAdv ? 1 : -1);
-            if (path == null) {
+            String stadewValleyBasePath = FileUtils.getStadewValleyBasePath();
+            File dest = new File(stadewValleyBasePath + "/SMAPI Installer/");
+            boolean failed = path == null;
+            if (!dest.exists()) {
+                if (!dest.mkdir()) {
+                    failed = true;
+                }
+            }
+            if (failed) {
                 DialogUtils.showAlertDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
                 return;
             }
@@ -132,7 +140,8 @@ public class InstallFragment extends Fragment {
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.unpacking_smapi_files, 6);
             modAssetsManager.installDefaultMods();
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.patching_package, 8);
-            if (!patcher.patch(path, isAdv)) {
+            File targetApk = new File(dest, "base.apk");
+            if (!patcher.patch(path, targetApk, isAdv)) {
                 int target = patcher.getSwitchAction().getAndSet(0);
                 if (target == R.string.menu_download) {
                     DialogUtils.showConfirmDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
@@ -147,7 +156,7 @@ public class InstallFragment extends Fragment {
                 return;
             }
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.signing_package, null);
-            String signPath = patcher.sign(path);
+            String signPath = patcher.sign(targetApk.getAbsolutePath());
             if (signPath == null) {
                 DialogUtils.showAlertDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
                 return;

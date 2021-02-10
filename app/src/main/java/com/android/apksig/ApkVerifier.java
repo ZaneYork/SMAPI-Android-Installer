@@ -20,17 +20,17 @@ import com.android.apksig.apk.ApkFormatException;
 import com.android.apksig.apk.ApkUtils;
 import com.android.apksig.internal.apk.AndroidBinXmlParser;
 import com.android.apksig.internal.apk.ApkSigningBlockUtils;
-import com.android.apksig.internal.apk.v1.V1SchemeVerifier;
 import com.android.apksig.internal.apk.ContentDigestAlgorithm;
 import com.android.apksig.internal.apk.SignatureAlgorithm;
+import com.android.apksig.internal.apk.v1.V1SchemeVerifier;
 import com.android.apksig.internal.apk.v2.V2SchemeVerifier;
-import com.android.apksig.internal.apk.v3.V3SchemeVerifier;
 import com.android.apksig.internal.util.AndroidSdkVersion;
 import com.android.apksig.internal.zip.CentralDirectoryRecord;
 import com.android.apksig.util.DataSource;
 import com.android.apksig.util.DataSources;
 import com.android.apksig.util.RunnablesExecutor;
 import com.android.apksig.zip.ZipFormatException;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +47,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * APK signature verifier which mimics the behavior of the Android platform.
@@ -211,54 +215,31 @@ public class ApkVerifier {
         // include v2 and/or v3 signatures.  If none is found, it falls back to JAR signature
         // verification. If the signature is found but does not verify, the APK is rejected.
         Set<Integer> foundApkSigSchemeIds = new HashSet<>(2);
-        if (maxSdkVersion >= AndroidSdkVersion.N) {
-            RunnablesExecutor executor = RunnablesExecutor.SINGLE_THREADED;
-            // Android P and newer attempts to verify APKs using APK Signature Scheme v3
-            if (maxSdkVersion >= AndroidSdkVersion.P) {
-                try {
-                    ApkSigningBlockUtils.Result v3Result =
-                            V3SchemeVerifier.verify(
-                                    executor,
-                                    apk,
-                                    zipSections,
-                                    Math.max(minSdkVersion, AndroidSdkVersion.P),
-                                    maxSdkVersion);
-                    foundApkSigSchemeIds.add(ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3);
-                    result.mergeFrom(v3Result);
-                } catch (ApkSigningBlockUtils.SignatureNotFoundException ignored) {
-                    // v3 signature not required
-                }
-                if (result.containsErrors()) {
-                    return result;
-                }
-            }
-
-            // Attempt to verify the APK using v2 signing if necessary. Platforms prior to Android P
-            // ignore APK Signature Scheme v3 signatures and always attempt to verify either JAR or
-            // APK Signature Scheme v2 signatures.  Android P onwards verifies v2 signatures only if
-            // no APK Signature Scheme v3 (or newer scheme) signatures were found.
-            if (minSdkVersion < AndroidSdkVersion.P || foundApkSigSchemeIds.isEmpty()) {
-                try {
-                    ApkSigningBlockUtils.Result v2Result =
-                            V2SchemeVerifier.verify(
-                                    executor,
-                                    apk,
-                                    zipSections,
-                                    supportedSchemeNames,
-                                    foundApkSigSchemeIds,
-                                    Math.max(minSdkVersion, AndroidSdkVersion.N),
-                                    maxSdkVersion);
-                    foundApkSigSchemeIds.add(ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2);
-                    result.mergeFrom(v2Result);
-                } catch (ApkSigningBlockUtils.SignatureNotFoundException ignored) {
-                    // v2 signature not required
-                }
-                if (result.containsErrors()) {
-                    return result;
+        foundApkSigSchemeIds.add(ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2);
+        FutureTask<ApkSigningBlockUtils.Result> taskV2 = new FutureTask<>(() -> {
+            if (maxSdkVersion >= AndroidSdkVersion.N) {
+                // Attempt to verify the APK using v2 signing if necessary. Platforms prior to Android P
+                // ignore APK Signature Scheme v3 signatures and always attempt to verify either JAR or
+                // APK Signature Scheme v2 signatures.  Android P onwards verifies v2 signatures only if
+                // no APK Signature Scheme v3 (or newer scheme) signatures were found.
+                if (minSdkVersion < AndroidSdkVersion.P || foundApkSigSchemeIds.isEmpty()) {
+                    try {
+                        RunnablesExecutor executor = RunnablesExecutor.SINGLE_THREADED;
+                        return V2SchemeVerifier.verify(
+                                executor,
+                                apk,
+                                zipSections,
+                                supportedSchemeNames,
+                                foundApkSigSchemeIds,
+                                Math.max(minSdkVersion, AndroidSdkVersion.N),
+                                maxSdkVersion);
+                    } catch (ApkSigningBlockUtils.SignatureNotFoundException ignored) {
+                        // v2 signature not required
+                    }
                 }
             }
-        }
-
+            return null;
+        });
         // Android O and newer requires that APKs targeting security sandbox version 2 and higher
         // are signed using APK Signature Scheme v2 or newer.
         if (maxSdkVersion >= AndroidSdkVersion.O) {
@@ -280,16 +261,27 @@ public class ApkVerifier {
         // ignore APK Signature Scheme v2 signatures and always attempt to verify JAR signatures.
         // Android N onwards verifies JAR signatures only if no APK Signature Scheme v2 (or newer
         // scheme) signatures were found.
-        if ((minSdkVersion < AndroidSdkVersion.N) || (foundApkSigSchemeIds.isEmpty())) {
-            V1SchemeVerifier.Result v1Result =
-                    V1SchemeVerifier.verify(
-                            apk,
-                            zipSections,
-                            supportedSchemeNames,
-                            foundApkSigSchemeIds,
-                            minSdkVersion,
-                            maxSdkVersion);
-            result.mergeFrom(v1Result);
+        FutureTask<V1SchemeVerifier.Result> taskV1 = new FutureTask<>(() -> {
+            if ((minSdkVersion < AndroidSdkVersion.N) || (foundApkSigSchemeIds.isEmpty())) {
+                return V1SchemeVerifier.verify(
+                        apk,
+                        zipSections,
+                        supportedSchemeNames,
+                        foundApkSigSchemeIds,
+                        minSdkVersion,
+                        maxSdkVersion);
+            }
+            return null;
+        });
+        ThreadPoolExecutor executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        executorService.submit(taskV1);
+        executorService.submit(taskV2);
+        executorService.shutdown();
+        try {
+            result.mergeFrom(taskV1.get());
+            result.mergeFrom(taskV2.get());
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
         if (result.containsErrors()) {
             return result;
@@ -632,6 +624,9 @@ public class ApkVerifier {
         }
 
         private void mergeFrom(V1SchemeVerifier.Result source) {
+            if(source == null) {
+                return;
+            }
             mVerifiedUsingV1Scheme = source.verified;
             mErrors.addAll(source.getErrors());
             mWarnings.addAll(source.getWarnings());
@@ -644,6 +639,9 @@ public class ApkVerifier {
         }
 
         private void mergeFrom(ApkSigningBlockUtils.Result source) {
+            if(source == null) {
+                return;
+            }
             switch (source.signatureSchemeVersion) {
                 case ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2:
                     mVerifiedUsingV2Scheme = source.verified;

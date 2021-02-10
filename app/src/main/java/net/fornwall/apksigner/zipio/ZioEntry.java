@@ -15,8 +15,10 @@
  */
 package net.fornwall.apksigner.zipio;
 
+import com.google.common.io.ByteSource;
+import com.google.common.io.FileBackedOutputStream;
+
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,6 +52,7 @@ public final class ZioEntry implements Cloneable {
 	private int localHeaderOffset;
 	private long dataPosition = -1;
 	private byte[] data = null;
+	private ByteSource dataSource = null;
 	private ZioEntryOutputStream entryOut = null;
 
 	private static byte[] alignBytes = new byte[4];
@@ -207,8 +210,9 @@ public final class ZioEntry implements Cloneable {
 		if (entryOut != null) {
 			entryOut.close();
 			size = entryOut.getSize();
-			data = ((ByteArrayOutputStream) entryOut.wrapped).toByteArray();
-			compressedSize = data.length;
+//			data = ((FileBackedOutputStream) entryOut.wrapped).toByteArray();
+			dataSource = ((FileBackedOutputStream) entryOut.wrapped).asByteSource();
+			compressedSize = (int) dataSource.size();
 			crc32 = entryOut.getCRC();
 		}
 
@@ -252,6 +256,10 @@ public final class ZioEntry implements Cloneable {
 
 		if (data != null) {
 			output.writeBytes(data);
+		} else if(dataSource != null){
+			try (InputStream inputStream = dataSource.openStream()){
+				output.pipeStream(inputStream);
+			}
 		} else {
 			zipInput.seek(dataPosition);
 
@@ -282,17 +290,18 @@ public final class ZioEntry implements Cloneable {
 
 		byte[] tmpdata = new byte[size];
 
-		InputStream din = getInputStream();
-		int count = 0;
+		try(InputStream din = getInputStream()) {
+			int count = 0;
 
-		while (count != size) {
-			int numRead = din.read(tmpdata, count, size - count);
-			if (numRead < 0)
-				throw new IllegalStateException(String.format("Read failed, expecting %d bytes, got %d instead", size,
-						count));
-			count += numRead;
+			while (count != size) {
+				int numRead = din.read(tmpdata, count, size - count);
+				if (numRead < 0)
+					throw new IllegalStateException(String.format("Read failed, expecting %d bytes, got %d instead", size,
+							count));
+				count += numRead;
+			}
+			return tmpdata;
 		}
-		return tmpdata;
 	}
 
 	// Returns an input stream for reading the entry's data.
@@ -300,11 +309,12 @@ public final class ZioEntry implements Cloneable {
 		if (entryOut != null) {
 			entryOut.close();
 			size = entryOut.getSize();
-			data = ((ByteArrayOutputStream) entryOut.wrapped).toByteArray();
+//			data = ((ByteArrayOutputStream) entryOut.wrapped).toByteArray();
+			dataSource = ((FileBackedOutputStream) entryOut.wrapped).asByteSource();
 			compressedSize = data.length;
 			crc32 = entryOut.getCRC();
 			entryOut = null;
-			InputStream rawis = new ByteArrayInputStream(data);
+			InputStream rawis = dataSource.openStream();
 			if (compression == 0)
 				return rawis;
 			else {
@@ -332,7 +342,8 @@ public final class ZioEntry implements Cloneable {
 
 	// Returns an output stream for writing an entry's data.
 	public OutputStream getOutputStream() {
-		entryOut = new ZioEntryOutputStream(compression, new ByteArrayOutputStream());
+		// use FileBackedOutputStream to reduce memory consumption
+		entryOut = new ZioEntryOutputStream(compression, new FileBackedOutputStream(128 * 1024, true));
 		return entryOut;
 	}
 

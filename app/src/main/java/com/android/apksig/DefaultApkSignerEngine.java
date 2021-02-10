@@ -32,8 +32,8 @@ import com.android.apksig.internal.util.TeeDataSink;
 import com.android.apksig.util.DataSink;
 import com.android.apksig.util.DataSinks;
 import com.android.apksig.util.DataSource;
-
 import com.android.apksig.util.RunnablesExecutor;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -53,7 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.StreamSupport;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Default implementation of {@link ApkSignerEngine}.
@@ -432,21 +433,25 @@ public class DefaultApkSignerEngine implements ApkSignerEngine {
         Pair<ManifestParser.Section, Map<String, ManifestParser.Section>> sections =
                 V1SchemeVerifier.parseManifest(manifestBytes, entryNames, dummyResult);
         String alg = V1SchemeSigner.getJcaMessageDigestAlgorithm(mV1ContentDigestAlgorithm);
-        for (Map.Entry<String, ManifestParser.Section> entry: sections.getSecond().entrySet()) {
-            String entryName = entry.getKey();
-            if (V1SchemeSigner.isJarEntryDigestNeededInManifest(entry.getKey()) &&
-                    isDebuggable(entryName)) {
-
-                Optional<V1SchemeVerifier.NamedDigest> extractedDigest =
-                        V1SchemeVerifier.getDigestsToVerify(
-                                entry.getValue(), "-Digest", mMinSdkVersion, Integer.MAX_VALUE).stream()
-                                .filter(d -> d.jcaDigestAlgorithm == alg)
-                                .findFirst();
-
-                extractedDigest.ifPresent(
-                        namedDigest -> mOutputJarEntryDigests.put(entryName, namedDigest.digest));
-            }
+        Stream<Map.Entry<String, ManifestParser.Section>> entryStream;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            entryStream = sections.getSecond().entrySet().parallelStream();
         }
+        else {
+            entryStream = sections.getSecond().entrySet().stream();
+        }
+        entryStream.filter(entry->V1SchemeSigner.isJarEntryDigestNeededInManifest(entry.getKey()) &&
+                isDebuggable(entry.getKey()) && entryNames.contains(entry.getKey())).forEach(entry->{
+            Optional<V1SchemeVerifier.NamedDigest> extractedDigest =
+                    V1SchemeVerifier.getDigestsToVerify(
+                            entry.getValue(), "-Digest", mMinSdkVersion, Integer.MAX_VALUE).stream()
+                            .filter(d -> d.jcaDigestAlgorithm.equals(alg))
+                            .findFirst();
+
+            extractedDigest.ifPresent(
+                    namedDigest -> mOutputJarEntryDigests.put(entry.getKey(), namedDigest.digest));
+
+        });
         return mOutputJarEntryDigests.keySet();
     }
 

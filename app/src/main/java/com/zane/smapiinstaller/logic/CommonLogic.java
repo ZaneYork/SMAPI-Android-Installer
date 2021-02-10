@@ -39,11 +39,13 @@ import com.zane.smapiinstaller.utils.ZipUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.zeroturnaround.zip.ZipUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -298,8 +300,8 @@ public class CommonLogic {
                 if (entry.isXALZ()) {
                     bytes = ZipUtils.decompressXALZ(bytes);
                 }
-                try (FileOutputStream stream = FileUtils.openOutputStream(targetFile)) {
-                    stream.write(bytes);
+                try (FileOutputStream outputStream = FileUtils.openOutputStream(targetFile)) {
+                    ByteStreams.copy(Channels.newChannel(new ByteArrayInputStream(bytes)), outputStream.getChannel());
                 } catch (IOException ignore) {
                 }
             } else {
@@ -312,7 +314,7 @@ public class CommonLogic {
         if (entry.isExternal() && apkFilesManifest != null) {
             byte[] bytes = FileUtils.getAssetBytes(context, apkFilesManifest.getBasePath() + entry.getAssetPath());
             try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
-                outputStream.write(bytes);
+                ByteStreams.copy(Channels.newChannel(new ByteArrayInputStream(bytes)), outputStream.getChannel());
             } catch (IOException ignored) {
             }
         } else {
@@ -358,7 +360,7 @@ public class CommonLogic {
                     }
                 }
                 try (FileOutputStream outputStream = new FileOutputStream(targetFile)) {
-                    ByteStreams.copy(inputStream, outputStream);
+                    ByteStreams.copy(Channels.newChannel(inputStream), outputStream.getChannel());
                 }
             } catch (IOException e) {
                 Log.e("COMMON", "Copy Error", e);

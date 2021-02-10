@@ -32,7 +32,7 @@ final class ZioEntryOutputStream extends OutputStream {
 	public ZioEntryOutputStream(int compression, OutputStream wrapped) {
 		this.wrapped = wrapped;
 		downstream = (compression == 0) ? wrapped : new DeflaterOutputStream(wrapped, new Deflater(
-				Deflater.BEST_COMPRESSION, true));
+				compression, true));
 	}
 
 	@Override

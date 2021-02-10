@@ -3,6 +3,8 @@ package com.zane.smapiinstaller.utils;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteStreams;
+import com.zane.smapiinstaller.dto.Tuple2;
 
 import net.fornwall.apksigner.zipio.ZioEntry;
 import net.fornwall.apksigner.zipio.ZipInput;
@@ -10,7 +12,6 @@ import net.fornwall.apksigner.zipio.ZipOutput;
 import net.jpountz.lz4.LZ4Factory;
 
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
-import org.bouncycastle.util.io.Streams;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -18,9 +19,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import lombok.AllArgsConstructor;
@@ -36,7 +40,7 @@ public class ZipUtils {
 
     public static byte[] decompressXALZ(byte[] bytes) {
         if (bytes == null) {
-            return bytes;
+            return new byte[0];
         }
         if (FILE_HEADER_XALZ.equals(new String(ByteUtils.subArray(bytes, 0, 4), StandardCharsets.ISO_8859_1))) {
             byte[] length = ByteUtils.subArray(bytes, 8, 12);
@@ -46,52 +50,96 @@ public class ZipUtils {
         return bytes;
     }
 
-    public static void addOrReplaceEntries(String inputZipFilename, List<ZipEntrySource> entrySources, String outputZipFilename, Consumer<Integer> progressCallback) throws IOException {
+    public static Tuple2<byte[], Set<String>> addOrReplaceEntries(String inputZipFilename, List<ZipEntrySource> entrySources, String outputZipFilename, Function<String, Boolean> removePredict, Consumer<Integer> progressCallback) throws IOException {
         File inFile = new File(inputZipFilename).getCanonicalFile();
         File outFile = new File(outputZipFilename).getCanonicalFile();
         if (inFile.equals(outFile)) {
             throw new IllegalArgumentException("Input and output files are the same");
         }
         ImmutableMap<String, ZipEntrySource> entryMap = Maps.uniqueIndex(entrySources, ZipEntrySource::getPath);
+        byte[] originManifest = null;
+        ConcurrentHashMap<String, Boolean> originEntryName = new ConcurrentHashMap<>();
         try (ZipInput input = new ZipInput(inputZipFilename)) {
             int size = input.entries.values().size();
-            int index = 0;
+            AtomicLong count = new AtomicLong();
             int reportInterval = size / 100;
             try (ZipOutput zipOutput = new ZipOutput(new FileOutputStream(outputZipFilename))) {
-                HashSet<String> replacedFileSet = new HashSet<>(entryMap.size());
+                ConcurrentHashMap<String, Boolean> replacedFileSet = new ConcurrentHashMap<>(entryMap.size());
+                MultiprocessingUtil.TaskBundle<ZioEntry> taskBundle = MultiprocessingUtil.newTaskBundle((zioEntry) -> {
+                    try {
+                        zipOutput.write(zioEntry);
+                        long index = count.incrementAndGet();
+                        if (index % reportInterval == 0) {
+                            progressCallback.accept((int) (index * 95.0 / size));
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                ZioEntry manifest = input.entries.get("META-INF/MANIFEST.MF");
+                if(manifest != null) {
+                    originManifest = manifest.getData();
+                }
                 for (ZioEntry inEntry : input.entries.values()) {
-                    if (entryMap.containsKey(inEntry.getName())) {
-                        ZipEntrySource source = entryMap.get(inEntry.getName());
-                        ZioEntry zioEntry = new ZioEntry(inEntry.getName());
+                    if (removePredict != null && removePredict.apply(inEntry.getName())) {
+                        continue;
+                    }
+                    taskBundle.submitTask(()->{
+                        if (entryMap.containsKey(inEntry.getName())) {
+                            ZipEntrySource source = entryMap.get(inEntry.getName());
+                            ZioEntry zioEntry = new ZioEntry(inEntry.getName());
+                            zioEntry.setCompression(source.getCompressionMethod());
+                            try (InputStream inputStream = source.getDataStream()) {
+                                if (inputStream != null) {
+                                    ByteStreams.copy(inputStream, zioEntry.getOutputStream());
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            replacedFileSet.put(inEntry.getName(), true);
+                            return zioEntry;
+                        } else {
+                            originEntryName.put(inEntry.getName(), true);
+                            return inEntry;
+                        }
+                    });
+                }
+                taskBundle.join();
+                Sets.SetView<String> difference = Sets.difference(entryMap.keySet(), replacedFileSet.keySet());
+                count.set(0);
+                taskBundle = MultiprocessingUtil.newTaskBundle((zioEntry) -> {
+                    try {
+                        zipOutput.write(zioEntry);
+                        long index = count.incrementAndGet();
+                        progressCallback.accept(95 + (int) (index * 5.0 / difference.size()));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                for (String name : difference) {
+                    taskBundle.submitTask(()-> {
+                        ZipEntrySource source = entryMap.get(name);
+                        ZioEntry zioEntry = new ZioEntry(name);
                         zioEntry.setCompression(source.getCompressionMethod());
                         try (InputStream inputStream = source.getDataStream()) {
-                            Streams.pipeAll(inputStream, zioEntry.getOutputStream());
+                            ByteStreams.copy(inputStream, zioEntry.getOutputStream());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                        zipOutput.write(zioEntry);
-                        replacedFileSet.add(inEntry.getName());
-                    } else {
-                        zipOutput.write(inEntry);
-                    }
-                    index++;
-                    if (index % reportInterval == 0) {
-                        progressCallback.accept((int) (index * 95.0 / size));
-                    }
+                        return zioEntry;
+                    });
                 }
-                Sets.SetView<String> difference = Sets.difference(entryMap.keySet(), replacedFileSet);
-                index = 0;
-                for (String name : difference) {
-                    ZipEntrySource source = entryMap.get(name);
-                    ZioEntry zioEntry = new ZioEntry(name);
-                    zioEntry.setCompression(source.getCompressionMethod());
-                    try (InputStream inputStream = source.getDataStream()) {
-                        Streams.pipeAll(inputStream, zioEntry.getOutputStream());
-                    }
-                    zipOutput.write(zioEntry);
-                    progressCallback.accept(95 + (int) (index * 5.0 / difference.size()));
-                }
+                taskBundle.join();
                 progressCallback.accept(100);
             }
         }
+        catch (RuntimeException e) {
+            if(e.getCause() != null && e.getCause() instanceof IOException) {
+                throw (IOException) e.getCause();
+            }
+            throw e;
+        }
+        return new Tuple2<>(originManifest, originEntryName.keySet());
     }
 
     public static void removeEntries(String inputZipFilename, String prefix, String outputZipFilename, Consumer<Integer> progressCallback) throws IOException {
@@ -134,11 +182,8 @@ public class ZipUtils {
         }
 
         private InputStream getDataStream() {
-            // Optimize: read only once
             if (dataSupplier != null) {
-                InputStream bytes = dataSupplier.get();
-                dataSupplier = null;
-                return bytes;
+                return dataSupplier.get();
             }
             return null;
         }

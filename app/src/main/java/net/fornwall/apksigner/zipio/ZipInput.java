@@ -1,6 +1,7 @@
 package net.fornwall.apksigner.zipio;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -34,8 +35,11 @@ public final class ZipInput implements AutoCloseable {
 	public Manifest getManifest() throws IOException {
 		if (manifest == null) {
 			ZioEntry e = entries.get("META-INF/MANIFEST.MF");
-			if (e != null)
-				manifest = new Manifest(e.getInputStream());
+			if (e != null) {
+				try(InputStream inputStream = e.getInputStream()) {
+					manifest = new Manifest(inputStream);
+				}
+			}
 		}
 		return manifest;
 	}

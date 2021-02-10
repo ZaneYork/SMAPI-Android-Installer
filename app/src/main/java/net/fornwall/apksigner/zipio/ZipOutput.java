@@ -15,7 +15,10 @@
  */
 package net.fornwall.apksigner.zipio;
 
+import com.google.common.io.ByteStreams;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -77,6 +80,11 @@ public final class ZipOutput implements AutoCloseable {
 	public void writeBytes(byte[] value) throws IOException {
 		out.write(value);
 		filePointer += value.length;
+	}
+
+	public void pipeStream(InputStream inputStream) throws IOException {
+		long length = ByteStreams.copy(inputStream, out);
+		filePointer += length;
 	}
 
 	public void writeBytes(byte[] value, int offset, int length) throws IOException {

@@ -50,14 +50,15 @@ public class ChainedDataSource implements DataSource {
         }
 
         for (DataSource src : mSources) {
+            long srcSize = src.size();
             // Offset is beyond the current source. Skip.
-            if (offset >= src.size()) {
-                offset -= src.size();
+            if (offset >= srcSize) {
+                offset -= srcSize;
                 continue;
             }
 
             // If the remaining is enough, finish it.
-            long remaining = src.size() - offset;
+            long remaining = srcSize - offset;
             if (remaining >= size) {
                 src.feed(offset, size, sink);
                 break;
