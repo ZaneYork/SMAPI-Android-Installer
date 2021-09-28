@@ -46,7 +46,7 @@ This software will install SMAPI to the Android version of Stardew Valley. SMPAI
 
 ## Other Information
 
-###Bug reports
+### Bug reports
 
 1.  Fill out this[Information form](https://docs.qq.com/form/edit/DWlJZc0paV2xxR2JL)
 2.  Join the QQ group[860453392](https://jq.qq.com/?_wv=1027&k=55svbYs)
