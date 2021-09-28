@@ -62,5 +62,5 @@ This software will install SMAPI to the Android version of Stardew Valley. SMPAI
 
 1.  [GitHub](https://github.com/ZaneYork/SMAPI-Android-Installer/releases)
 2.  [Coolapk](https://www.coolapk.com/apk/256582)
-3.  ~~Google Play~~ Removed from google play and developer account blocked for seemingly no reason. ?(从此谷歌一生黑)?
+3.  ~~Google Play~~ Removed from google play and developer account blocked for seemingly no reason. ?(从此谷歌一生黑)? (Something about google being evil I think)
 
