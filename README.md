@@ -53,8 +53,8 @@ This software will install SMAPI to the Android version of Stardew Valley. SMPAI
 
 ### How it Works
 
-1.  Extract the original game files.
-2.  Generate SMAPI dependency files.
+1.  Extract the original game.
+2.  Generate SMAPI dependencies.
 3.  Add SMAPI launch code to the game's files.
 4.  Sign the modified game and call the package installer.
 
