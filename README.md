@@ -29,3 +29,38 @@
 1.  [GitHub](https://github.com/ZaneYork/SMAPI-Android-Installer/releases)
 2.  [Coolapk](https://www.coolapk.com/apk/256582)
 3.  ~~Google Play~~ 已下架，开发者账户被谷歌无理由关联封禁，从此谷歌一生黑
+
+#
+
+# SMAPI-Android-Installer
+
+This software will install SMAPI to the Android version of Stardew Valley. SMPAI is Stardew Valley's mod loading framework.
+
+## Instructions
+
+1.  Download the latest apk package from the Releases page
+2.  After it is finished downloading, install it. Then open the SMAPI installer app and hit the install button.
+3.  Wait for it to finish, and install the gennerated apk.
+4.  Place downloaded mods into the StardewValley/Mods folder on your internal storage.
+5.  Open the new SMAPI Stardew Valley app to play the modded version of the game.
+
+## Other Information
+
+### Bug reports
+
+1.  Fill out this [Information form](https://docs.qq.com/form/edit/DWlJZc0paV2xxR2JL)
+2.  Join the QQ group [860453392](https://jq.qq.com/?_wv=1027&k=55svbYs)
+
+### How it Works
+
+1.  Extracts the original game.
+2.  Generates SMAPI dependencies.
+3.  Adds SMAPI launch code to the game's files.
+4.  Signs the modified game and calls the package installer.
+
+### Download mirrors
+
+1.  [GitHub](https://github.com/ZaneYork/SMAPI-Android-Installer/releases)
+2.  [Coolapk](https://www.coolapk.com/apk/256582)
+3.  ~~Google Play~~ Removed from google play and developer account blocked for seemingly no reason. Google sucks.
+
