@@ -1,85 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <resources>
-
     <string-array name="donation_methods">
-
         <item>Alipay</item>
-
         <item>WeChat</item>
-
         <item>QQ</item>
-
         <item>Red Packet Code</item>
-
         <item>Список донатів</item>
-
     </string-array>
-
     <string-array name="languages">
-
         <item>Автоматично</item>
-
         <item>English</item>
-
         <item>简体中文</item>
-
         <item>繁體中文</item>
-
         <item>한국어</item>
-
         <item>ไทย</item>
-
         <item>Español</item>
-
         <item>Français</item>
-
         <item>Português</item>
-
         <item>Українська</item>
-
         <item>Bahasa Indonesia</item>
-
     </string-array>
-
     <string-array name="translators">
-
         <item>Вимкнено</item>
-
         <item>Google</item>
-
         <item>YouDao</item>
-
     </string-array>
-
     <string-array name="mod_list_sort_by">
-
         <item>за назвою(asc)</item>
-
         <item>за назвою(desc)</item>
-
         <item>за датою(asc)</item>
-
         <item>за датою(desc)</item>
-
     </string-array>
-
     <string-array name="qq_group_list">
-
         <item>860453392</item>
-
         <item>1078428449</item>
-
         <item>980882763</item>
-
     </string-array>
-
     <string-array name="vk_config_mode">
-
         <item>Графіка</item>
-
         <item>Тескт</item>
-
     </string-array>
-
 </resources>
