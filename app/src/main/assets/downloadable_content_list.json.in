@@ -1,13 +1,13 @@
 {
-  "version": 34,
+  "version": 35,
   "contents": [
     {
       "type": "COMPAT",
       "name": "SMAPI for 1.4.5.145",
       "assetPath": "compat/145/",
-      "description": "SMAPI compat package for game 1.4.5.138 - 1.4.5.147, SMAPI 3.7.5",
-      "url": "http://zaneyork.cn/dl/compat/smapi_145_210201.zip",
-      "hash": "d9f6e3e5161a1236163df8dfe56859cb2701d1847ff2ed04742c925e20c19ed9"
+      "description": "SMAPI compat package for game 1.4.5.138 - 1.4.5.147, SMAPI 3.7.6",
+      "url": "http://zaneyork.cn/dl/compat/smapi_145_220405.zip",
+      "hash": "9c1e75f082e5e3e6acaba0f756662db62fccfb83cb736591e374d064daa9e711"
     },
     {
       "type": "COMPAT",
