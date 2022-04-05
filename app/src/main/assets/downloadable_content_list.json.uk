@@ -1,0 +1,44 @@
+{
+  "version": 34,
+  "contents": [
+    {
+      "type": "COMPAT",
+      "name": "SMAPI для версії 1.4.5.145",
+      "assetPath": "compat/145/",
+      "description": "Пакет SMAPI для версій гри 1.4.5.138 - 1.4.5.147, SMAPI 3.7.5",
+      "url": "http://zaneyork.cn/dl/compat/smapi_145_210201.zip",
+      "hash": "d9f6e3e5161a1236163df8dfe56859cb2701d1847ff2ed04742c925e20c19ed9"
+    },
+    {
+      "type": "COMPAT",
+      "name": "SMAPI для версії 1.4.5.137",
+      "assetPath": "compat/137/",
+      "description": "Пакет SMAPI для версій гри 1.4.4.128 - 1.4.5.137, SMAPI 3.7.5",
+      "url": "http://zaneyork.cn/dl/compat/smapi_137_201019.zip",
+      "hash": "880413ab7404cac4ad946768a31167b6c447f995f1228c7ed331c6095a3e29b8"
+    },
+    {
+      "type": "COMPAT",
+      "name": "SMAPI для Galaxy Маркету",
+      "assetPath": "compat/samsung_138/",
+      "description": "Пакет SMAPI для версій гри 1.4.5.138 - 1.4.5.147, SMAPI 3.7.5",
+      "url": "http://zaneyork.cn/dl/compat/smapi_samsung_145_210201.zip",
+      "hash": "b2a99924b2a6842168df1df4c2c0d934c63bb0010e34dfdc6f4037d4bc091c7a"
+    },
+    {
+      "type": "COMPAT",
+      "name": "SMAPI для маркету Amazon",
+      "assetPath": "compat/amazon_138/",
+      "description": "Пакет SMAPI для версій гри 1.4.5.138 - 1.4.5.147, SMAPI 3.7.5",
+      "url": "http://zaneyork.cn/dl/compat/smapi_amazon_145_210201.zip",
+      "hash": "3f0ef36b139750e27ccab165b8fed6cbf58c10cadbf4b5a34436891740ae1f89"
+    },
+    {
+      "type": "LOCALE",
+      "name": "Китайський переклад версії 2.5.1",
+      "description": "Пакет перекладу спрощеною китайською, завдяки Wabi-Sabi",
+      "url": "http://zaneyork.cn/dl/locale/locale_pack_zh_2.5.1.zip",
+      "hash": "4924ba7022c5604e7bc46ee2aad27d4f285c299a3939f3d2817afc10e2e73d77"
+    }
+  ]
+}
