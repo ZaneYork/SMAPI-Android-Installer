@@ -87,6 +87,6 @@
     <string name="settings_rewrite_in_parallel">Перепишіть у Parallel</string>
     <string name="request_unknown_source_permission">Необхідно увімкнути дозвіл встановлення з невідомих джерел для встановлення фреймворку мода, відкрити налаштування?</string>
     <string name="settings_rewrite_missing">Перепишіть загублене</string>
-    <string name="settings_set_app_name">Ім'я запатченого застосунка</string>
+    <string name="settings_set_app_name">Ім\'я запатченого застосунка</string>
     <string name="request_all_files_access_permission">Потрібен дозвіл на доступ до всіх файлів на Android Q чи більш пізньої версії, щоб встановити модифікацію, продовжити?</string>
 </resources>

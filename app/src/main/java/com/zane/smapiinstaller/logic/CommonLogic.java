@@ -11,6 +11,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.DocumentsContract;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
@@ -55,6 +57,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import androidx.annotation.RequiresApi;
+import androidx.documentfile.provider.DocumentFile;
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
 import pxb.android.axml.AxmlWriter;
@@ -210,7 +214,9 @@ public class CommonLogic {
      * @return 操作是否成功
      */
     public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode, String packageName, long versionCode) {
-        checkMusic(packageName, checkMode);
+        if(!checkMusic(context)){
+            return false;
+        }
         List<ApkFilesManifest> apkFilesManifests = CommonLogic.findAllApkFileManifest(context);
         filterManifest(apkFilesManifests, packageName, versionCode);
         List<ManifestEntry> manifestEntries = null;
@@ -268,11 +274,26 @@ public class CommonLogic {
         return true;
     }
 
-    private static void checkMusic(String packageName, boolean checkMode) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && StringUtils.equals(packageName, Constants.ORIGIN_PACKAGE_NAME_GOOGLE)) {
-            File pathFrom = new File(FileUtils.getStadewValleyBasePath(), "Android/obb/" + packageName);
-            File pathTo = new File(FileUtils.getStadewValleyBasePath(), "Android/obb/" + Constants.TARGET_PACKAGE_NAME);
+    private static boolean checkMusic(Context context) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+            File pathFrom = new File(FileUtils.getStadewValleyBasePath(), "Android/obb/" + Constants.ORIGIN_PACKAGE_NAME_GOOGLE);
+            File pathTo = new File(FileUtils.getStadewValleyBasePath(), "StardewValley");
             if (pathFrom.exists() && pathFrom.isDirectory()) {
+                if (!pathFrom.canRead()) {
+                    ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION, (resultCode, data) -> {
+                        if (resultCode == Activity.RESULT_OK) {
+                            if (data == null) {
+                                return;
+                            }
+                            Uri uri = data.getData();
+                            if (uri == null) {
+                                return;
+                            }
+                            context.getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        }
+                    });
+                    openObbRootPermission((Activity) context, ActivityResultHandler.REQUEST_CODE_OBB_FILES_ACCESS_PERMISSION);
+                }
                 if (!pathTo.exists()) {
                     pathTo.mkdirs();
                 }
@@ -291,6 +312,7 @@ public class CommonLogic {
                 }
             }
         }
+        return true;
     }
 
     private static void unpackFromApk(String apkPath, boolean checkMode, ManifestEntry entry, File targetFile) {
@@ -443,6 +465,41 @@ public class CommonLogic {
                 CommonLogic.openUrl(activity, "https://play.google.com/store/apps/details?id=com.zane.smapiinstaller");
             }
         });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    public static void openPermissionSetting(Activity activity) {
+        try {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+            intent.addCategory("android.intent.category.DEFAULT");
+            intent.setData(Uri.parse("package:" + activity.getPackageName()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            activity.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
+        } catch (ActivityNotFoundException ignored){
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + activity.getPackageName()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                activity.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
+            }
+            catch (ActivityNotFoundException ignored2) {
+                intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
+            }
+        }
+    }
+
+    public static void openObbRootPermission(Activity context, int REQUEST_CODE_FOR_DIR) {
+        Uri uri1 = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fobb");
+        DocumentFile documentFile = DocumentFile.fromTreeUri(context, uri1);
+        Intent intent1 = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent1.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+        intent1.putExtra(DocumentsContract.EXTRA_INITIAL_URI, documentFile.getUri());
+        context.startActivityForResult(intent1, REQUEST_CODE_FOR_DIR);
     }
 
     public static void showPrivacyPolicy(View view, BiConsumer<MaterialDialog, DialogAction> callback) {

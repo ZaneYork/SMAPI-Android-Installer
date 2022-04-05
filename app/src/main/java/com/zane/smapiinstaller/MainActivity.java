@@ -1,7 +1,6 @@
 package com.zane.smapiinstaller;
 
 import android.Manifest;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -95,13 +94,7 @@ public class MainActivity extends AppCompatActivity {
                                 requestPermissions();
                             }
                         });
-                        try {
-                            Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
-                            intent.setData(Uri.parse("package:" + this.getPackageName()));
-                            startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
-                        } catch (ActivityNotFoundException ignored){
-                            startActivityForResult(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION), ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
-                        }
+                        CommonLogic.openPermissionSetting(this);
                     } else {
                         this.finish();
                     }
