@@ -17,8 +17,8 @@
         <item>Español</item>
         <item>Français</item>
         <item>Português</item>
-        <item>Українська</item>
         <item>Bahasa Indonesia</item>
+        <item>Українська</item>
     </string-array>
     <string-array name="translators">
         <item>关闭</item>

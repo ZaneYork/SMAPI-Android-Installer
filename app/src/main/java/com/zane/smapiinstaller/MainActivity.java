@@ -361,6 +361,9 @@ public class MainActivity extends AppCompatActivity {
                 case 9:
                     restart = MultiLanguages.setAppLanguage(this, new Locale("in", ""));
                     break;
+                case 10:
+                    restart = MultiLanguages.setAppLanguage(this, new Locale("uk", ""));
+                    break;
                 default:
                     return;
             }
