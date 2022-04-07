@@ -64,7 +64,6 @@
     <string name="text_install_tip1">Нотатка: Необхідна версія гри 1.4.5.148 або вище.</string>
     <string name="text_install_tip2">Базова гра потрібна при оновленні/встановленні.</string>
     <string name="unpacking_smapi_files">Розпаковка</string>
-
     <string name="toast_redpacket_message" translatable="false">红包码已复制\n支付宝首页搜索“9188262” 立即领红包</string>
     <string name="icon_desc" translatable="false">icon</string>
     <string name="mod_version_update_text" translatable="false">%1$s -> %2$s</string>
