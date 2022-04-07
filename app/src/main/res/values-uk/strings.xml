@@ -8,9 +8,9 @@
     <string name="button_install">Встановити</string>
     <string name="button_logs">Журнал</string>
     <string name="button_nexus">Nexus</string>
-    <string name="button_qq_group_1_text">QQ Група 1: 860453392</string>
-    <string name="button_qq_group_2_text">QQ Група 2: 1078428449</string>
-    <string name="button_release">Реліз</string>
+    <string name="button_qq_group_1_text">1 Група в QQ: 860453392</string>
+    <string name="button_qq_group_2_text">1 Група в QQ: 1078428449</string>
+    <string name="button_release">Релізи</string>
     <string name="cancel">Скасувати</string>
     <string name="confirm">Підтвердити</string>
     <string name="confirm_delete_content">Ви впевнені, що хочете видалити це?</string>
@@ -29,23 +29,23 @@
     <string name="error_illegal_path">Будь ласка, введіть дійсний шлях</string>
     <string name="error_no_supported_game_version">Версія гри не підтримується, спочатку основіть або завантажте сумісний пакет</string>
     <string name="error_smapi_not_installed">SMAPI ще не встановлено, спочатку натисніть на кнопку встановлення</string>
-    <string name="extracting_package">Витягування встановлюючого пакету</string>
-    <string name="failed_to_patch_game">Не вдалося встановити шлях до папки гри, будь ласка, зверніться по допомогу до розробника</string>
+    <string name="extracting_package">Витягування пакету встановлення</string>
+    <string name="failed_to_patch_game">Не вдалося встановити шлях до теки гри, будь ласка, зверніться по допомогу до розробника</string>
     <string name="failed_to_process_manifest">Не вдалося обробити файл AndroidManifest.xml</string>
     <string name="failed_to_sign_game">Не вдалося зареєструвати гру, будь ласка, зверніться по допомогу до розробника</string>
-    <string name="failed_to_unpack_smapi_files">Не вдалося розпакувати файли smapi</string>
+    <string name="failed_to_unpack_smapi_files">Не вдалося розпакувати файли SMAPI</string>
     <string name="info">Інформація</string>
     <string name="input">Введення</string>
-    <string name="input_mods_path">Будь ласка, введіть шлях до папки mods</string>
+    <string name="input_mods_path">Будь ласка, введіть шлях до теки Mods</string>
     <string name="install_progress_title">Прогрес встановлення</string>
     <string name="installing_package">Встановлення</string>
     <string name="locale_pack">Локальний пакет</string>
-    <string name="menu_about">Про</string>
-    <string name="menu_config">Config</string>
+    <string name="menu_about">Про застосунок</string>
+    <string name="menu_config">Сурисування</string>
     <string name="menu_config_edit">Редагувати</string>
-    <string name="menu_download">Завантажити</string>
+    <string name="menu_download">Завантаження</string>
     <string name="menu_help">Допомога</string>
-    <string name="menu_install">Встановити</string>
+    <string name="menu_install">Встановлення</string>
     <string name="nav_header_subtitle">ZaneYork@qq.com</string>
     <string name="nav_header_title">Встановлювач SMAPI</string>
     <string name="ok">ОК</string>
@@ -54,31 +54,30 @@
     <string name="save">Зберегти</string>
     <string name="settings_check_for_updates">Перевірити на наявність оновлень</string>
     <string name="settings_developer_mode">Режим розробника</string>
-    <string name="settings_set_language">Мова</string>
+    <string name="settings_set_language">Мова застосунку</string>
     <string name="settings_set_mod_path">Встановити шлях до модів гри</string>
     <string name="settings_translation_service">Сервіс перекладу</string>
     <string name="settings_verbose_logging">Докдадний вхід</string>
     <string name="signing_package">Реєстрація</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
     <string name="smapi_version">Версія SMAPI: 3.7.6.1</string>
-    <string name="text_install_tip1">Нотатка: Необхідна версія гри 1.4.5.148 або вище.</string>
+    <string name="text_install_tip1">Примітка: Необхідна версія гри 1.4.5.148 або вище.</string>
     <string name="text_install_tip2">Базова гра потрібна при оновленні/встановленні.</string>
-    <string name="unpacking_smapi_files">Розпаковка</string>
-
+    <string name="unpacking_smapi_files">Розпакування</string>
     <string name="toast_redpacket_message" translatable="false">红包码已复制\n支付宝首页搜索“9188262” 立即领红包</string>
     <string name="icon_desc" translatable="false">icon</string>
     <string name="mod_version_update_text" translatable="false">%1$s -> %2$s</string>
     <string name="sort_by">Сортувати</string>
     <string name="text_too_large">Текстовий файл занадто довгий для редактора</string>
     <string name="open_with">Відкрити за допомогою</string>
-    <string name="no_update_text">Усі моди в актуальному стані</string>
+    <string name="no_update_text">Ви маєте останні версії модів</string>
     <string name="app_update_detected">Виявлено нову версію: %1$s</string>
     <string name="parser">Синтаксичний аналізатор</string>
     <string name="mod_version_update_checking">Перевірка оновлень для моду</string>
     <string name="smapi_version_runing">Останній запуск: %s</string>
     <string name="settings_disable_mono_mod">Вимкнути Harmony</string>
     <string name="settings_set_max_log_size">Максимальний розмір журналу</string>
-    <string name="button_qq_group_text">QQ Група</string>
+    <string name="button_qq_group_text">Група в QQ</string>
     <string name="privacy_policy">Політика конфіденційності</string>
     <string name="settings_advanced_mode">Розширений режим патчу</string>
     <string name="button_initial">Джерело</string>
@@ -86,7 +85,7 @@
     <string name="error_patch_crc_incorrect">Не вдалося запатчити %1$s: CRC (%2$s))</string>
     <string name="settings_rewrite_in_parallel">Перепишіть у Parallel</string>
     <string name="request_unknown_source_permission">Необхідно увімкнути дозвіл встановлення з невідомих джерел для встановлення фреймворку мода, відкрити налаштування?</string>
-    <string name="settings_rewrite_missing">Перепишіть загублене</string>
+    <string name="settings_rewrite_missing">Перезаписати втрачене</string>
     <string name="settings_set_app_name">Ім\'я запатченого застосунка</string>
     <string name="request_all_files_access_permission">Потрібен дозвіл на доступ до всіх файлів на Android Q чи більш пізньої версії, щоб встановити модифікацію, продовжити?</string>
 </resources>
