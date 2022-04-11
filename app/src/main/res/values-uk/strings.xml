@@ -30,13 +30,13 @@
     <string name="error_no_supported_game_version">Версія гри не підтримується, спочатку основіть або завантажте сумісний пакет</string>
     <string name="error_smapi_not_installed">SMAPI ще не встановлено, спочатку натисніть на кнопку встановлення</string>
     <string name="extracting_package">Витягування пакету встановлення</string>
-    <string name="failed_to_patch_game">Не вдалося встановити шлях до папки гри, будь ласка, зверніться по допомогу до розробника</string>
+    <string name="failed_to_patch_game">Не вдалося встановити шлях до теки гри, будь ласка, зверніться по допомогу до розробника</string>
     <string name="failed_to_process_manifest">Не вдалося обробити файл AndroidManifest.xml</string>
     <string name="failed_to_sign_game">Не вдалося зареєструвати гру, будь ласка, зверніться по допомогу до розробника</string>
     <string name="failed_to_unpack_smapi_files">Не вдалося розпакувати файли SMAPI</string>
     <string name="info">Інформація</string>
     <string name="input">Введення</string>
-    <string name="input_mods_path">Будь ласка, введіть шлях до папки Mods</string>
+    <string name="input_mods_path">Будь ласка, введіть шлях до теки Mods</string>
     <string name="install_progress_title">Прогрес встановлення</string>
     <string name="installing_package">Встановлення</string>
     <string name="locale_pack">Локальний пакет</string>
