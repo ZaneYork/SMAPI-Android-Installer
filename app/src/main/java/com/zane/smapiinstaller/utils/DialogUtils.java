@@ -329,7 +329,7 @@ public class DialogUtils {
     public static void showSingleChoiceDialog(View view, int title, int items, int index, BiConsumer<MaterialDialog, Integer> callback) {
         CommonLogic.runOnUiThread(CommonLogic.getActivityFromView(view), (activity) -> {
             MaterialDialog materialDialog = new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR()).title(title, null);
-            materialDialog = DialogSingleChoiceExtKt.listItemsSingleChoice(materialDialog, items, null, null, index, false, (dialog, position, text) -> {
+            materialDialog = DialogSingleChoiceExtKt.listItemsSingleChoice(materialDialog, items, null, null, index, false, -1, -1, (dialog, position, text) -> {
                 callback.accept(dialog, position);
                 return null;
             });

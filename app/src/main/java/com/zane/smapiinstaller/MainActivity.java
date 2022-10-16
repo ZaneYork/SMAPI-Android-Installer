@@ -15,6 +15,9 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.hjq.language.MultiLanguages;
+import com.hjq.permissions.OnPermissionCallback;
+import com.hjq.permissions.Permission;
+import com.hjq.permissions.XXPermissions;
 import com.lmntrx.android.library.livin.missme.ProgressDialog;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.model.Response;
@@ -43,6 +46,7 @@ import com.zane.smapiinstaller.utils.TranslateUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
@@ -73,10 +77,10 @@ public class MainActivity extends AppCompatActivity {
             if (!haveInstallPermission) {
                 DialogUtils.showConfirmDialog(MainActivity.instance, R.string.confirm, R.string.request_unknown_source_permission, ((dialog, dialogAction) -> {
                     if (dialogAction == DialogAction.POSITIVE) {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
-                        intent.setData(Uri.parse("package:" + this.getPackageName()));
-                        ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_APP_INSTALL, (resultCode, data) -> this.requestPermissions());
-                        MainActivity.instance.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_APP_INSTALL);
+                        XXPermissions.with(this).permission(Permission.REQUEST_INSTALL_PACKAGES)
+                                .request(getPermissionCallback());
+                    } else {
+                        this.finish();
                     }
                 }));
                 return;
@@ -87,14 +91,8 @@ public class MainActivity extends AppCompatActivity {
             if (!Environment.isExternalStorageManager()) {
                 DialogUtils.showConfirmDialog(MainActivity.instance, R.string.confirm, R.string.request_all_files_access_permission, ((dialog, dialogAction) -> {
                     if (dialogAction == DialogAction.POSITIVE) {
-                        ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION, (resultCode, data) -> {
-                            if (!Environment.isExternalStorageManager()) {
-                                this.finish();
-                            } else {
-                                requestPermissions();
-                            }
-                        });
-                        CommonLogic.openPermissionSetting(this);
+                        XXPermissions.with(this).permission(Permission.MANAGE_EXTERNAL_STORAGE)
+                                .request(getPermissionCallback());
                     } else {
                         this.finish();
                     }
@@ -102,13 +100,44 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
-        } else {
-            initView();
-        }
+        XXPermissions.with(this)
+                .permission(Permission.MANAGE_EXTERNAL_STORAGE)
+                .permission(Permission.REQUEST_INSTALL_PACKAGES)
+                .request(new OnPermissionCallback() {
+                    @Override
+                    public void onGranted(List<String> permissions, boolean all) {
+                        if (!all) {
+                            requestPermissions();
+                            return;
+                        }
+                        initView();
+                    }
+                    @Override
+                    public void onDenied(List<String> permissions, boolean never) {
+                        if (never) {
+                            XXPermissions.startPermissionActivity(instance, permissions);
+                        }
+                        requestPermissions();
+                    }
+                });
+    }
+
+    @NonNull
+    private OnPermissionCallback getPermissionCallback() {
+        return new OnPermissionCallback() {
+            @Override
+            public void onGranted(List<String> permissions, boolean all) {
+                requestPermissions();
+            }
+
+            @Override
+            public void onDenied(List<String> permissions, boolean never) {
+                if (never) {
+                    XXPermissions.startPermissionActivity(instance, permissions);
+                }
+                requestPermissions();
+            }
+        };
     }
 
     @Override
@@ -118,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             this.finish();
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -284,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
             appConfig.setValue(String.valueOf(item.isChecked()));
             ConfigUtils.saveConfig((MainApplication) getApplication(), appConfig);
             startActivity(new Intent(this, MainActivity.class));
-            overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+//            overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
             finish();
         } else {
             return super.onOptionsItemSelected(item);
@@ -370,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
             if (restart) {
                 // 我们可以充分运用 Activity 跳转动画，在跳转的时候设置一个渐变的效果
                 startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
+//                overridePendingTransition(R.anim.fragment_fade_enter, R.anim.fragment_fade_exit);
                 finish();
             }
         });

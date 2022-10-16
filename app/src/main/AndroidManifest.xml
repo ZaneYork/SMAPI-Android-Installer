@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:installLocation="auto"
-    package="com.zane.smapiinstaller">
+    android:installLocation="auto">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     <queries>
         <package android:name="com.chucklefish.stardewvalley"/>
         <package android:name="com.zane.stardewvalley"/>
@@ -30,7 +29,6 @@
         android:configChanges="orientation|keyboard|screenSize"
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/AppTheme"
-        android:preserveLegacyExternalStorage="true"
         android:requestLegacyExternalStorage="true"
         tools:ignore="UnusedAttribute"
         android:largeHeap="true">
