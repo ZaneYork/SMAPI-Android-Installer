@@ -38,6 +38,6 @@
     </string-array>
     <string-array name="vk_config_mode">
         <item>Графіка</item>
-        <item>Тескт</item>
+        <item>Текст</item>
     </string-array>
 </resources>
