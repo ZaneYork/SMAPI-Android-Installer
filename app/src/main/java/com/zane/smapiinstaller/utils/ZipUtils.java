@@ -1,9 +1,14 @@
 package com.zane.smapiinstaller.utils;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
+import com.zane.smapiinstaller.dto.AssemblyStoreAssembly;
 import com.zane.smapiinstaller.dto.Tuple2;
 
 import net.fornwall.apksigner.zipio.ZioEntry;
@@ -19,13 +24,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,18 +45,77 @@ import lombok.EqualsAndHashCode;
  */
 public class ZipUtils {
 
-    private final static String FILE_HEADER_XALZ = "XALZ";
+    private final static byte[] MAGIC_BLOB = new byte[]{'X', 'A', 'B', 'A'};
+    private final static byte[] MAGIC_COMPRESSED = new byte[]{'X', 'A', 'L', 'Z'};
+
+    public static int fromBytes(byte[] bytes) {
+        return (bytes[0] & 0xff) | ((bytes[1] & 0xff) << 8) | ((bytes[2] & 0xff) << 16) | ((bytes[3] & 0xff) << 24);
+    }
 
     public static byte[] decompressXALZ(byte[] bytes) {
         if (bytes == null) {
             return new byte[0];
         }
-        if (FILE_HEADER_XALZ.equals(new String(ByteUtils.subArray(bytes, 0, 4), StandardCharsets.ISO_8859_1))) {
+        if (Arrays.equals(ByteUtils.subArray(bytes, 0, 4), MAGIC_COMPRESSED)) {
             byte[] length = ByteUtils.subArray(bytes, 8, 12);
             int len = (length[0] & 0xff) | ((length[1] & 0xff) << 8) | ((length[2] & 0xff) << 16) | ((length[3] & 0xff) << 24);
             bytes = LZ4Factory.fastestJavaInstance().fastDecompressor().decompress(bytes, 12, len);
         }
         return bytes;
+    }
+
+
+    public static Map<String, byte[]> unpackXABA(byte[] manifestBytes, byte[] xabaBytes) {
+        List<List<String>> manifest = Splitter.on('\n').omitEmptyStrings().splitToList(new String(manifestBytes, StandardCharsets.UTF_8))
+                .stream().skip(1).map(line -> Splitter.on(CharMatcher.whitespace()).omitEmptyStrings().splitToList(line)).collect(Collectors.toList());
+        ByteSource source = ByteSource.wrap(manifestBytes);
+        Map<String, byte[]> result = new HashMap<>();
+        try {
+            int offset = 0;
+            byte[] buffer = source.slice(offset, 4).read();
+            if (!Arrays.equals(buffer, MAGIC_BLOB)) {
+                return result;
+            }
+            buffer = source.slice(offset += 4, 4).read();
+            int version = fromBytes(buffer);
+            if (version > 1) {
+                throw new RuntimeException();
+            }
+            buffer = source.slice(offset += 4, 4).read();
+            int lec = fromBytes(buffer);
+            buffer = source.slice(offset += 4, 4).read();
+            int gec = fromBytes(buffer);
+            buffer = source.slice(offset += 4, 4).read();
+            int storeId = fromBytes(buffer);
+            for (int i = 0; i < lec; i++) {
+                AssemblyStoreAssembly assembly = new AssemblyStoreAssembly();
+                buffer = source.slice(offset += 4, 4).read();
+                assembly.setDataOffset(fromBytes(buffer));
+                buffer = source.slice(offset += 4, 4).read();
+                assembly.setDataSize(fromBytes(buffer));
+                buffer = source.slice(offset += 4, 4).read();
+                assembly.setDebugDataOffset(fromBytes(buffer));
+                buffer = source.slice(offset += 4, 4).read();
+                assembly.setDebugDataSize(fromBytes(buffer));
+                buffer = source.slice(offset += 4, 4).read();
+                assembly.setConfigDataOffset(fromBytes(buffer));
+                buffer = source.slice(offset += 4, 4).read();
+                assembly.setConfigDataSize(fromBytes(buffer));
+
+                buffer = source.slice(assembly.getDataOffset(), 4).read();
+                byte[] bytes;
+                if (Arrays.equals(buffer, MAGIC_COMPRESSED)) {
+                    byte[] lzBytes = source.slice(assembly.getDataOffset(), assembly.getDataSize()).read();
+                    bytes = decompressXALZ(lzBytes);
+
+                } else {
+                    bytes = source.slice(assembly.getDataOffset(), assembly.getDataSize()).read();
+                }
+                result.put(manifest.get(i).get(4) + ".dll", bytes);
+            }
+        } catch (IOException ignored) {
+        }
+        return result;
     }
 
     public static Tuple2<byte[], Set<String>> addOrReplaceEntries(String inputZipFilename, List<ZipEntrySource> entrySources, String outputZipFilename, Function<String, Boolean> removePredict, Consumer<Integer> progressCallback) throws IOException {
@@ -77,14 +145,14 @@ public class ZipUtils {
                     }
                 });
                 ZioEntry manifest = input.entries.get("META-INF/MANIFEST.MF");
-                if(manifest != null) {
+                if (manifest != null) {
                     originManifest = manifest.getData();
                 }
                 for (ZioEntry inEntry : input.entries.values()) {
                     if (removePredict != null && removePredict.apply(inEntry.getName())) {
                         continue;
                     }
-                    taskBundle.submitTask(()->{
+                    taskBundle.submitTask(() -> {
                         if (entryMap.containsKey(inEntry.getName())) {
                             ZipEntrySource source = entryMap.get(inEntry.getName());
                             ZioEntry zioEntry = new ZioEntry(inEntry.getName());
@@ -117,7 +185,7 @@ public class ZipUtils {
                     }
                 });
                 for (String name : difference) {
-                    taskBundle.submitTask(()-> {
+                    taskBundle.submitTask(() -> {
                         ZipEntrySource source = entryMap.get(name);
                         ZioEntry zioEntry = new ZioEntry(name);
                         zioEntry.setCompression(source.getCompressionMethod());
@@ -132,9 +200,8 @@ public class ZipUtils {
                 taskBundle.join();
                 progressCallback.accept(100);
             }
-        }
-        catch (RuntimeException e) {
-            if(e.getCause() != null && e.getCause() instanceof IOException) {
+        } catch (RuntimeException e) {
+            if (e.getCause() != null && e.getCause() instanceof IOException) {
                 throw (IOException) e.getCause();
             }
             throw e;
