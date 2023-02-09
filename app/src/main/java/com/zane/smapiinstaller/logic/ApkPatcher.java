@@ -36,6 +36,7 @@ import com.zane.smapiinstaller.utils.ZipUtils;
 
 import net.fornwall.apksigner.KeyStoreFileManager;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -50,6 +51,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -64,6 +66,7 @@ import java.util.zip.Deflater;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
+
 import pxb.android.axml.NodeVisitor;
 
 /**
@@ -109,7 +112,7 @@ public class ApkPatcher {
      * @param advancedStage 0: 初始化，1: 高级安装，-1: 普通安装
      * @return 抽取后的APK文件路径，如果抽取失败返回null
      */
-    public String extract(int advancedStage) {
+    public Tuple2<String, String[]> extract(int advancedStage) {
         emitProgress(0);
         PackageManager packageManager = context.getPackageManager();
         List<String> packageNames = FileUtils.getAssetJson(context, "package_names.json", new TypeReference<List<String>>() {
@@ -143,7 +146,7 @@ public class ApkPatcher {
                         }
                         return null;
                     });
-                    return apkFile.getAbsolutePath();
+                    return new Tuple2<>(apkFile.getAbsolutePath(), null);
                 } else if (advancedStage == 1) {
                     File contentFolder = new File(stadewValleyBasePath + "/StardewValley/Content");
                     if (contentFolder.exists()) {
@@ -154,10 +157,10 @@ public class ApkPatcher {
                     } else {
                         extract(0);
                     }
-                    return apkFile.getAbsolutePath();
+                    return new Tuple2<>(apkFile.getAbsolutePath(), null);
                 }
                 emitProgress(5);
-                return apkFile.getAbsolutePath();
+                return new Tuple2<>(apkFile.getAbsolutePath(), packageInfo.applicationInfo.splitSourceDirs);
             } catch (PackageManager.NameNotFoundException ignored) {
                 return null;
             }
@@ -174,7 +177,7 @@ public class ApkPatcher {
      * @param isAdvanced 是否高级模式
      * @return 是否成功打包
      */
-    public boolean patch(String apkPath, File targetFile, boolean isAdvanced) {
+    public boolean patch(String apkPath, File targetFile, boolean isAdvanced, boolean isResourcePack) {
         if (apkPath == null) {
             return false;
         }
@@ -199,7 +202,7 @@ public class ApkPatcher {
             ApkFilesManifest apkFilesManifest = apkFilesManifests.get(0);
             List<ManifestEntry> manifestEntries = apkFilesManifest.getManifestEntries();
             errorMessage.set(null);
-            List<ZipUtils.ZipEntrySource> entries = manifestEntries.stream()
+            List<ZipUtils.ZipEntrySource> entries = isResourcePack ? new ArrayList<>() : manifestEntries.stream()
                     .map(entry -> processFileEntry(file, apkFilesManifest, entry, isAdvanced))
                     .filter(Objects::nonNull).flatMap(Stream::of).distinct().collect(Collectors.toList());
             entries.add(new ZipUtils.ZipEntrySource("AndroidManifest.xml", modifiedManifest, Deflater.DEFLATED));
@@ -208,7 +211,7 @@ public class ApkPatcher {
             stopwatch.reset();
             stopwatch.start();
             originSignInfo = ZipUtils.addOrReplaceEntries(apkPath, entries, targetFile.getAbsolutePath(),
-                    isAdvanced ? (entryName) -> entryName.startsWith("assets/Content") : null,
+                    (entryName) -> entryName.startsWith("assemblies/assemblies.") || (isAdvanced && entryName.startsWith("assets/Content")),
                     (progress) -> emitProgress((int) (baseProgress + (progress / 100.0) * 35)));
             stopwatch.stop();
             emitProgress(46);
@@ -225,40 +228,51 @@ public class ApkPatcher {
         if (entry.isAdvanced() && !isAdvanced) {
             return null;
         }
-        if (entry.getTargetPath().endsWith(Constants.FILE_SEPARATOR) && entry.getAssetPath().contains("*")) {
-            String path = StringUtils.substringBeforeLast(entry.getAssetPath(), Constants.FILE_SEPARATOR);
-            String pattern = StringUtils.substringAfterLast(entry.getAssetPath(), Constants.FILE_SEPARATOR);
-            try {
-                if (entry.getOrigin() == 1) {
-                    ArrayList<ZipUtils.ZipEntrySource> list = new ArrayList<>();
-                    ZipUtil.iterate(apkFile, (in, zipEntry) -> {
-                        String entryPath = StringUtils.substringBeforeLast(zipEntry.getName(), Constants.FILE_SEPARATOR);
-                        String filename = StringUtils.substringAfterLast(zipEntry.getName(), Constants.FILE_SEPARATOR);
-                        if (entryPath.equals(path) && StringUtils.wildCardMatch(filename, pattern)) {
-                            byte[] bytes = ByteStreams.toByteArray(in);
-                            ZipUtils.ZipEntrySource source;
-                            if (entry.isXALZ()) {
-                                source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> new ByteArrayInputStream(ZipUtils.decompressXALZ(bytes)));
-                            } else {
-                                source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression());
-                            }
-                            list.add(source);
-                        }
-                    });
-                    return list.toArray(new ZipUtils.ZipEntrySource[0]);
-                } else {
-                    return Stream.of(context.getAssets().list(path))
-                            .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
-                            .map(filename -> new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> {
-                                try {
-                                    return FileUtils.getLocalAsset(context, path + Constants.FILE_SEPARATOR + filename);
-                                } catch (IOException ignored) {
+        if (entry.getTargetPath().endsWith(Constants.FILE_SEPARATOR)) {
+            if (entry.isXABA()) {
+                byte[] manifestBytes = ZipUtil.unpackEntry(apkFile, entry.getAssetPath() + ".manifest");
+                byte[] xabaBytes = ZipUtil.unpackEntry(apkFile, entry.getAssetPath() + ".blob");
+                Map<String, byte[]> unpackedAssemblies = ZipUtils.unpackXABA(manifestBytes, xabaBytes);
+                ArrayList<ZipUtils.ZipEntrySource> list = new ArrayList<>();
+                unpackedAssemblies.forEach((filename, bytes) -> {
+                    list.add(new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression()));
+                });
+                return list.toArray(new ZipUtils.ZipEntrySource[0]);
+            } else if (entry.getAssetPath().contains("*")) {
+                String path = StringUtils.substringBeforeLast(entry.getAssetPath(), Constants.FILE_SEPARATOR);
+                String pattern = StringUtils.substringAfterLast(entry.getAssetPath(), Constants.FILE_SEPARATOR);
+                try {
+                    if (entry.getOrigin() == 1) {
+                        ArrayList<ZipUtils.ZipEntrySource> list = new ArrayList<>();
+                        ZipUtil.iterate(apkFile, (in, zipEntry) -> {
+                            String entryPath = StringUtils.substringBeforeLast(zipEntry.getName(), Constants.FILE_SEPARATOR);
+                            String filename = StringUtils.substringAfterLast(zipEntry.getName(), Constants.FILE_SEPARATOR);
+                            if (entryPath.equals(path) && StringUtils.wildCardMatch(filename, pattern)) {
+                                byte[] bytes = ByteStreams.toByteArray(in);
+                                ZipUtils.ZipEntrySource source;
+                                if (entry.isXALZ()) {
+                                    source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> new ByteArrayInputStream(ZipUtils.decompressXALZ(bytes)));
+                                } else {
+                                    source = new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, bytes, entry.getCompression());
                                 }
-                                return null;
-                            }))
-                            .toArray(ZipUtils.ZipEntrySource[]::new);
+                                list.add(source);
+                            }
+                        });
+                        return list.toArray(new ZipUtils.ZipEntrySource[0]);
+                    } else {
+                        return Stream.of(context.getAssets().list(path))
+                                .filter(filename -> StringUtils.wildCardMatch(filename, pattern))
+                                .map(filename -> new ZipUtils.ZipEntrySource(entry.getTargetPath() + filename, entry.getCompression(), () -> {
+                                    try {
+                                        return FileUtils.getLocalAsset(context, path + Constants.FILE_SEPARATOR + filename);
+                                    } catch (IOException ignored) {
+                                    }
+                                    return null;
+                                }))
+                                .toArray(ZipUtils.ZipEntrySource[]::new);
+                    }
+                } catch (IOException ignored) {
                 }
-            } catch (IOException ignored) {
             }
             return null;
         }
@@ -351,6 +365,10 @@ public class ApkPatcher {
                 if (StringUtils.equals(attr.name, ManifestPatchConstants.PATTERN_VERSION_CODE)) {
                     versionCode.set((int) attr.obj);
                 }
+            } else if (attr.type == NodeVisitor.TYPE_INT_BOOLEAN) {
+                if (StringUtils.equals(attr.name, ManifestPatchConstants.PATTERN_EXTRACT_NATIVE_LIBS)) {
+                    attr.obj = true;
+                }
             }
             return null;
         };
@@ -390,7 +408,7 @@ public class ApkPatcher {
         try {
             String stadewValleyBasePath = FileUtils.getStadewValleyBasePath();
             emitProgress(47);
-            String signApkPath = stadewValleyBasePath + "/SMAPI Installer/base_signed.apk";
+            String signApkPath = stadewValleyBasePath + "/SMAPI Installer/" + FilenameUtils.getBaseName(apkPath) + "_signed.apk";
             KeyStore ks = new KeyStoreFileManager.JksKeyStore();
             try (InputStream fis = context.getAssets().open("debug.keystore.dat")) {
                 ks.load(fis, PASSWORD.toCharArray());
@@ -407,11 +425,11 @@ public class ApkPatcher {
                             Collections.singletonList(publicKey))
                             .build());
             DefaultApkSignerEngine signerEngine = new DefaultApkSignerEngine.Builder(engineSignerConfigs, 19)
-                            .setV1SigningEnabled(true)
-                            .setV2SigningEnabled(true)
-                            .setV3SigningEnabled(false)
-                            .build();
-            if(originSignInfo != null && originSignInfo.getFirst() != null) {
+                    .setV1SigningEnabled(true)
+                    .setV2SigningEnabled(true)
+                    .setV3SigningEnabled(false)
+                    .build();
+            if (originSignInfo != null && originSignInfo.getFirst() != null) {
                 signerEngine.initWith(originSignInfo.getFirst(), originSignInfo.getSecond());
             }
             long zipOpElapsed = stopwatch.elapsed(TimeUnit.MILLISECONDS);
@@ -432,7 +450,7 @@ public class ApkPatcher {
                 }
             });
             thread.start();
-            try(RandomAccessFile inputApkFile = new RandomAccessFile(apkPath, "r")) {
+            try (RandomAccessFile inputApkFile = new RandomAccessFile(apkPath, "r")) {
                 ApkSigner signer = new ApkSigner.Builder(signerEngine)
                         .setInputApk(DataSources.asDataSource(inputApkFile, 0, inputApkFile.length()))
                         .setOutputApk(outputFile)
@@ -527,7 +545,7 @@ public class ApkPatcher {
     }
 
     private void emitProgress(int progress) {
-        if(lastProgress < progress) {
+        if (lastProgress < progress) {
             lastProgress = progress;
             for (Consumer<Integer> consumer : progressListener) {
                 consumer.accept(progress);

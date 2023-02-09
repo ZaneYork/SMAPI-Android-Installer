@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -59,6 +60,7 @@ import java.util.stream.Stream;
 
 import androidx.annotation.RequiresApi;
 import androidx.documentfile.provider.DocumentFile;
+
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
 import pxb.android.axml.AxmlWriter;
@@ -214,9 +216,6 @@ public class CommonLogic {
      * @return 操作是否成功
      */
     public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode, String packageName, long versionCode) {
-        if(!checkMusic(context)){
-            return false;
-        }
         List<ApkFilesManifest> apkFilesManifests = CommonLogic.findAllApkFileManifest(context);
         filterManifest(apkFilesManifests, packageName, versionCode);
         List<ManifestEntry> manifestEntries = null;
@@ -279,20 +278,8 @@ public class CommonLogic {
             File pathFrom = new File(FileUtils.getStadewValleyBasePath(), "Android/obb/" + Constants.ORIGIN_PACKAGE_NAME_GOOGLE);
             File pathTo = new File(FileUtils.getStadewValleyBasePath(), "StardewValley");
             if (pathFrom.exists() && pathFrom.isDirectory()) {
-                if (!pathFrom.canRead()) {
-                    ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION, (resultCode, data) -> {
-                        if (resultCode == Activity.RESULT_OK) {
-                            if (data == null) {
-                                return;
-                            }
-                            Uri uri = data.getData();
-                            if (uri == null) {
-                                return;
-                            }
-                            context.getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        }
-                    });
-                    openObbRootPermission((Activity) context, ActivityResultHandler.REQUEST_CODE_OBB_FILES_ACCESS_PERMISSION);
+                if(!checkObbRootPermission((Activity) context, ActivityResultHandler.REQUEST_CODE_OBB_FILES_ACCESS_PERMISSION, (success) -> checkMusic(context))) {
+                    return false;
                 }
                 if (!pathTo.exists()) {
                     pathTo.mkdirs();
@@ -475,14 +462,13 @@ public class CommonLogic {
             intent.setData(Uri.parse("package:" + activity.getPackageName()));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
-        } catch (ActivityNotFoundException ignored){
+        } catch (ActivityNotFoundException ignored) {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             intent.setData(Uri.parse("package:" + activity.getPackageName()));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {
                 activity.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
-            }
-            catch (ActivityNotFoundException ignored2) {
+            } catch (ActivityNotFoundException ignored2) {
                 intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 activity.startActivityForResult(intent, ActivityResultHandler.REQUEST_CODE_ALL_FILES_ACCESS_PERMISSION);
@@ -490,9 +476,15 @@ public class CommonLogic {
         }
     }
 
-    public static void openObbRootPermission(Activity context, int REQUEST_CODE_FOR_DIR) {
-        Uri uri1 = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fobb");
-        DocumentFile documentFile = DocumentFile.fromTreeUri(context, uri1);
+    public static boolean checkDataRootPermission(Activity context, int REQUEST_CODE_FOR_DIR, Consumer<Boolean> callback) {
+        Uri targetDirUri = pathToUri("Android/data/" + Constants.ORIGIN_PACKAGE_NAME_GOOGLE);
+        if(checkPathPermission(context, targetDirUri)) {
+            return true;
+        }
+        ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_DATA_FILES_ACCESS_PERMISSION, (resultCode, data) -> {
+            takePermission(resultCode, data, context.getContentResolver(), callback);
+        });
+        DocumentFile documentFile = DocumentFile.fromTreeUri(context, targetDirUri);
         Intent intent1 = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent1.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
                 | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
@@ -500,6 +492,57 @@ public class CommonLogic {
                 | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
         intent1.putExtra(DocumentsContract.EXTRA_INITIAL_URI, documentFile.getUri());
         context.startActivityForResult(intent1, REQUEST_CODE_FOR_DIR);
+        return false;
+    }
+
+    private static void takePermission(Integer resultCode, Intent data, ContentResolver context, Consumer<Boolean> callback) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (data == null) {
+                return;
+            }
+            Uri uri = data.getData();
+            if (uri == null) {
+                return;
+            }
+            context.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            callback.accept(true);
+        } else {
+            callback.accept(false);
+        }
+    }
+
+    public static Uri pathToUri(String path) {
+        return Uri.parse("content://com.android.externalstorage.documents/tree/primary%3A" + path.replace("/", "%3A"));
+    }
+
+    public static boolean checkPathPermission(Context context, Uri targetDirUri) {
+        if(DocumentFile.fromTreeUri(context, targetDirUri).canWrite()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean checkPathPermission(Context context, String path) {
+        return checkPathPermission(context, path);
+    }
+
+    public static boolean checkObbRootPermission(Activity context, int REQUEST_CODE_FOR_DIR, Consumer<Boolean> callback) {
+        Uri targetDirUri = pathToUri("Android/obb");
+        if(checkPathPermission(context, targetDirUri)) {
+           return true;
+        }
+        ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_OBB_FILES_ACCESS_PERMISSION, (resultCode, data) -> {
+            takePermission(resultCode, data, context.getContentResolver(), callback);
+        });
+        DocumentFile documentFile = DocumentFile.fromTreeUri(context, targetDirUri);
+        Intent intent1 = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        intent1.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                | Intent.FLAG_GRANT_PREFIX_URI_PERMISSION);
+        intent1.putExtra(DocumentsContract.EXTRA_INITIAL_URI, documentFile.getUri());
+        context.startActivityForResult(intent1, REQUEST_CODE_FOR_DIR);
+        return false;
     }
 
     public static void showPrivacyPolicy(View view, BiConsumer<MaterialDialog, DialogAction> callback) {

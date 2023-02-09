@@ -72,9 +72,9 @@
     },
     {
       "targetPath": "assemblies/",
-      "assetPath": "assemblies/assemblies.blob",
+      "assetPath": "assemblies/assemblies",
       "origin": 1,
-      "isXABB": true,
+      "isXABA": true,
       "compression": 0,
       "external": false
     }

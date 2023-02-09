@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.R;
@@ -14,6 +15,8 @@ import com.zane.smapiinstaller.constant.AppConfigKeyConstants;
 import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.databinding.FragmentInstallBinding;
+import com.zane.smapiinstaller.dto.Tuple2;
+import com.zane.smapiinstaller.logic.ActivityResultHandler;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
 import com.zane.smapiinstaller.logic.ModAssetsManager;
@@ -22,12 +25,16 @@ import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -95,12 +102,12 @@ public class InstallFragment extends Fragment {
         if (task != null) {
             task.interrupt();
         }
-        task = new Thread(() -> CommonLogic.showProgressDialog(binding.getRoot(), context, (dialog)->{
+        task = new Thread(() -> CommonLogic.showProgressDialog(binding.getRoot(), context, (dialog) -> {
             ApkPatcher patcher = new ApkPatcher(context);
             patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(binding.getRoot(), dialog, null, progress));
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.extracting_package, null);
-            String path = patcher.extract(0);
-            if (path == null) {
+            Tuple2<String, String[]> paths = patcher.extract(0);
+            if (paths == null) {
                 DialogUtils.showAlertDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.error_game_not_found)));
             }
         }));
@@ -111,17 +118,20 @@ public class InstallFragment extends Fragment {
      * 安装逻辑
      */
     private void installLogic(boolean isAdv) {
+//        if (!CommonLogic.checkDataRootPermission(context, ActivityResultHandler.REQUEST_CODE_DATA_FILES_ACCESS_PERMISSION, (success) -> installLogic(isAdv))) {
+//            return;
+//        }
         if (task != null) {
             task.interrupt();
         }
-        task = new Thread(() -> CommonLogic.showProgressDialog(binding.getRoot(), context, (dialog)-> {
+        task = new Thread(() -> CommonLogic.showProgressDialog(binding.getRoot(), context, (dialog) -> {
             ApkPatcher patcher = new ApkPatcher(context);
             patcher.registerProgressListener((progress) -> DialogUtils.setProgressDialogState(binding.getRoot(), dialog, null, progress));
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.extracting_package, null);
-            String path = patcher.extract(isAdv ? 1 : -1);
+            Tuple2<String, String[]> paths = patcher.extract(isAdv ? 1 : -1);
             String stadewValleyBasePath = FileUtils.getStadewValleyBasePath();
             File dest = new File(stadewValleyBasePath + "/SMAPI Installer/");
-            boolean failed = path == null;
+            boolean failed = paths == null;
             if (!dest.exists()) {
                 if (!dest.mkdir()) {
                     failed = true;
@@ -132,16 +142,16 @@ public class InstallFragment extends Fragment {
                 return;
             }
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.unpacking_smapi_files, null);
-            if (!CommonLogic.unpackSmapiFiles(context, path, false, patcher.getGamePackageName(), patcher.getGameVersionCode())) {
-                DialogUtils.showAlertDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
-                return;
-            }
-            ModAssetsManager modAssetsManager = new ModAssetsManager(binding.getRoot());
-            DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.unpacking_smapi_files, 6);
-            modAssetsManager.installDefaultMods();
+//            if (!CommonLogic.unpackSmapiFiles(context, apkPath, false, patcher.getGamePackageName(), patcher.getGameVersionCode())) {
+//                DialogUtils.showAlertDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_unpack_smapi_files)));
+//                return;
+//            }
+//            ModAssetsManager modAssetsManager = new ModAssetsManager(binding.getRoot());
+//            DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.unpacking_smapi_files, 6);
+//            modAssetsManager.installDefaultMods();
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.patching_package, 8);
             File targetApk = new File(dest, "base.apk");
-            if (!patcher.patch(path, targetApk, isAdv)) {
+            if (!patcher.patch(paths.getFirst(), targetApk, isAdv, false)) {
                 int target = patcher.getSwitchAction().getAndSet(0);
                 if (target == R.string.menu_download) {
                     DialogUtils.showConfirmDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
@@ -155,12 +165,21 @@ public class InstallFragment extends Fragment {
                 }
                 return;
             }
+            List<String> resourcePacks = new ArrayList<>();
+            if (paths.getSecond() != null) {
+                for (String resourcePack : paths.getSecond()) {
+                    File targetResourcePack = new File(dest, FilenameUtils.getName(resourcePack));
+                    patcher.patch(resourcePack, targetResourcePack, false, true);
+                    resourcePacks.add(targetResourcePack.getAbsolutePath());
+                }
+            }
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.signing_package, null);
             String signPath = patcher.sign(targetApk.getAbsolutePath());
             if (signPath == null) {
                 DialogUtils.showAlertDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
                 return;
             }
+            List<String> signedResourcePacks = resourcePacks.stream().map(patcher::sign).collect(Collectors.toList());
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.installing_package, null);
             patcher.install(signPath);
         }));

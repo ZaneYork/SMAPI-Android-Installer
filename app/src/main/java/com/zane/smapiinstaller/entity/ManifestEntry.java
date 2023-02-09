@@ -50,4 +50,9 @@ public class ManifestEntry {
      */
     @JsonProperty("isXALZ")
     private boolean isXALZ;
+    /**
+     * 是否为XABA压缩格式
+     */
+    @JsonProperty("isXABA")
+    private boolean isXABA;
 }

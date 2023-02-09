@@ -15,4 +15,6 @@ public class ManifestPatchConstants {
     public static final CharSequence APP_PACKAGE_NAME = "com.chucklefish.stardewvalley";
 
     public static final String PATTERN_VERSION_AMAZON = "amazon";
+
+    public static final String PATTERN_EXTRACT_NATIVE_LIBS = "extractNativeLibs";
 }

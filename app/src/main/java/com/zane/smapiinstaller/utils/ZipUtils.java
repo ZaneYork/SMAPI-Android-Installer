@@ -68,7 +68,7 @@ public class ZipUtils {
     public static Map<String, byte[]> unpackXABA(byte[] manifestBytes, byte[] xabaBytes) {
         List<List<String>> manifest = Splitter.on('\n').omitEmptyStrings().splitToList(new String(manifestBytes, StandardCharsets.UTF_8))
                 .stream().skip(1).map(line -> Splitter.on(CharMatcher.whitespace()).omitEmptyStrings().splitToList(line)).collect(Collectors.toList());
-        ByteSource source = ByteSource.wrap(manifestBytes);
+        ByteSource source = ByteSource.wrap(xabaBytes);
         Map<String, byte[]> result = new HashMap<>();
         try {
             int offset = 0;
