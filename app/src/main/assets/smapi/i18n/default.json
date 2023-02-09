@@ -1,5 +1,8 @@
 {
-    "warn.invalid-content-removed": "Invalid content was removed to prevent a crash (see the SMAPI console for info).",
+    // short date format for SDate
+    // tokens: {{day}} (like 15), {{season}} (like Spring), {{seasonLowercase}} (like spring), {{year}} (like 2)
+    "generic.date": "{{season}} {{day}}",
+    "generic.date-with-year": "{{season}} {{day}} in year {{year}}",
     "warn.save-broken": "Load save failed, your save file may be broken.You can swap to previous day's save, or restore save files manually with save backups.Backup provided by SMAPI was located at StardewValley/smapi-internal/save-backups",
     "btn.swap": "Swap",
     "btn.back": "Back"

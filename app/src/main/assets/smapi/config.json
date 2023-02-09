@@ -6,13 +6,27 @@ This file contains advanced configuration for SMAPI. You generally shouldn't cha
 The default values are mirrored in StardewModdingAPI.Framework.Models.SConfig to log custom changes.
 
 
+This file is overwritten each time you update or reinstall SMAPI. To avoid losing custom settings,
+create a 'config.user.json' file in the same folder with *only* the settings you want to change.
+That file won't be overwritten, and any settings in it will override the default options. Don't
+copy all the settings, or you may cause bugs due to overridden changes in future SMAPI versions.
+
+
 
 */
 {
     /**
-     * Whether SMAPI should log more information about the game context.
+     * The logs for which to enable verbose logging, which may show a lot more information to
+     * simplify troubleshooting.
+     *
+     * The possible values are:
+     *   - "*" for everything (not recommended);
+     *   - "SMAPI" for messages from SMAPI itself;
+     *   - mod IDs from their manifest.json files.
+     *
+     * For example: [ "SMAPI", "Pathoschild.ContentPatcher" ]
      */
-    "VerboseLogging": false,
+    "VerboseLogging": [],
 
     /**
      * Whether SMAPI should check for newer versions of SMAPI and mods when you load the game. If new
@@ -25,32 +39,51 @@ The default values are mirrored in StardewModdingAPI.Framework.Models.SConfig to
      * Whether to enable features intended for mod developers. Currently this only makes TRACE-level
      * messages appear in the console.
      */
-    "DeveloperMode": false,
+    "DeveloperMode": true,
+
+    /**
+     * Whether SMAPI should listen for console input. Disabling this will prevent you from using
+     * console commands. On some specific Linux systems, disabling this may reduce CPU usage.
+     */
+    "ListenForConsoleInput": true,
+
+    /**
+     * Whether SMAPI should rewrite mods for compatibility. This may prevent older mods from
+     * loading, but bypasses a Visual Studio crash when debugging.
+     */
+    "RewriteMods": true,
+
+    /**
+     * Whether to make SMAPI file APIs case-insensitive (even if the filesystem is case-sensitive).
+     *
+     * If null, it's only enabled on Android and Linux.
+     */
+    "UseCaseInsensitivePaths": null,
 
     /**
      * Whether to add a section to the 'mod issues' list for mods which directly use potentially
      * sensitive .NET APIs like file or shell access. Note that many mods do this legitimately as
      * part of their normal functionality, so these warnings are meaningless without further
-     * investigation. When this is commented out, it'll be true for local debug builds and false
-     * otherwise.
+     * investigation.
+     *
+     * If null, it's only enabled for local debug builds.
      */
-    //"ParanoidWarnings": true,
+    "ParanoidWarnings": null,
 
     /**
-     * Whether SMAPI should show newer beta versions as an available update. When this is commented
-     * out, it'll be true if the current SMAPI version is beta, and false otherwise.
+     * Whether SMAPI should show newer beta versions as an available update.
+     *
+     * If null, it's only enabled if the current SMAPI version is beta.
      */
-    //"UseBetaChannel": true,
+    "UseBetaChannel": null,
 
     /**
      * SMAPI's GitHub project name, used to perform update checks.
      */
-    "GitHubProjectName": "MartyrPher/SMAPI-Android-Installer",
+    "GitHubProjectName": "Pathoschild/SMAPI",
 
     /**
      * The base URL for SMAPI's web API, used to perform update checks.
-     * Note: the protocol will be changed to http:// on Linux/Mac due to OpenSSL issues with the
-     * game's bundled Mono.
      */
     "WebApiBaseUrl": "https://smapi.io/api/",
 
@@ -60,19 +93,14 @@ The default values are mirrored in StardewModdingAPI.Framework.Models.SConfig to
     "LogNetworkTraffic": false,
 
     /**
-     * Whether to generate a 'SMAPI-latest.metadata-dump.json' file in the logs folder with the full mod
-     * metadata for detected mods. This is only needed when troubleshooting some cases.
-     */
-    "DumpMetadata": false,
-
-    /**
      * The colors to use for text written to the SMAPI console.
      *
      * The possible values for 'UseScheme' are:
-     *  - AutoDetect: SMAPI will assume a light background on Mac, and detect the background color
+     *  - AutoDetect: SMAPI will assume a light background on macOS, and detect the background color
      *    automatically on Linux or Windows.
      *  - LightBackground: use darker text colors that look better on a white or light background.
      *  - DarkBackground: use lighter text colors that look better on a black or dark background.
+     *  - None: disables all colors, so everything is written in the default terminal color.
      *
      * For available color codes, see https://docs.microsoft.com/en-us/dotnet/api/system.consolecolor.
      *
@@ -105,10 +133,31 @@ The default values are mirrored in StardewModdingAPI.Framework.Models.SConfig to
     },
 
     /**
+     * Whether to prevent mods from enabling Harmony's debug mode, which impacts performance and
+     * creates a file on your desktop. Debug mode should never be enabled by a released mod.
+     *
+     * If you actually need debug mode to test your own mod, set this to false.
+     */
+    "SuppressHarmonyDebugMode": true,
+
+    /**
      * The mod IDs SMAPI should ignore when performing update checks or validating update keys.
      */
     "SuppressUpdateChecks": [
         "SMAPI.ConsoleCommands",
+        "SMAPI.ErrorHandler",
         "SMAPI.SaveBackup"
-    ]
+    ],
+
+    /**
+     * The mod IDs SMAPI should load before any other mods (except those needed to load them)
+     * or after any other mods.
+     *
+     * This lets you manually fix the load order if needed, but this is a last resort — SMAPI
+     * automatically adjusts the load order based on mods' dependencies, so needing to manually
+     * edit the order is usually a problem with one or both mods' metadata that can be reported to
+     * the mod author.
+     */
+    "ModsToLoadEarly": [],
+    "ModsToLoadLate": []
 }

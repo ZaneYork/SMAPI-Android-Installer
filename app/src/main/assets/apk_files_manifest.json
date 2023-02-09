@@ -1,12 +1,8 @@
 {
-  "minBuildCode": 148,
+  "minBuildCode": 162,
   "maxBuildCode": null,
   "basePath": "",
-  "targetPackageName": [
-    "com.chucklefish.stardewvalley",
-    "com.zane.stardewvalley",
-    "com.martyrpher.stardewvalley"
-  ],
+  "targetPackageName": ["com.chucklefish.stardewvalley"],
   "manifestEntries": [
     {
       "targetPath": "classes.dex",
@@ -75,46 +71,10 @@
       "external": false
     },
     {
-      "targetPath": "assemblies/0Harmony.dll",
-      "assetPath": "smapi/0Harmony.dll",
-      "compression": 0,
-      "external": false
-    },
-    {
-      "targetPath": "assemblies/Mono.Cecil.dll",
-      "assetPath": "smapi/Mono.Cecil.dll",
-      "compression": 0,
-      "external": false
-    },
-    {
-      "targetPath": "assemblies/MonoMod.RuntimeDetour.dll",
-      "assetPath": "smapi/MonoMod.RuntimeDetour.dll",
-      "compression": 0,
-      "external": false
-    },
-    {
-      "targetPath": "assemblies/MonoMod.Utils.dll",
-      "assetPath": "smapi/MonoMod.Utils.dll",
-      "compression": 0,
-      "external": false
-    },
-    {
-      "targetPath": "assemblies/System.Xml.Linq.dll",
-      "assetPath": "smapi/System.Xml.Linq.dll",
-      "compression": 0,
-      "external": false
-    },
-    {
-      "targetPath": "assemblies/TMXTile.dll",
-      "assetPath": "smapi/TMXTile.dll",
-      "compression": 0,
-      "external": false
-    },
-    {
       "targetPath": "assemblies/",
-      "assetPath": "assemblies/*.dll",
+      "assetPath": "assemblies/assemblies.blob",
       "origin": 1,
-      "isXALZ": true,
+      "isXABB": true,
       "compression": 0,
       "external": false
     }
