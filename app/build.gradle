@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.zane.smapiinstaller"
-        minSdkVersion 19
+        minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 73

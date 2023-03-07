@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.zane.smapiinstaller.MainApplication;
 import com.zane.smapiinstaller.R;
@@ -16,10 +15,8 @@ import com.zane.smapiinstaller.constant.Constants;
 import com.zane.smapiinstaller.constant.DialogAction;
 import com.zane.smapiinstaller.databinding.FragmentInstallBinding;
 import com.zane.smapiinstaller.dto.Tuple2;
-import com.zane.smapiinstaller.logic.ActivityResultHandler;
 import com.zane.smapiinstaller.logic.ApkPatcher;
 import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.logic.ModAssetsManager;
 import com.zane.smapiinstaller.ui.main.MainTabsFragmentDirections;
 import com.zane.smapiinstaller.utils.ConfigUtils;
 import com.zane.smapiinstaller.utils.DialogUtils;
@@ -151,7 +148,7 @@ public class InstallFragment extends Fragment {
 //            modAssetsManager.installDefaultMods();
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.patching_package, 8);
             File targetApk = new File(dest, "base.apk");
-            if (!patcher.patch(paths.getFirst(), targetApk, isAdv, false)) {
+            if (!patcher.patch(paths.getFirst(), paths.getSecond(), targetApk, isAdv, false)) {
                 int target = patcher.getSwitchAction().getAndSet(0);
                 if (target == R.string.menu_download) {
                     DialogUtils.showConfirmDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_patch_game)), R.string.menu_download, R.string.cancel, (d, which) -> {
@@ -165,21 +162,21 @@ public class InstallFragment extends Fragment {
                 }
                 return;
             }
-            List<String> resourcePacks = new ArrayList<>();
-            if (paths.getSecond() != null) {
-                for (String resourcePack : paths.getSecond()) {
-                    File targetResourcePack = new File(dest, FilenameUtils.getName(resourcePack));
-                    patcher.patch(resourcePack, targetResourcePack, false, true);
-                    resourcePacks.add(targetResourcePack.getAbsolutePath());
-                }
-            }
+//            List<String> resourcePacks = new ArrayList<>();
+//            if (paths.getSecond() != null) {
+//                for (String resourcePack : paths.getSecond()) {
+//                    File targetResourcePack = new File(dest, FilenameUtils.getName(resourcePack));
+//                    patcher.patch(resourcePack, paths.getSecond(), targetResourcePack, false, true);
+//                    resourcePacks.add(targetResourcePack.getAbsolutePath());
+//                }
+//            }
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.signing_package, null);
             String signPath = patcher.sign(targetApk.getAbsolutePath());
             if (signPath == null) {
                 DialogUtils.showAlertDialog(binding.getRoot(), R.string.error, StringUtils.firstNonBlank(patcher.getErrorMessage().get(), context.getString(R.string.failed_to_sign_game)));
                 return;
             }
-            List<String> signedResourcePacks = resourcePacks.stream().map(patcher::sign).collect(Collectors.toList());
+//            List<String> signedResourcePacks = resourcePacks.stream().map(patcher::sign).collect(Collectors.toList());
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.installing_package, null);
             patcher.install(signPath);
         }));

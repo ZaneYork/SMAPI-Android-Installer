@@ -13,13 +13,11 @@ import android.util.Log;
 import com.android.apksig.ApkSigner;
 import com.android.apksig.ApkVerifier;
 import com.android.apksig.DefaultApkSignerEngine;
-import com.android.apksig.util.DataSinks;
 import com.android.apksig.util.DataSources;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import com.zane.smapiinstaller.BuildConfig;
 import com.zane.smapiinstaller.MainActivity;
 import com.zane.smapiinstaller.R;
@@ -31,6 +29,7 @@ import com.zane.smapiinstaller.entity.ApkFilesManifest;
 import com.zane.smapiinstaller.entity.ManifestEntry;
 import com.zane.smapiinstaller.utils.DialogUtils;
 import com.zane.smapiinstaller.utils.FileUtils;
+import com.zane.smapiinstaller.utils.PackageInstallUtil;
 import com.zane.smapiinstaller.utils.StringUtils;
 import com.zane.smapiinstaller.utils.ZipUtils;
 
@@ -49,6 +48,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -173,11 +173,12 @@ public class ApkPatcher {
      * 将指定APK文件重新打包，添加SMAPI，修改AndroidManifest.xml，同时验证版本是否正确
      *
      * @param apkPath    APK文件路径
+     * @param second
      * @param targetFile 目标文件
      * @param isAdvanced 是否高级模式
      * @return 是否成功打包
      */
-    public boolean patch(String apkPath, File targetFile, boolean isAdvanced, boolean isResourcePack) {
+    public boolean patch(String apkPath, String[] resourcePacks, File targetFile, boolean isAdvanced, boolean isResourcePack) {
         if (apkPath == null) {
             return false;
         }
@@ -210,7 +211,7 @@ public class ApkPatcher {
             int baseProgress = 10;
             stopwatch.reset();
             stopwatch.start();
-            originSignInfo = ZipUtils.addOrReplaceEntries(apkPath, entries, targetFile.getAbsolutePath(),
+            originSignInfo = ZipUtils.addOrReplaceEntries(apkPath, resourcePacks, entries, targetFile.getAbsolutePath(),
                     (entryName) -> entryName.startsWith("assemblies/assemblies.") || (isAdvanced && entryName.startsWith("assets/Content")),
                     (progress) -> emitProgress((int) (baseProgress + (progress / 100.0) * 35)));
             stopwatch.stop();
@@ -462,7 +463,7 @@ public class ApkPatcher {
             if (thread.isAlive() && !thread.isInterrupted()) {
                 thread.interrupt();
             }
-            if (result.containsErrors()) {
+            if (result.containsErrors() && result.getErrors().size() > 0) {
                 errorMessage.set(result.getErrors().stream().map(ApkVerifier.IssueWithParams::toString).collect(Collectors.joining(",")));
                 return null;
             }
@@ -478,7 +479,7 @@ public class ApkPatcher {
     /**
      * 对指定安装包发起安装
      *
-     * @param apkPath 安装包路径
+     * @param apkPath             安装包路径
      */
     public void install(String apkPath) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

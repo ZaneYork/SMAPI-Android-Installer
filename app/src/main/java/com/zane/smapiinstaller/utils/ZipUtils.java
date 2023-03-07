@@ -118,7 +118,7 @@ public class ZipUtils {
         return result;
     }
 
-    public static Tuple2<byte[], Set<String>> addOrReplaceEntries(String inputZipFilename, List<ZipEntrySource> entrySources, String outputZipFilename, Function<String, Boolean> removePredict, Consumer<Integer> progressCallback) throws IOException {
+    public static Tuple2<byte[], Set<String>> addOrReplaceEntries(String inputZipFilename, String[] resourcePacks, List<ZipEntrySource> entrySources, String outputZipFilename, Function<String, Boolean> removePredict, Consumer<Integer> progressCallback) throws IOException {
         File inFile = new File(inputZipFilename).getCanonicalFile();
         File outFile = new File(outputZipFilename).getCanonicalFile();
         if (inFile.equals(outFile)) {
@@ -127,11 +127,11 @@ public class ZipUtils {
         ImmutableMap<String, ZipEntrySource> entryMap = Maps.uniqueIndex(entrySources, ZipEntrySource::getPath);
         byte[] originManifest = null;
         ConcurrentHashMap<String, Boolean> originEntryName = new ConcurrentHashMap<>();
-        try (ZipInput input = new ZipInput(inputZipFilename)) {
-            int size = input.entries.values().size();
-            AtomicLong count = new AtomicLong();
-            int reportInterval = size / 100;
-            try (ZipOutput zipOutput = new ZipOutput(new FileOutputStream(outputZipFilename))) {
+        try (ZipOutput zipOutput = new ZipOutput(new FileOutputStream(outputZipFilename))) {
+            try (ZipInput input = new ZipInput(inputZipFilename)) {
+                int size = input.entries.values().size();
+                AtomicLong count = new AtomicLong();
+                int reportInterval = size / 100;
                 ConcurrentHashMap<String, Boolean> replacedFileSet = new ConcurrentHashMap<>(entryMap.size());
                 MultiprocessingUtil.TaskBundle<ZioEntry> taskBundle = MultiprocessingUtil.newTaskBundle((zioEntry) -> {
                     try {
@@ -199,6 +199,22 @@ public class ZipUtils {
                 }
                 taskBundle.join();
                 progressCallback.accept(100);
+            }
+            for (String resourcePack : resourcePacks) {
+                try (ZipInput input = new ZipInput(resourcePack)) {
+                    for (ZioEntry inEntry : input.entries.values()) {
+                        if(inEntry.getName().startsWith("assets/Content")) {
+                            ZioEntry zioEntry = new ZioEntry(inEntry.getName());
+                            zioEntry.setCompression(inEntry.getCompression());
+                            try (InputStream inputStream = inEntry.getInputStream()) {
+                                ByteStreams.copy(inputStream, zioEntry.getOutputStream());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            zipOutput.write(zioEntry);
+                        }
+                    }
+                }
             }
         } catch (RuntimeException e) {
             if (e.getCause() != null && e.getCause() instanceof IOException) {
