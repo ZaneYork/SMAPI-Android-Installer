@@ -146,7 +146,7 @@ public class ApkPatcher {
                         }
                         return null;
                     });
-                    return new Tuple2<>(apkFile.getAbsolutePath(), null);
+                    return new Tuple2<>(apkFile.getAbsolutePath(), new String[0]);
                 } else if (advancedStage == 1) {
                     File contentFolder = new File(stadewValleyBasePath + "/StardewValley/Content");
                     if (contentFolder.exists()) {
@@ -157,7 +157,7 @@ public class ApkPatcher {
                     } else {
                         extract(0);
                     }
-                    return new Tuple2<>(apkFile.getAbsolutePath(), null);
+                    return new Tuple2<>(apkFile.getAbsolutePath(), new String[0]);
                 }
                 emitProgress(5);
                 return new Tuple2<>(apkFile.getAbsolutePath(), packageInfo.applicationInfo.splitSourceDirs);

@@ -12,8 +12,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
-        versionCode 73
-        versionName "3.7.6.11"
+        versionCode 74
+        versionName "3.18.2.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
