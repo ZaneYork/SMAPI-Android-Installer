@@ -26,6 +26,8 @@ public class Constants {
      * 安装包目标包名
      */
     public static final String TARGET_PACKAGE_NAME =  "com.zane.stardewvalley";
+
+    public static final String TARGET_DATA_FILE_URI = "Android/data/" + Constants.TARGET_PACKAGE_NAME;
     /**
      * 安装包目标包名
      */

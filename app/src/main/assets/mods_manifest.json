@@ -3,23 +3,5 @@
     "assetPath":"mods/virtual-keyboard.zip",
     "Name": "VirtualKeyboard",
     "UniqueID": "VirtualKeyboard"
-  },
-  {
-    "assetPath":"mods/custom-localization.zip",
-    "Name": "CustomLocalization",
-    "UniqueID": "ZaneYork.CustomLocalization",
-    "CleanInstall": true,
-    "Version": "1.1.0",
-    "OriginUniqueId": ["SMAPI.CustomLocalization"]
-  },
-  {
-    "assetPath":"mods/console-commands.zip",
-    "Name": "Console Commands",
-    "UniqueID": "SMAPI.ConsoleCommands"
-  },
-  {
-    "assetPath":"mods/save-backup.zip",
-    "Name": "SaveBackup",
-    "UniqueID": "SMAPI.SaveBackup"
   }
 ]

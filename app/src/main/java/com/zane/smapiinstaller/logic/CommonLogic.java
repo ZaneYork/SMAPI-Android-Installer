@@ -20,6 +20,9 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 
+import androidx.annotation.RequiresApi;
+import androidx.documentfile.provider.DocumentFile;
+
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Iterables;
@@ -39,6 +42,7 @@ import com.zane.smapiinstaller.utils.FileUtils;
 import com.zane.smapiinstaller.utils.StringUtils;
 import com.zane.smapiinstaller.utils.ZipUtils;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -48,6 +52,7 @@ import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,9 +62,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import androidx.annotation.RequiresApi;
-import androidx.documentfile.provider.DocumentFile;
 
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
@@ -215,7 +217,7 @@ public class CommonLogic {
      * @param versionCode 版本号
      * @return 操作是否成功
      */
-    public static boolean unpackSmapiFiles(Context context, String apkPath, boolean checkMode, String packageName, long versionCode) {
+    public static boolean unpackSmapiFiles(Activity context, String apkPath, boolean checkMode, String packageName, long versionCode) {
         List<ApkFilesManifest> apkFilesManifests = CommonLogic.findAllApkFileManifest(context);
         filterManifest(apkFilesManifests, packageName, versionCode);
         List<ManifestEntry> manifestEntries = null;
@@ -270,7 +272,41 @@ public class CommonLogic {
                     break;
             }
         }
+        if (CommonLogic.checkDataRootPermission(context)) {
+            Uri targetDirUri = pathToTreeUri(Constants.TARGET_DATA_FILE_URI);
+            DocumentFile documentFile = DocumentFile.fromTreeUri(context, targetDirUri);
+            for (DocumentFile file : documentFile.listFiles()) {
+                if (file.getName().equals("files")) {
+                    copyDocument(context, new File(basePath, "smapi-internal"), file);
+                    copyDocument(context, new File(basePath, "Mods"), file);
+                }
+            }
+        }
         return true;
+    }
+
+    private static void copyDocument(Activity context, File src, DocumentFile dest) {
+        if (src.isDirectory()) {
+            DocumentFile documentFile = dest.findFile(src.getName());
+            if (documentFile == null) {
+                documentFile = dest.createDirectory(src.getName());
+            }
+            for (File file : src.listFiles()) {
+                copyDocument(context, file, documentFile);
+            }
+        } else {
+            DocumentFile documentFile = dest.findFile(src.getName());
+            if (documentFile == null) {
+                documentFile = dest.createFile("application/x-binary", src.getName());
+            }
+            if(documentFile.length() != src.length()) {
+                try (OutputStream outputStream = context.getContentResolver().openOutputStream(documentFile.getUri())) {
+                    FileUtils.copy(src, outputStream);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     private static boolean checkMusic(Context context) {
@@ -278,7 +314,7 @@ public class CommonLogic {
             File pathFrom = new File(FileUtils.getStadewValleyBasePath(), "Android/obb/" + Constants.ORIGIN_PACKAGE_NAME_GOOGLE);
             File pathTo = new File(FileUtils.getStadewValleyBasePath(), "StardewValley");
             if (pathFrom.exists() && pathFrom.isDirectory()) {
-                if(!checkObbRootPermission((Activity) context, ActivityResultHandler.REQUEST_CODE_OBB_FILES_ACCESS_PERMISSION, (success) -> checkMusic(context))) {
+                if (!checkObbRootPermission((Activity) context, ActivityResultHandler.REQUEST_CODE_OBB_FILES_ACCESS_PERMISSION, (success) -> checkMusic(context))) {
                     return false;
                 }
                 if (!pathTo.exists()) {
@@ -314,7 +350,7 @@ public class CommonLogic {
                 } catch (IOException ignore) {
                 }
             } else {
-                ZipUtil.unpackEntry(new File(apkPath), entry.getAssetPath(), targetFile);
+                ZipUtil.unpack(new File(apkPath), targetFile, name -> name.startsWith(entry.getAssetPath()) ? FilenameUtils.getName(name) : null);
             }
         }
     }
@@ -476,9 +512,25 @@ public class CommonLogic {
         }
     }
 
-    public static boolean checkDataRootPermission(Activity context, int REQUEST_CODE_FOR_DIR, Consumer<Boolean> callback) {
-        Uri targetDirUri = pathToUri("Android/data/" + Constants.ORIGIN_PACKAGE_NAME_GOOGLE);
-        if(checkPathPermission(context, targetDirUri)) {
+    public static boolean checkDataRootPermission(Activity context) {
+        File pathFrom = new File(FileUtils.getStadewValleyBasePath(), "Android/data/" + Constants.TARGET_PACKAGE_NAME + "/files/");
+        if (!pathFrom.exists()) {
+            return false;
+        }
+        Uri targetDirUri = pathToTreeUri(Constants.TARGET_DATA_FILE_URI);
+        if (checkPathPermission(context, targetDirUri)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean requestDataRootPermission(Activity context, int REQUEST_CODE_FOR_DIR, Consumer<Boolean> callback) {
+        File pathFrom = new File(FileUtils.getStadewValleyBasePath(), "Android/data/" + Constants.TARGET_PACKAGE_NAME + "/files");
+        if (!pathFrom.exists()) {
+            return true;
+        }
+        Uri targetDirUri = pathToTreeUri(Constants.TARGET_DATA_FILE_URI);
+        if (checkPathPermission(context, targetDirUri)) {
             return true;
         }
         ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_DATA_FILES_ACCESS_PERMISSION, (resultCode, data) -> {
@@ -504,32 +556,32 @@ public class CommonLogic {
             if (uri == null) {
                 return;
             }
-            context.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            context.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             callback.accept(true);
         } else {
             callback.accept(false);
         }
     }
 
-    public static Uri pathToUri(String path) {
-        return Uri.parse("content://com.android.externalstorage.documents/tree/primary%3A" + path.replace("/", "%3A"));
+    public static Uri pathToTreeUri(String path) {
+        return Uri.parse("content://com.android.externalstorage.documents/tree/primary%3A" + path.replace("/", "%2F"));
+    }
+
+    public static Uri pathToSingleUri(String path) {
+        return Uri.parse("content://com.android.externalstorage.documents/document/primary%3A" + path.replace("/", "%2F"));
     }
 
     public static boolean checkPathPermission(Context context, Uri targetDirUri) {
-        if(DocumentFile.fromTreeUri(context, targetDirUri).canWrite()) {
+        if (DocumentFile.fromTreeUri(context, targetDirUri).canWrite()) {
             return true;
         }
         return false;
     }
 
-    public static boolean checkPathPermission(Context context, String path) {
-        return checkPathPermission(context, path);
-    }
-
     public static boolean checkObbRootPermission(Activity context, int REQUEST_CODE_FOR_DIR, Consumer<Boolean> callback) {
-        Uri targetDirUri = pathToUri("Android/obb");
-        if(checkPathPermission(context, targetDirUri)) {
-           return true;
+        Uri targetDirUri = pathToTreeUri("Android/obb");
+        if (checkPathPermission(context, targetDirUri)) {
+            return true;
         }
         ActivityResultHandler.registerListener(ActivityResultHandler.REQUEST_CODE_OBB_FILES_ACCESS_PERMISSION, (resultCode, data) -> {
             takePermission(resultCode, data, context.getContentResolver(), callback);

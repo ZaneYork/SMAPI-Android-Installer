@@ -11,7 +11,7 @@
   },
   {
     "targetPath": "smapi-internal/",
-    "assetPath": "assemblies/*.dll",
+    "assetPath": "assemblies/",
     "origin": 1
   }
 ]
