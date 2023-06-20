@@ -10,14 +10,11 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.zane.smapiinstaller.dto.AssemblyStoreAssembly;
 import com.zane.smapiinstaller.dto.Tuple2;
-
 import net.fornwall.apksigner.zipio.ZioEntry;
 import net.fornwall.apksigner.zipio.ZipInput;
 import net.fornwall.apksigner.zipio.ZipOutput;
 import net.jpountz.lz4.LZ4Factory;
-
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,20 +33,15 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 /**
  * @author Zane
  */
 public class ZipUtils {
-
-    private final static byte[] MAGIC_BLOB = new byte[]{'X', 'A', 'B', 'A'};
-    private final static byte[] MAGIC_COMPRESSED = new byte[]{'X', 'A', 'L', 'Z'};
+    private static final byte[] MAGIC_BLOB = new byte[] {'X', 'A', 'B', 'A'};
+    private static final byte[] MAGIC_COMPRESSED = new byte[] {'X', 'A', 'L', 'Z'};
 
     public static int fromBytes(byte[] bytes) {
-        return (bytes[0] & 0xff) | ((bytes[1] & 0xff) << 8) | ((bytes[2] & 0xff) << 16) | ((bytes[3] & 0xff) << 24);
+        return (bytes[0] & 255) | ((bytes[1] & 255) << 8) | ((bytes[2] & 255) << 16) | ((bytes[3] & 255) << 24);
     }
 
     public static byte[] decompressXALZ(byte[] bytes) {
@@ -58,16 +50,14 @@ public class ZipUtils {
         }
         if (Arrays.equals(ByteUtils.subArray(bytes, 0, 4), MAGIC_COMPRESSED)) {
             byte[] length = ByteUtils.subArray(bytes, 8, 12);
-            int len = (length[0] & 0xff) | ((length[1] & 0xff) << 8) | ((length[2] & 0xff) << 16) | ((length[3] & 0xff) << 24);
+            int len = (length[0] & 255) | ((length[1] & 255) << 8) | ((length[2] & 255) << 16) | ((length[3] & 255) << 24);
             bytes = LZ4Factory.fastestJavaInstance().fastDecompressor().decompress(bytes, 12, len);
         }
         return bytes;
     }
 
-
     public static Map<String, byte[]> unpackXABA(byte[] manifestBytes, byte[] xabaBytes) {
-        List<List<String>> manifest = Splitter.on('\n').omitEmptyStrings().splitToList(new String(manifestBytes, StandardCharsets.UTF_8))
-                .stream().skip(1).map(line -> Splitter.on(CharMatcher.whitespace()).omitEmptyStrings().splitToList(line)).collect(Collectors.toList());
+        List<List<String>> manifest = Splitter.on('\n').omitEmptyStrings().splitToList(new String(manifestBytes, StandardCharsets.UTF_8)).stream().skip(1).map(line -> Splitter.on(CharMatcher.whitespace()).omitEmptyStrings().splitToList(line)).collect(Collectors.toList());
         ByteSource source = ByteSource.wrap(xabaBytes);
         Map<String, byte[]> result = new HashMap<>();
         try {
@@ -101,13 +91,11 @@ public class ZipUtils {
                 assembly.setConfigDataOffset(fromBytes(buffer));
                 buffer = source.slice(offset += 4, 4).read();
                 assembly.setConfigDataSize(fromBytes(buffer));
-
                 buffer = source.slice(assembly.getDataOffset(), 4).read();
                 byte[] bytes;
                 if (Arrays.equals(buffer, MAGIC_COMPRESSED)) {
                     byte[] lzBytes = source.slice(assembly.getDataOffset(), assembly.getDataSize()).read();
                     bytes = decompressXALZ(lzBytes);
-
                 } else {
                     bytes = source.slice(assembly.getDataOffset(), assembly.getDataSize()).read();
                 }
@@ -133,7 +121,7 @@ public class ZipUtils {
                 AtomicLong count = new AtomicLong();
                 int reportInterval = size / 100;
                 ConcurrentHashMap<String, Boolean> replacedFileSet = new ConcurrentHashMap<>(entryMap.size());
-                MultiprocessingUtil.TaskBundle<ZioEntry> taskBundle = MultiprocessingUtil.newTaskBundle((zioEntry) -> {
+                MultiprocessingUtil.TaskBundle<ZioEntry> taskBundle = MultiprocessingUtil.newTaskBundle(zioEntry -> {
                     try {
                         zipOutput.write(zioEntry);
                         long index = count.incrementAndGet();
@@ -175,7 +163,7 @@ public class ZipUtils {
                 taskBundle.join();
                 Sets.SetView<String> difference = Sets.difference(entryMap.keySet(), replacedFileSet.keySet());
                 count.set(0);
-                taskBundle = MultiprocessingUtil.newTaskBundle((zioEntry) -> {
+                taskBundle = MultiprocessingUtil.newTaskBundle(zioEntry -> {
                     try {
                         zipOutput.write(zioEntry);
                         long index = count.incrementAndGet();
@@ -203,7 +191,7 @@ public class ZipUtils {
             for (String resourcePack : resourcePacks) {
                 try (ZipInput input = new ZipInput(resourcePack)) {
                     for (ZioEntry inEntry : input.entries.values()) {
-                        if(inEntry.getName().startsWith("assets/Content")) {
+                        if (inEntry.getName().startsWith("assets/Content")) {
                             ZioEntry zioEntry = new ZioEntry(inEntry.getName());
                             zioEntry.setCompression(inEntry.getCompression());
                             try (InputStream inputStream = inEntry.getInputStream()) {
@@ -250,9 +238,7 @@ public class ZipUtils {
         }
     }
 
-    @Data
-    @AllArgsConstructor
-    @EqualsAndHashCode(of = "path")
+
     public static class ZipEntrySource {
         private String path;
         private int compressionMethod;
@@ -270,5 +256,78 @@ public class ZipUtils {
             }
             return null;
         }
+
+        //<editor-fold defaultstate="collapsed" desc="delombok">
+        @SuppressWarnings("all")
+        public String getPath() {
+            return this.path;
+        }
+
+        @SuppressWarnings("all")
+        public int getCompressionMethod() {
+            return this.compressionMethod;
+        }
+
+        @SuppressWarnings("all")
+        public Supplier<InputStream> getDataSupplier() {
+            return this.dataSupplier;
+        }
+
+        @SuppressWarnings("all")
+        public void setPath(final String path) {
+            this.path = path;
+        }
+
+        @SuppressWarnings("all")
+        public void setCompressionMethod(final int compressionMethod) {
+            this.compressionMethod = compressionMethod;
+        }
+
+        @SuppressWarnings("all")
+        public void setDataSupplier(final Supplier<InputStream> dataSupplier) {
+            this.dataSupplier = dataSupplier;
+        }
+
+        @Override
+        @SuppressWarnings("all")
+        public String toString() {
+            return "ZipUtils.ZipEntrySource(path=" + this.getPath() + ", compressionMethod=" + this.getCompressionMethod() + ", dataSupplier=" + this.getDataSupplier() + ")";
+        }
+
+        @SuppressWarnings("all")
+        public ZipEntrySource(final String path, final int compressionMethod, final Supplier<InputStream> dataSupplier) {
+            this.path = path;
+            this.compressionMethod = compressionMethod;
+            this.dataSupplier = dataSupplier;
+        }
+
+        @Override
+        @SuppressWarnings("all")
+        public boolean equals(final Object o) {
+            if (o == this) return true;
+            if (!(o instanceof ZipUtils.ZipEntrySource)) return false;
+            final ZipUtils.ZipEntrySource other = (ZipUtils.ZipEntrySource) o;
+            if (!other.canEqual((Object) this)) return false;
+            final Object this$path = this.getPath();
+            final Object other$path = other.getPath();
+            if (this$path == null ? other$path != null : !this$path.equals(other$path)) return false;
+            return true;
+        }
+
+        @SuppressWarnings("all")
+        protected boolean canEqual(final Object other) {
+            return other instanceof ZipUtils.ZipEntrySource;
+        }
+
+        @Override
+        @SuppressWarnings("all")
+        public int hashCode() {
+            final int PRIME = 59;
+            int result = 1;
+            final Object $path = this.getPath();
+            result = result * PRIME + ($path == null ? 43 : $path.hashCode());
+            return result;
+        }
+        //</editor-fold>
     }
 }

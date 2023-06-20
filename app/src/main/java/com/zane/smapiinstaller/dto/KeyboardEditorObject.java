@@ -1,15 +1,11 @@
 package com.zane.smapiinstaller.dto;
 
 import android.webkit.JavascriptInterface;
-
 import java.util.function.Consumer;
-
-import lombok.AllArgsConstructor;
 
 /**
  * @author Zane
  */
-@AllArgsConstructor
 public class KeyboardEditorObject {
     private String text;
     private String language;
@@ -27,7 +23,7 @@ public class KeyboardEditorObject {
     @JavascriptInterface
     public void setText(String text) {
         this.text = text;
-        if(setterCallback != null) {
+        if (setterCallback != null) {
             setterCallback.accept(text);
         }
     }
@@ -56,4 +52,17 @@ public class KeyboardEditorObject {
     public String getLanguage() {
         return language;
     }
+
+    //<editor-fold defaultstate="collapsed" desc="delombok">
+    @SuppressWarnings("all")
+    public KeyboardEditorObject(final String text, final String language, final int height, final int width, final float scale, final boolean landscape, final Consumer<String> setterCallback) {
+        this.text = text;
+        this.language = language;
+        this.height = height;
+        this.width = width;
+        this.scale = scale;
+        this.landscape = landscape;
+        this.setterCallback = setterCallback;
+    }
+    //</editor-fold>
 }
