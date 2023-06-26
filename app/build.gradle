@@ -10,13 +10,16 @@ android {
     defaultConfig {
         applicationId "com.zane.smapiinstaller"
         minSdkVersion 21
-        //noinspection ExpiringTargetSdkVersion
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 30
-        versionCode 74
-        versionName "3.18.2.2"
+        versionCode 75
+        versionName "3.18.3.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
+        lintOptions {
+            abortOnError false
+        }
     }
 
     buildTypes {

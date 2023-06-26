@@ -61,8 +61,8 @@
     <string name="settings_verbose_logging">자세한 로그</string>
     <string name="signing_package">설치 패키지 서명</string>
     <string name="smapi_game_name">SMAPI Stardew Valley</string>
-    <string name="smapi_version">SMAPI버전: 3.7.6.1</string>
-    <string name="text_install_tip1">참고 : 게임 버전 1.4.5.148 이상이 필요합니다</string>
+    <string name="smapi_version">SMAPI버전: 3.18.3.1</string>
+    <string name="text_install_tip1">참고 : 게임 버전 1.5.6.39 이상이 필요합니다</string>
     <string name="text_install_tip2">업데이트 또는 설치 중에 게임 본체를 설치해야합니다</string>
     <string name="unpacking_smapi_files">포장 풀기</string>
 </resources>

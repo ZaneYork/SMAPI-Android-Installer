@@ -188,18 +188,20 @@ public class ZipUtils {
                 taskBundle.join();
                 progressCallback.accept(100);
             }
-            for (String resourcePack : resourcePacks) {
-                try (ZipInput input = new ZipInput(resourcePack)) {
-                    for (ZioEntry inEntry : input.entries.values()) {
-                        if (inEntry.getName().startsWith("assets/Content")) {
-                            ZioEntry zioEntry = new ZioEntry(inEntry.getName());
-                            zioEntry.setCompression(inEntry.getCompression());
-                            try (InputStream inputStream = inEntry.getInputStream()) {
-                                ByteStreams.copy(inputStream, zioEntry.getOutputStream());
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
+            if(resourcePacks != null) {
+                for (String resourcePack : resourcePacks) {
+                    try (ZipInput input = new ZipInput(resourcePack)) {
+                        for (ZioEntry inEntry : input.entries.values()) {
+                            if (inEntry.getName().startsWith("assets/Content")) {
+                                ZioEntry zioEntry = new ZioEntry(inEntry.getName());
+                                zioEntry.setCompression(inEntry.getCompression());
+                                try (InputStream inputStream = inEntry.getInputStream()) {
+                                    ByteStreams.copy(inputStream, zioEntry.getOutputStream());
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                zipOutput.write(zioEntry);
                             }
-                            zipOutput.write(zioEntry);
                         }
                     }
                 }
