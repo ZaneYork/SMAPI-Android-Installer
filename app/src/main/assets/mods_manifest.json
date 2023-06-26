@@ -3,5 +3,10 @@
     "assetPath":"mods/virtual-keyboard.zip",
     "Name": "VirtualKeyboard",
     "UniqueID": "VirtualKeyboard"
+  },
+  {
+    "assetPath":"mods/console-commands.zip",
+    "Name": "Console Commands",
+    "UniqueID": "SMAPI.ConsoleCommands"
   }
 ]
