@@ -2,6 +2,7 @@ package com.zane.smapiinstaller.logic;
 
 import android.app.Activity;
 import android.content.pm.PackageInfo;
+import android.net.Uri;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -45,6 +46,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import androidx.documentfile.provider.DocumentFile;
+import androidx.documentfile.provider.DocumentUtils;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -169,6 +172,7 @@ public class ModAssetsManager {
         }
         File modFolder = new File(FileUtils.getStadewValleyBasePath(), Constants.MOD_PATH);
         ImmutableListMultimap<String, ModManifestEntry> installedModMap = Multimaps.index(findAllInstalledMods(), ModManifestEntry::getUniqueID);
+        List<File> unpackedMods = new ArrayList<>();
         for (ModManifestEntry mod : modManifestEntries) {
             if (installedModMap.containsKey(mod.getUniqueID())) {
                 ImmutableList<ModManifestEntry> installedMods = installedModMap.get(mod.getUniqueID());
@@ -202,7 +206,9 @@ public class ModAssetsManager {
                 }
                 if (installedMods.size() > 0) {
                     try {
-                        ZipUtil.unpack(context.getAssets().open(mod.getAssetPath()), new File(installedMods.get(0).getAssetPath()), (name) -> StringUtils.removeStart(name, mod.getName() + "/"));
+                        File targetFile = new File(installedMods.get(0).getAssetPath());
+                        ZipUtil.unpack(context.getAssets().open(mod.getAssetPath()), targetFile, (name) -> StringUtils.removeStart(name, mod.getName() + "/"));
+                        unpackedMods.add(targetFile);
                     } catch (IOException e) {
                         Log.e(TAG, "Install Mod Error", e);
                     }
@@ -211,8 +217,23 @@ public class ModAssetsManager {
             }
             try {
                 ZipUtil.unpack(context.getAssets().open(mod.getAssetPath()), modFolder);
+                unpackedMods.add(new File(modFolder, mod.getName()));
             } catch (IOException e) {
                 Log.e(TAG, "Install Mod Error", e);
+            }
+        }
+        if (CommonLogic.checkDataRootPermission(context)) {
+            Uri targetDirUri = CommonLogic.pathToTreeUri(Constants.TARGET_DATA_FILE_URI);
+            DocumentFile documentFile = DocumentFile.fromTreeUri(context, targetDirUri);
+            if(documentFile != null) {
+                DocumentFile filesDoc = DocumentUtils.findFile(context, documentFile, "files");
+                DocumentFile modsDoc = DocumentUtils.findFile(context, filesDoc, "Mods");
+                if (modsDoc == null) {
+                    modsDoc = filesDoc.createDirectory("Mods");
+                }
+                for (File mod : unpackedMods) {
+                    CommonLogic.copyDocument(context, mod, modsDoc);
+                }
             }
         }
         return true;

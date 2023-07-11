@@ -173,7 +173,6 @@ public class ApkPatcher {
      * 将指定APK文件重新打包，添加SMAPI，修改AndroidManifest.xml，同时验证版本是否正确
      *
      * @param apkPath    APK文件路径
-     * @param second
      * @param targetFile 目标文件
      * @param isAdvanced 是否高级模式
      * @return 是否成功打包

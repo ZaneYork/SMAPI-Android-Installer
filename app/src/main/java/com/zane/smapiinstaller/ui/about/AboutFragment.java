@@ -59,8 +59,14 @@ public class AboutFragment extends Fragment {
                 case 1:
                     CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "kshK7BavcS2jXZ6exDvezc18ksLB8YsM"));
                     break;
-                default:
+                case 2:
                     CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "zqsWYGBuAxPx0n9RI_ONs-7NA1Mm48QY"));
+                    break;
+                case 3:
+                    CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, baseUrl + "uYnxVTCGlWuLbeb3XA3mDXoO0tlYhy3J"));
+                    break;
+                default:
+                    CommonLogic.doOnNonNull(this.getContext(), (context) -> CommonLogic.openUrl(context, "https://s.zaneyork.cn:8443/s/qc"));
                     break;
             }
         });

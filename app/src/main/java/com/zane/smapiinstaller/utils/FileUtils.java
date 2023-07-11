@@ -1,8 +1,13 @@
 package com.zane.smapiinstaller.utils;
 
+import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
+
+import androidx.documentfile.provider.DocumentFile;
+import androidx.documentfile.provider.DocumentUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Iterables;
@@ -12,6 +17,8 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.hjq.language.MultiLanguages;
+import com.zane.smapiinstaller.constant.Constants;
+import com.zane.smapiinstaller.logic.CommonLogic;
 
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -326,5 +334,35 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
                         Iterables.filter(Files.fileTraverser().breadthFirst(new File(basePath)), filter::test),
                         File::getAbsolutePath)
         );
+    }
+
+    public static File docOverlayFetch(Context context, String relativePath) {
+        relativePath = relativePath.replace("StardewValley/", "");
+        if (CommonLogic.checkDataRootPermission(context)) {
+            Uri targetDirUri = CommonLogic.pathToTreeUri(Constants.TARGET_DATA_FILE_URI);
+            DocumentFile documentFile = DocumentFile.fromTreeUri(context, targetDirUri);
+            DocumentFile filesDoc = DocumentUtils.findFile(context, documentFile, "files");
+            if(filesDoc != null) {
+                String[] split = relativePath.split("/");
+                DocumentFile currentDoc = filesDoc;
+                for (String path : split) {
+                    currentDoc = DocumentUtils.findFile(context, currentDoc, path);
+                    if(currentDoc == null) {
+                        break;
+                    }
+                }
+                if(currentDoc != null && currentDoc.isFile()) {
+                    try (InputStream inputStream = context.getContentResolver().openInputStream(currentDoc.getUri())) {
+                        File tempFile = File.createTempFile(currentDoc.getName(), null);
+                        tempFile.deleteOnExit();
+                        FileUtils.copy(inputStream, tempFile);
+                        return tempFile;
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+        return new File(FileUtils.getStadewValleyBasePath(), relativePath);
     }
 }

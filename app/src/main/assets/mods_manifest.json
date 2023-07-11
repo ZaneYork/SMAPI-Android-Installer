@@ -6,7 +6,7 @@
   },
   {
     "assetPath":"mods/console-commands.zip",
-    "Name": "Console Commands",
+    "Name": "ConsoleCommands",
     "UniqueID": "SMAPI.ConsoleCommands"
   }
 ]

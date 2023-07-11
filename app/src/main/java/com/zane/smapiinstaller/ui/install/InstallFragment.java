@@ -57,7 +57,7 @@ public class InstallFragment extends Fragment {
             binding.layoutAdvInstall.setVisibility(View.VISIBLE);
         }
         try {
-            String firstLine = Files.asCharSource(new File(FileUtils.getStadewValleyBasePath(), Constants.LOG_PATH), StandardCharsets.UTF_8).readFirstLine();
+            String firstLine = Files.asCharSource(FileUtils.docOverlayFetch(context, Constants.LOG_PATH), StandardCharsets.UTF_8).readFirstLine();
             if (StringUtils.isNoneBlank(firstLine)) {
                 String versionString = RegExUtils.removePattern(firstLine, "\\[.+\\]\\s+");
                 versionString = RegExUtils.removePattern(versionString, "\\s+with.+");
@@ -158,7 +158,6 @@ public class InstallFragment extends Fragment {
                 return;
             }
             ModAssetsManager modAssetsManager = new ModAssetsManager(binding.getRoot());
-            DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.unpacking_smapi_files, 6);
             modAssetsManager.installDefaultMods();
 
             DialogUtils.setProgressDialogState(binding.getRoot(), dialog, R.string.signing_package, null);

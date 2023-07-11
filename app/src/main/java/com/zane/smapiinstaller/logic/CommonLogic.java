@@ -22,6 +22,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.RequiresApi;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.documentfile.provider.DocumentUtils;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -275,19 +276,17 @@ public class CommonLogic {
         if (CommonLogic.checkDataRootPermission(context)) {
             Uri targetDirUri = pathToTreeUri(Constants.TARGET_DATA_FILE_URI);
             DocumentFile documentFile = DocumentFile.fromTreeUri(context, targetDirUri);
-            for (DocumentFile file : documentFile.listFiles()) {
-                if (file.getName().equals("files")) {
-                    copyDocument(context, new File(basePath, "smapi-internal"), file);
-                    copyDocument(context, new File(basePath, "Mods"), file);
-                }
+            DocumentFile filesDoc = DocumentUtils.findFile(context, documentFile, "files");
+            if(filesDoc != null) {
+                copyDocument(context, new File(basePath, "smapi-internal"), filesDoc);
             }
         }
         return true;
     }
 
-    private static void copyDocument(Activity context, File src, DocumentFile dest) {
+    public static void copyDocument(Activity context, File src, DocumentFile dest) {
         if (src.isDirectory()) {
-            DocumentFile documentFile = dest.findFile(src.getName());
+            DocumentFile documentFile = DocumentUtils.findFile(context, dest, src.getName());
             if (documentFile == null) {
                 documentFile = dest.createDirectory(src.getName());
             }
@@ -295,7 +294,7 @@ public class CommonLogic {
                 copyDocument(context, file, documentFile);
             }
         } else {
-            DocumentFile documentFile = dest.findFile(src.getName());
+            DocumentFile documentFile = DocumentUtils.findFile(context, dest, src.getName());
             if (documentFile == null) {
                 documentFile = dest.createFile("application/x-binary", src.getName());
             }
@@ -512,7 +511,7 @@ public class CommonLogic {
         }
     }
 
-    public static boolean checkDataRootPermission(Activity context) {
+    public static boolean checkDataRootPermission(Context context) {
         File pathFrom = new File(FileUtils.getStadewValleyBasePath(), "Android/data/" + Constants.TARGET_PACKAGE_NAME + "/files/");
         if (!pathFrom.exists()) {
             return false;
