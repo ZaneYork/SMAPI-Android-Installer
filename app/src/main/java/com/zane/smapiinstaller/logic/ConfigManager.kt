@@ -1,35 +1,34 @@
-package com.zane.smapiinstaller.logic;
+package com.zane.smapiinstaller.logic
 
-import com.zane.smapiinstaller.constant.Constants;
-import com.zane.smapiinstaller.entity.FrameworkConfig;
-import com.zane.smapiinstaller.utils.FileUtils;
-
-import java.io.File;
+import com.zane.smapiinstaller.constant.Constants
+import com.zane.smapiinstaller.entity.FrameworkConfig
+import com.zane.smapiinstaller.utils.FileUtils
+import java.io.File
 
 /**
  * 配置管理器
  * @author Zane
  */
-public class ConfigManager {
-    private FrameworkConfig config;
+class ConfigManager {
+    var config: FrameworkConfig
 
-    public ConfigManager() {
-        File configFile = new File(FileUtils.getStadewValleyBasePath(), Constants.CONFIG_PATH);
-        if(configFile.exists()) {
-            config = FileUtils.getFileJson(configFile, FrameworkConfig.class);
+    init {
+        val configFile = File(FileUtils.stadewValleyBasePath, Constants.CONFIG_PATH)
+        var conf: FrameworkConfig? = null
+        if (configFile.exists()) {
+            conf = FileUtils.getFileJson(configFile, FrameworkConfig::class.java)
         }
-        if(config == null) {
-            config = new FrameworkConfig();
-            config.setInitial(true);
+        if (conf != null) {
+            config = conf
+        }
+        else {
+            config = FrameworkConfig()
+            config.setInitial(true)
         }
     }
 
-    public FrameworkConfig getConfig() {
-        return config;
-    }
-
-    public void flushConfig() {
-        File configFile = new File(FileUtils.getStadewValleyBasePath(), Constants.CONFIG_PATH);
-        FileUtils.writeFileJson(configFile, config);
+    fun flushConfig() {
+        val configFile = File(FileUtils.stadewValleyBasePath, Constants.CONFIG_PATH)
+        FileUtils.writeFileJson(configFile, config)
     }
 }

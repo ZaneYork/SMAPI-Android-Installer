@@ -1,68 +1,28 @@
-package com.zane.smapiinstaller.dto;
+package com.zane.smapiinstaller.dto
 
-import android.webkit.JavascriptInterface;
-import java.util.function.Consumer;
+import android.webkit.JavascriptInterface
 
 /**
  * @author Zane
  */
-public class KeyboardEditorObject {
-    private String text;
-    private String language;
-    private int height;
-    private int width;
-    private float scale;
-    private boolean landscape;
-    private Consumer<String> setterCallback;
+class KeyboardEditorObject (
+    private var text: String,
+    @get:JavascriptInterface val language: String,
+    @get:JavascriptInterface val height: Int,
+    @get:JavascriptInterface val width: Int,
+    @get:JavascriptInterface val scale: Float,
+    @get:JavascriptInterface val isLandscape: Boolean,
+    private val setterCallback: ((String) -> Unit)? = null
+) {
 
     @JavascriptInterface
-    public String getText() {
-        return text;
-    }
-
-    @JavascriptInterface
-    public void setText(String text) {
-        this.text = text;
-        if (setterCallback != null) {
-            setterCallback.accept(text);
-        }
+    fun getText(): String {
+        return text
     }
 
     @JavascriptInterface
-    public int getHeight() {
-        return height;
+    fun setText(text: String) {
+        this.text = text
+        setterCallback?.invoke(text)
     }
-
-    @JavascriptInterface
-    public int getWidth() {
-        return width;
-    }
-
-    @JavascriptInterface
-    public float getScale() {
-        return scale;
-    }
-
-    @JavascriptInterface
-    public boolean isLandscape() {
-        return landscape;
-    }
-
-    @JavascriptInterface
-    public String getLanguage() {
-        return language;
-    }
-
-    //<editor-fold defaultstate="collapsed" desc="delombok">
-    @SuppressWarnings("all")
-    public KeyboardEditorObject(final String text, final String language, final int height, final int width, final float scale, final boolean landscape, final Consumer<String> setterCallback) {
-        this.text = text;
-        this.language = language;
-        this.height = height;
-        this.width = width;
-        this.scale = scale;
-        this.landscape = landscape;
-        this.setterCallback = setterCallback;
-    }
-    //</editor-fold>
 }

@@ -7,7 +7,7 @@ import pxb.android.axml.NodeVisitor;
 /**
  * AndroidManifest文件节点访问器
  */
-class ManifestTagVisitor extends NodeVisitor {
+public class ManifestTagVisitor extends NodeVisitor {
     private final Function<AttrArgs, List<AttrArgs>> attrProcessLogic;
     private final Function<ChildArgs, List<ChildArgs>> childProcessLogic;
 

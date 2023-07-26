@@ -1,70 +1,57 @@
-package com.zane.smapiinstaller.ui.help;
+package com.zane.smapiinstaller.ui.help
 
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.databinding.HelpListItemBinding;
-import com.zane.smapiinstaller.entity.HelpItem;
-
-import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import android.os.Build
+import android.text.Html
+import android.text.method.LinkMovementMethod
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.zane.smapiinstaller.R
+import com.zane.smapiinstaller.databinding.HelpListItemBinding
+import com.zane.smapiinstaller.entity.HelpItem
 
 /**
  * @author Zane
  */
-public class HelpItemAdapter extends RecyclerView.Adapter<HelpItemAdapter.ViewHolder>  {
-
-    public void setHelpItems(List<HelpItem> helpItems) {
-        this.helpItems = helpItems;
-        notifyDataSetChanged();
+class HelpItemAdapter(private var helpItems: List<HelpItem>) :
+    RecyclerView.Adapter<HelpItemAdapter.ViewHolder>() {
+    fun setHelpItems(helpItems: List<HelpItem>) {
+        this.helpItems = helpItems
+        notifyDataSetChanged()
     }
 
-    private List<HelpItem> helpItems;
-
-    public HelpItemAdapter(List<HelpItem> helpItems) {
-        this.helpItems = helpItems;
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.help_list_item, parent, false)
+        return ViewHolder(view)
     }
 
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.help_list_item, parent, false);
-        return new ViewHolder(view);
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.setHelpItem(helpItems[position])
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.setHelpItem(helpItems.get(position));
+    override fun getItemCount(): Int {
+        return helpItems.size
     }
 
-    @Override
-    public int getItemCount() {
-        return helpItems.size();
-    }
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val binding: HelpListItemBinding
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        private final HelpListItemBinding binding;
-
-        public ViewHolder(View view) {
-            super(view);
-            binding = HelpListItemBinding.bind(view);
+        init {
+            binding = HelpListItemBinding.bind(view)
         }
-        void setHelpItem(HelpItem item) {
-            binding.textItemTitle.setText(item.getTitle());
-            binding.textItemAuthor.setText(item.getAuthor());
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                binding.textItemContent.setText(Html.fromHtml(item.getContent(), Html.FROM_HTML_MODE_COMPACT));
+
+        fun setHelpItem(item: HelpItem) {
+            binding.textItemTitle.text = item.title
+            binding.textItemAuthor.text = item.author
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                binding.textItemContent.text =
+                    Html.fromHtml(item.content, Html.FROM_HTML_MODE_COMPACT)
             } else {
-                binding.textItemContent.setText(Html.fromHtml(item.getContent()));
+                binding.textItemContent.text = Html.fromHtml(item.content)
             }
-            binding.textItemContent.setMovementMethod(LinkMovementMethod.getInstance());
+            binding.textItemContent.movementMethod = LinkMovementMethod.getInstance()
         }
     }
 }

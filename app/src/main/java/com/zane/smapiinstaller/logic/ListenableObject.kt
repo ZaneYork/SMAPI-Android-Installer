@@ -1,35 +1,32 @@
-package com.zane.smapiinstaller.logic;
-
-import java.util.List;
-
-import java.util.function.Predicate;
+package com.zane.smapiinstaller.logic
 
 /**
  * @author Zane
  */
-public interface ListenableObject<T> {
+interface ListenableObject<T> {
     /**
      * 返回一个当前已注册的监听器列表
      * @return 监听器列表
      */
-    List<Predicate<T>> getOnChangedListenerList();
+    val onChangedListenerList: MutableList<(T) -> Boolean>
+
     /**
      * 注册数据变化监听器
      *
      * @param onChanged 回调
      */
-    default void registerOnChangeListener(Predicate<T> onChanged) {
-        getOnChangedListenerList().add(onChanged);
+    fun registerOnChangeListener(onChanged: (T) -> Boolean) {
+        onChangedListenerList.add(onChanged)
     }
 
     /**
      * 发起数据变化事件
      * @param data 数据
      */
-    default void emitDataChangeEvent(T data) {
-        for (Predicate<T> listener : getOnChangedListenerList()) {
-            if(listener.test(data)) {
-                return;
+    fun emitDataChangeEvent(data: T) {
+        for (listener in onChangedListenerList) {
+            if (listener.invoke(data)) {
+                return
             }
         }
     }

@@ -1,61 +1,52 @@
-package com.zane.smapiinstaller.utils;
+package com.zane.smapiinstaller.utils
 
-import android.app.Activity;
-import android.content.Context;
-import android.net.Uri;
-import android.os.Environment;
-import android.util.Log;
-
-import androidx.documentfile.provider.DocumentFile;
-import androidx.documentfile.provider.DocumentUtils;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.hash.Hashing;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.CharStreams;
-import com.google.common.io.Files;
-import com.hjq.language.MultiLanguages;
-import com.zane.smapiinstaller.constant.Constants;
-import com.zane.smapiinstaller.logic.CommonLogic;
-
-import org.apache.commons.io.input.BOMInputStream;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.function.Predicate;
+import android.content.Context
+import android.os.Environment
+import android.util.Log
+import androidx.documentfile.provider.DocumentFile
+import androidx.documentfile.provider.DocumentUtils
+import com.fasterxml.jackson.core.type.TypeReference
+import com.google.common.hash.Hashing
+import com.google.common.io.ByteStreams
+import com.google.common.io.CharStreams
+import com.google.common.io.Files
+import com.hjq.language.MultiLanguages
+import com.zane.smapiinstaller.constant.Constants
+import com.zane.smapiinstaller.logic.CommonLogic.checkDataRootPermission
+import com.zane.smapiinstaller.logic.CommonLogic.pathToTreeUri
+import org.apache.commons.io.input.BOMInputStream
+import org.apache.commons.lang3.StringUtils
+import org.zeroturnaround.zip.commons.FileUtils
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 
 /**
  * 文件工具类
  *
  * @author Zane
  */
-public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
+object FileUtils : FileUtils() {
     /**
      * 读取文本文件
      *
      * @param file 文件
      * @return 文本
      */
-    public static String getFileText(File file) {
+    fun getFileText(file: File?): String? {
         try {
-            InputStream inputStream = new BOMInputStream(new FileInputStream(file));
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return CharStreams.toString(reader);
-            }
-        } catch (Exception ignored) {
+            val inputStream: InputStream = BOMInputStream(FileInputStream(file))
+            InputStreamReader(
+                inputStream, StandardCharsets.UTF_8
+            ).use { reader -> return CharStreams.toString(reader) }
+        } catch (ignored: Exception) {
         }
-        return null;
+        return null
     }
 
     /**
@@ -66,12 +57,12 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @return 输入流
      * @throws IOException 异常
      */
-    public static InputStream getLocalAsset(Context context, String filename) throws IOException {
-        File file = new File(context.getFilesDir(), filename);
-        if (file.exists()) {
-            return new BOMInputStream(new FileInputStream(file));
-        }
-        return context.getAssets().open(filename);
+    @Throws(IOException::class)
+    fun getLocalAsset(context: Context, filename: String): InputStream {
+        val file = File(context.filesDir, filename)
+        return if (file.exists()) {
+            BOMInputStream(FileInputStream(file))
+        } else context.assets.open(filename)
     }
 
     /**
@@ -82,19 +73,19 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @return 输入流
      * @throws IOException 异常
      */
-    public static InputStream getLocaledLocalAsset(Context context, String filename) throws IOException {
+    @Throws(IOException::class)
+    fun getLocaledLocalAsset(context: Context, filename: String): InputStream {
         try {
-            String language = MultiLanguages.getAppLanguage().getLanguage();
-            String localedFilename = filename + '.' + language;
-            File file = new File(context.getFilesDir(), localedFilename);
-            if (file.exists()) {
-                return new BOMInputStream(new FileInputStream(file));
-            }
-            return context.getAssets().open(localedFilename);
-        } catch (IOException e) {
-            Log.d("LOCALE", "No locale asset found", e);
+            val language = MultiLanguages.getAppLanguage().language
+            val localedFilename = "$filename.$language"
+            val file = File(context.filesDir, localedFilename)
+            return if (file.exists()) {
+                BOMInputStream(FileInputStream(file))
+            } else context.assets.open(localedFilename)
+        } catch (e: IOException) {
+            Log.d("LOCALE", "No locale asset found", e)
         }
-        return getLocalAsset(context, filename);
+        return getLocalAsset(context, filename)
     }
 
     /**
@@ -104,16 +95,16 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param type 数据类型
      * @param <T>  泛型类型
      * @return 数据
-     */
-    public static <T> T getFileJson(File file, TypeReference<T> type) {
+    </T> */
+    fun <T> getFileJson(file: File?, type: TypeReference<T>?): T? {
         try {
-            InputStream inputStream = new FileInputStream(file);
-            try (InputStreamReader reader = new InputStreamReader(new BOMInputStream(inputStream), StandardCharsets.UTF_8)) {
-                return JsonUtil.fromJson(CharStreams.toString(reader), type);
-            }
-        } catch (Exception ignored) {
+            val inputStream: InputStream = FileInputStream(file)
+            InputStreamReader(
+                BOMInputStream(inputStream), StandardCharsets.UTF_8
+            ).use { reader -> return JsonUtil.fromJson(CharStreams.toString(reader), type) }
+        } catch (ignored: Exception) {
         }
-        return null;
+        return null
     }
 
     /**
@@ -123,16 +114,16 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param tClass 数据类型
      * @param <T>    泛型类型
      * @return 数据
-     */
-    public static <T> T getFileJson(File file, Class<T> tClass) {
+    </T> */
+    fun <T> getFileJson(file: File?, tClass: Class<T>?): T? {
         try {
-            InputStream inputStream = new FileInputStream(file);
-            try (InputStreamReader reader = new InputStreamReader(new BOMInputStream(inputStream), StandardCharsets.UTF_8)) {
-                return JsonUtil.fromJson(CharStreams.toString(reader), tClass);
-            }
-        } catch (Exception ignored) {
+            val inputStream: InputStream = FileInputStream(file)
+            InputStreamReader(
+                BOMInputStream(inputStream), StandardCharsets.UTF_8
+            ).use { reader -> return JsonUtil.fromJson(CharStreams.toString(reader), tClass) }
+        } catch (ignored: Exception) {
         }
-        return null;
+        return null
     }
 
     /**
@@ -142,21 +133,23 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param filename 文件名
      * @param content  内容
      */
-    public static void writeAssetJson(Context context, String filename, Object content) {
+    fun writeAssetJson(context: Context, filename: String, content: Any?) {
         try {
-            String tmpFilename = filename + ".tmp";
-            File file = new File(context.getFilesDir(), tmpFilename);
-            FileOutputStream outputStream = new FileOutputStream(file);
-            try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
-                writer.write(JsonUtil.toJson(content));
+            val tmpFilename = "$filename.tmp"
+            val file = File(context.filesDir, tmpFilename)
+            val outputStream = FileOutputStream(file)
+            try {
+                OutputStreamWriter(
+                    outputStream, StandardCharsets.UTF_8
+                ).use { writer -> writer.write(JsonUtil.toJson(content)) }
             } finally {
-                File distFile = new File(context.getFilesDir(), filename);
+                val distFile = File(context.filesDir, filename)
                 if (distFile.exists()) {
-                    org.zeroturnaround.zip.commons.FileUtils.forceDelete(distFile);
+                    forceDelete(distFile)
                 }
-                org.zeroturnaround.zip.commons.FileUtils.moveFile(file, distFile);
+                moveFile(file, distFile)
             }
-        } catch (Exception ignored) {
+        } catch (ignored: Exception) {
         }
     }
 
@@ -166,24 +159,28 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param file    文件
      * @param content 内容
      */
-    public static void writeFileJson(File file, Object content) {
+    fun writeFileJson(file: File, content: Any?) {
         try {
-            if (!file.getParentFile().exists()) {
-                org.zeroturnaround.zip.commons.FileUtils.forceMkdir(file.getParentFile());
+            file.parentFile?.let {
+                if (!it.exists()) {
+                    forceMkdir(it)
+                }
             }
-            String filename = file.getName();
-            String tmpFilename = filename + ".tmp";
-            File fileTmp = new File(file.getParent(), tmpFilename);
-            FileOutputStream outputStream = new FileOutputStream(fileTmp);
-            try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
-                writer.write(JsonUtil.toJson(content));
+            val filename = file.name
+            val tmpFilename = "$filename.tmp"
+            val fileTmp = File(file.parent, tmpFilename)
+            val outputStream = FileOutputStream(fileTmp)
+            try {
+                OutputStreamWriter(
+                    outputStream, StandardCharsets.UTF_8
+                ).use { writer -> writer.write(JsonUtil.toJson(content)) }
             } finally {
                 if (file.exists()) {
-                    org.zeroturnaround.zip.commons.FileUtils.forceDelete(file);
+                    forceDelete(file)
                 }
-                org.zeroturnaround.zip.commons.FileUtils.moveFile(fileTmp, file);
+                moveFile(fileTmp, file)
             }
-        } catch (Exception ignored) {
+        } catch (ignored: Exception) {
         }
     }
 
@@ -194,15 +191,15 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param filename 文件名
      * @return 文本
      */
-    public static String getAssetText(Context context, String filename) {
+    fun getAssetText(context: Context, filename: String): String? {
         try {
-            InputStream inputStream = getLocalAsset(context, filename);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return CharStreams.toString(reader);
-            }
-        } catch (IOException ignored) {
+            val inputStream = getLocalAsset(context, filename)
+            InputStreamReader(
+                inputStream, StandardCharsets.UTF_8
+            ).use { reader -> return CharStreams.toString(reader) }
+        } catch (ignored: IOException) {
         }
-        return null;
+        return null
     }
 
     /**
@@ -212,15 +209,15 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param filename 文件名
      * @return 文本
      */
-    public static String getLocaledAssetText(Context context, String filename) {
+    fun getLocaledAssetText(context: Context, filename: String): String? {
         try {
-            InputStream inputStream = getLocaledLocalAsset(context, filename);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return CharStreams.toString(reader);
-            }
-        } catch (IOException ignored) {
+            val inputStream = getLocaledLocalAsset(context, filename)
+            InputStreamReader(
+                inputStream, StandardCharsets.UTF_8
+            ).use { reader -> return CharStreams.toString(reader) }
+        } catch (ignored: IOException) {
         }
-        return null;
+        return null
     }
 
     /**
@@ -231,24 +228,42 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param tClass   数据类型
      * @param <T>      泛型类型
      * @return 数据
-     */
-    public static <T> T getAssetJson(Context context, String filename, Class<T> tClass) {
-        String text = getAssetText(context, filename);
-        if (text != null) {
-            return JsonUtil.fromJson(text, tClass);
-        }
-        return null;
+    </T> */
+    fun <T> getAssetJson(context: Context, filename: String, tClass: Class<T>?): T? {
+        val text = getAssetText(context, filename)
+        return if (text != null) {
+            JsonUtil.fromJson(text, tClass)
+        } else null
     }
 
-    public static <T> T getLocaledAssetJson(Context context, String filename, Class<T> tClass) {
+    fun <T> getLocaledAssetJson(context: Context, filename: String, tClass: Class<T>?): T? {
         try {
-            InputStream inputStream = getLocaledLocalAsset(context, filename);
-            try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-                return JsonUtil.fromJson(CharStreams.toString(reader), tClass);
-            }
-        } catch (IOException ignored) {
+            val inputStream = getLocaledLocalAsset(context, filename)
+            InputStreamReader(
+                inputStream, StandardCharsets.UTF_8
+            ).use { reader -> return JsonUtil.fromJson(CharStreams.toString(reader), tClass) }
+        } catch (ignored: IOException) {
         }
-        return null;
+        return null
+    }
+
+    /**
+     * 读取资源为字节数组
+     *
+     * @param context  context
+     * @param filename 文件名
+     * @return 字节数组
+     */
+    fun getAssetBytes(context: Context, filename: String): ByteArray {
+        try {
+            getLocalAsset(context, filename).use { inputStream ->
+                return ByteStreams.toByteArray(
+                    inputStream
+                )
+            }
+        } catch (ignored: IOException) {
+        }
+        return ByteArray(0)
     }
 
     /**
@@ -259,30 +274,12 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param type     数据类型
      * @param <T>      泛型类型
      * @return 数据
-     */
-    public static <T> T getAssetJson(Context context, String filename, TypeReference<T> type) {
-        String text = getAssetText(context, filename);
-        if (text != null) {
-            return JsonUtil.fromJson(text, type);
-        }
-        return null;
-    }
-
-    /**
-     * 读取资源为字节数组
-     *
-     * @param context  context
-     * @param filename 文件名
-     * @return 字节数组
-     */
-    public static byte[] getAssetBytes(Context context, String filename) {
-        try {
-            try (InputStream inputStream = getLocalAsset(context, filename)) {
-                return ByteStreams.toByteArray(inputStream);
-            }
-        } catch (IOException ignored) {
-        }
-        return new byte[0];
+    </T> */
+    fun <T> getAssetJson(context: Context, filename: String, type: TypeReference<T>): T? {
+        val text = getAssetText(context, filename)
+        return if (text != null) {
+            JsonUtil.fromJson(text, type)
+        } else null
     }
 
     /**
@@ -291,8 +288,8 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param path 文件路径
      * @return 移除前缀后的路径
      */
-    public static String toPrettyPath(String path) {
-        return StringUtils.removeStart(path, FileUtils.getStadewValleyBasePath());
+    fun toPrettyPath(path: String?): String {
+        return StringUtils.removeStart(path, stadewValleyBasePath)
     }
 
     /**
@@ -302,12 +299,16 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param filename 资源名
      * @return SHA3-256值
      */
-    public static String getFileHash(Context context, String filename) {
-        try (InputStream inputStream = getLocalAsset(context, filename)) {
-            return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
-        } catch (IOException ignored) {
+    fun getFileHash(context: Context, filename: String): String? {
+        try {
+            getLocalAsset(context, filename).use { inputStream ->
+                return Hashing.sha256().hashBytes(
+                    ByteStreams.toByteArray(inputStream)
+                ).toString()
+            }
+        } catch (ignored: IOException) {
         }
-        return null;
+        return null
     }
 
     /**
@@ -316,53 +317,54 @@ public class FileUtils extends org.zeroturnaround.zip.commons.FileUtils {
      * @param file 文件
      * @return SHA3-256值
      */
-    public static String getFileHash(File file) {
-        try (InputStream inputStream = new FileInputStream(file)) {
-            return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString();
-        } catch (IOException ignored) {
+    fun getFileHash(file: File?): String? {
+        try {
+            FileInputStream(file).use { inputStream ->
+                return Hashing.sha256().hashBytes(ByteStreams.toByteArray(inputStream)).toString()
+            }
+        } catch (ignored: IOException) {
         }
-        return null;
+        return null
     }
 
-    public static String getStadewValleyBasePath() {
-        return Environment.getExternalStorageDirectory().getAbsolutePath();
+    val stadewValleyBasePath: String
+        get() = Environment.getExternalStorageDirectory().absolutePath
+
+    fun listAll(basePath: String, filter: (File) -> Boolean): MutableList<String> {
+        return Files.fileTraverser().breadthFirst(File(basePath)).filterNotNull().filter(filter)
+            .map { obj -> obj.absolutePath }.toMutableList()
     }
 
-    public static List<String> listAll(String basePath, Predicate<File> filter) {
-        return Lists.newArrayList(
-                Iterables.transform(
-                        Iterables.filter(Files.fileTraverser().breadthFirst(new File(basePath)), filter::test),
-                        File::getAbsolutePath)
-        );
-    }
-
-    public static File docOverlayFetch(Context context, String relativePath) {
-        relativePath = relativePath.replace("StardewValley/", "");
-        if (CommonLogic.checkDataRootPermission(context)) {
-            Uri targetDirUri = CommonLogic.pathToTreeUri(Constants.TARGET_DATA_FILE_URI);
-            DocumentFile documentFile = DocumentFile.fromTreeUri(context, targetDirUri);
-            DocumentFile filesDoc = DocumentUtils.findFile(context, documentFile, "files");
-            if(filesDoc != null) {
-                String[] split = relativePath.split("/");
-                DocumentFile currentDoc = filesDoc;
-                for (String path : split) {
-                    currentDoc = DocumentUtils.findFile(context, currentDoc, path);
-                    if(currentDoc == null) {
-                        break;
+    fun docOverlayFetch(context: Context, relativePath: String): File {
+        val trimmedRelativePath = relativePath.replace("StardewValley/", "")
+        if (checkDataRootPermission(context)) {
+            val targetDirUri = pathToTreeUri(Constants.TARGET_DATA_FILE_URI)
+            val documentFile = DocumentFile.fromTreeUri(context, targetDirUri)
+            val filesDoc = DocumentUtils.findFile(context, documentFile, "files")
+            if (filesDoc != null) {
+                val split =
+                    trimmedRelativePath.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                var currentDoc = filesDoc
+                for (path in split) {
+                    currentDoc = DocumentUtils.findFile(context, currentDoc, path)
+                    if (currentDoc == null) {
+                        break
                     }
                 }
-                if(currentDoc != null && currentDoc.isFile()) {
-                    try (InputStream inputStream = context.getContentResolver().openInputStream(currentDoc.getUri())) {
-                        File tempFile = File.createTempFile(currentDoc.getName(), null);
-                        tempFile.deleteOnExit();
-                        FileUtils.copy(inputStream, tempFile);
-                        return tempFile;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                if (currentDoc != null && currentDoc.isFile) {
+                    try {
+                        context.contentResolver.openInputStream(currentDoc.uri).use { inputStream ->
+                            val tempFile = currentDoc.name?.let { File.createTempFile(it, null) } ?: File.createTempFile("tmp_", null)
+                            tempFile.deleteOnExit()
+                            copy(inputStream, tempFile)
+                            return tempFile
+                        }
+                    } catch (e: IOException) {
+                        throw RuntimeException(e)
                     }
                 }
             }
         }
-        return new File(FileUtils.getStadewValleyBasePath(), relativePath);
+        return File(stadewValleyBasePath, trimmedRelativePath)
     }
 }

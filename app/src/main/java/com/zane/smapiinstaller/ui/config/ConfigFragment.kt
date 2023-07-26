@@ -1,93 +1,72 @@
-package com.zane.smapiinstaller.ui.config;
+package com.zane.smapiinstaller.ui.config
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.databinding.FragmentConfigBinding;
-import com.zane.smapiinstaller.utils.DialogUtils;
-import com.zane.smapiinstaller.utils.function.TextChangedWatcher;
-
-import java.util.ArrayList;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.zane.smapiinstaller.R
+import com.zane.smapiinstaller.databinding.FragmentConfigBinding
+import com.zane.smapiinstaller.utils.DialogUtils.showSingleChoiceDialog
+import com.zane.smapiinstaller.utils.function.TextChangedWatcher
 
 /**
  * @author Zane
  */
-public class ConfigFragment extends Fragment {
-
-    private ConfigViewModel configViewModel;
-
-    private FragmentConfigBinding binding;
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentConfigBinding.inflate(inflater, container, false);
-        binding.viewModList.setLayoutManager(new LinearLayoutManager(this.getContext()));
-        configViewModel = new ConfigViewModel(binding.getRoot());
-        ModManifestAdapter modManifestAdapter = new ModManifestAdapter(configViewModel, new ArrayList<>(configViewModel.getModList()));
-        binding.viewModList.setAdapter(modManifestAdapter);
-        configViewModel.registerOnChangeListener((list) -> {
-            modManifestAdapter.setList(new ArrayList<>(list));
-            return false;
-        });
-        binding.viewModList.addItemDecoration(new DividerItemDecoration(binding.viewModList.getContext(), DividerItemDecoration.VERTICAL));
-        binding.buttonSearch.addTextChangedListener(new TextChangedWatcher() {
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                configViewModel.filter(s);
-            }
-        });
-        binding.buttonSortBy.setOnClickListener(this::onSortByClick);
-        return binding.getRoot();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
-
-    public void onSortByClick(View v) {
-        int index = 0;
-        switch (configViewModel.getSortBy()) {
-            case "Name asc":
-                index = 0;
-                break;
-            case "Name desc":
-                index = 1;
-                break;
-            case "Date asc":
-                index = 2;
-                break;
-            case "Date desc":
-                index = 3;
-                break;
-            default:
+class ConfigFragment : Fragment() {
+    private lateinit var configViewModel: ConfigViewModel
+    private lateinit var binding: FragmentConfigBinding
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentConfigBinding.inflate(inflater, container, false)
+        binding.viewModList.layoutManager = LinearLayoutManager(this.context)
+        configViewModel = ConfigViewModel(binding.root)
+        val modManifestAdapter = ModManifestAdapter(
+            configViewModel, ArrayList(
+                configViewModel.modList
+            )
+        )
+        binding.viewModList.adapter = modManifestAdapter
+        configViewModel.registerOnChangeListener { list ->
+            modManifestAdapter.setList(ArrayList(list))
+            false
         }
-        DialogUtils.showSingleChoiceDialog(binding.viewModList, R.string.sort_by, R.array.mod_list_sort_by, index, (dialog, position) -> {
-            switch (position) {
-                case 0:
-                    configViewModel.switchSortBy("Name asc");
-                    break;
-                case 1:
-                    configViewModel.switchSortBy("Name desc");
-                    break;
-                case 2:
-                    configViewModel.switchSortBy("Date asc");
-                    break;
-                case 3:
-                    configViewModel.switchSortBy("Date desc");
-                    break;
-                default:
+        binding.viewModList.addItemDecoration(
+            DividerItemDecoration(
+                binding.viewModList.context, DividerItemDecoration.VERTICAL
+            )
+        )
+        binding.buttonSearch.addTextChangedListener(object : TextChangedWatcher() {
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                configViewModel.filter(s)
             }
-        });
+        })
+        binding.buttonSortBy.setOnClickListener { v -> onSortByClick(v) }
+        return binding.root
+    }
+
+    fun onSortByClick(v: View?) {
+        var index = 0
+        when (configViewModel.sortBy) {
+            "Name asc" -> index = 0
+            "Name desc" -> index = 1
+            "Date asc" -> index = 2
+            "Date desc" -> index = 3
+            else -> {}
+        }
+        showSingleChoiceDialog(
+            binding.viewModList, R.string.sort_by, R.array.mod_list_sort_by, index
+        ) { _, position ->
+            when (position) {
+                0 -> configViewModel.switchSortBy("Name asc")
+                1 -> configViewModel.switchSortBy("Name desc")
+                2 -> configViewModel.switchSortBy("Date asc")
+                3 -> configViewModel.switchSortBy("Date desc")
+                else -> {}
+            }
+        }
     }
 }

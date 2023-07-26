@@ -1,61 +1,28 @@
-package com.zane.smapiinstaller.dto;
+package com.zane.smapiinstaller.dto
 
-import android.webkit.JavascriptInterface;
-import java.util.function.Consumer;
+import android.webkit.JavascriptInterface
 
 /**
  * @author Zane
  */
-public class JsonEditorObject {
-    private String text;
-    private String mode;
-    private String language;
-    private boolean editable;
-    private int height;
-    private Consumer<String> setterCallback;
+class JsonEditorObject
+    (
+    private var text: String,
+    @get:JavascriptInterface val mode: String,
+    @get:JavascriptInterface val language: String,
+    @get:JavascriptInterface val isEditable: Boolean,
+    @get:JavascriptInterface val height: Int,
+    private val setterCallback: ((String) -> Unit)? = null
+) {
 
     @JavascriptInterface
-    public String getText() {
-        return text;
-    }
-
-    @JavascriptInterface
-    public void setText(String text) {
-        this.text = text;
-        if (setterCallback != null) {
-            setterCallback.accept(text);
-        }
+    fun getText(): String {
+        return text
     }
 
     @JavascriptInterface
-    public boolean isEditable() {
-        return editable;
+    fun setText(text: String) {
+        this.text = text
+        setterCallback?.invoke(text)
     }
-
-    @JavascriptInterface
-    public int getHeight() {
-        return height;
-    }
-
-    @JavascriptInterface
-    public String getMode() {
-        return mode;
-    }
-
-    @JavascriptInterface
-    public String getLanguage() {
-        return language;
-    }
-
-    //<editor-fold defaultstate="collapsed" desc="delombok">
-    @SuppressWarnings("all")
-    public JsonEditorObject(final String text, final String mode, final String language, final boolean editable, final int height, final Consumer<String> setterCallback) {
-        this.text = text;
-        this.mode = mode;
-        this.language = language;
-        this.editable = editable;
-        this.height = height;
-        this.setterCallback = setterCallback;
-    }
-    //</editor-fold>
 }

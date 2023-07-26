@@ -1,16 +1,16 @@
-package com.zane.smapiinstaller.constant;
+package com.zane.smapiinstaller.constant
 
 /**
  * @author Zane
  */
-
-public enum  DialogAction {
+enum class DialogAction {
     /**
      * 确认
      */
     POSITIVE,
+
     /**
-    * 取消
-    */
+     * 取消
+     */
     NEGATIVE
 }

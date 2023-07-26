@@ -1,76 +1,76 @@
-package com.zane.smapiinstaller.ui.help;
+package com.zane.smapiinstaller.ui.help
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.zane.smapiinstaller.MobileNavigationDirections;
-import com.zane.smapiinstaller.constant.Constants;
-import com.zane.smapiinstaller.databinding.FragmentHelpBinding;
-import com.zane.smapiinstaller.entity.HelpItemList;
-import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.logic.UpdatableListManager;
-import com.zane.smapiinstaller.utils.FileUtils;
-
-import java.io.File;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.navigation.Navigation.findNavController
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.zane.smapiinstaller.constant.Constants
+import com.zane.smapiinstaller.databinding.FragmentHelpBinding
+import com.zane.smapiinstaller.entity.HelpItemList
+import com.zane.smapiinstaller.logic.CommonLogic.openUrl
+import com.zane.smapiinstaller.logic.UpdatableListManager
+import com.zane.smapiinstaller.utils.FileUtils
+import java.io.File
 
 /**
  * @author Zane
  */
-public class HelpFragment extends Fragment {
-
-    private FragmentHelpBinding binding;
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentHelpBinding.inflate(inflater, container, false);
-        binding.viewHelpList.setLayoutManager(new LinearLayoutManager(this.getContext()));
-        UpdatableListManager<HelpItemList> manager = new UpdatableListManager<>(binding.getRoot(), "help_item_list.json", HelpItemList.class, Constants.HELP_LIST_UPDATE_URL);
-        HelpItemAdapter adapter = new HelpItemAdapter(manager.getList().getItems());
-        binding.viewHelpList.setAdapter(adapter);
-        manager.registerOnChangeListener((list) -> {
-            adapter.setHelpItems(list.getItems());
-            return false;
-        });
-        binding.viewHelpList.addItemDecoration(new DividerItemDecoration(binding.viewHelpList.getContext(), DividerItemDecoration.VERTICAL));
-        binding.buttonCompat.setOnClickListener(v -> compat());
-        binding.buttonNexus.setOnClickListener(v -> nexus());
-        binding.buttonLogs.setOnClickListener(v -> showLog());
-        return binding.getRoot();
+class HelpFragment : Fragment() {
+    private lateinit var binding: FragmentHelpBinding
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentHelpBinding.inflate(inflater, container, false)
+        binding.viewHelpList.layoutManager = LinearLayoutManager(this.context)
+        val manager = UpdatableListManager(
+            binding.root,
+            "help_item_list.json",
+            HelpItemList::class.java,
+            Constants.HELP_LIST_UPDATE_URL
+        )
+        val adapter = HelpItemAdapter(manager.list.items)
+        binding.viewHelpList.adapter = adapter
+        manager.registerOnChangeListener { list ->
+            adapter.setHelpItems(list.items)
+            false
+        }
+        binding.viewHelpList.addItemDecoration(
+            DividerItemDecoration(
+                binding.viewHelpList.context, DividerItemDecoration.VERTICAL
+            )
+        )
+        binding.buttonCompat.setOnClickListener { compat() }
+        binding.buttonNexus.setOnClickListener { nexus() }
+        binding.buttonLogs.setOnClickListener { showLog() }
+        return binding.root
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    private fun compat() {
+        this.context?.let {
+            openUrl(it, "https://smapi.io/mods")
+        }
     }
 
-    private void compat() {
-        CommonLogic.doOnNonNull(this.getContext(), context -> CommonLogic.openUrl(context, "https://smapi.io/mods"));
+    private fun nexus() {
+        this.context?.let {
+            openUrl(it, "https://www.nexusmods.com/stardewvalley/mods/")
+        }
     }
 
-    private void nexus() {
-        CommonLogic.doOnNonNull(this.getContext(), context -> CommonLogic.openUrl(context, "https://www.nexusmods.com/stardewvalley/mods/"));
-    }
-
-    private void showLog() {
-        CommonLogic.doOnNonNull(this.getView(), view -> {
-            NavController controller = Navigation.findNavController(view);
-            File logFile = new File(FileUtils.getStadewValleyBasePath(), Constants.LOG_PATH);
+    private fun showLog() {
+        this.view?.let { view: View ->
+            val controller = findNavController(view)
+            val logFile = File(FileUtils.stadewValleyBasePath, Constants.LOG_PATH)
             if (logFile.exists()) {
-                MobileNavigationDirections.ActionNavAnyToConfigEditFragment action = HelpFragmentDirections.actionNavAnyToConfigEditFragment(logFile.getAbsolutePath());
-                action.setEditable(false);
-                controller.navigate(action);
+                val action =
+                    HelpFragmentDirections.actionNavAnyToConfigEditFragment(logFile.absolutePath)
+                action.editable = false
+                controller.navigate(action)
             }
-        });
+        }
     }
 }

@@ -23,11 +23,10 @@ import com.zane.smapiinstaller.utils.MathUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import java.util.stream.Stream;
-
-/** Pseudo {@link DataSource} that chains the given {@link DataSource} as a continuous one. */
+/**
+ * Pseudo {@link DataSource} that chains the given {@link DataSource} as a continuous one.
+ */
 public class ChainedDataSource implements DataSource {
 
     private final DataSource[] mSources;
@@ -35,7 +34,11 @@ public class ChainedDataSource implements DataSource {
 
     public ChainedDataSource(DataSource... sources) {
         mSources = sources;
-        mTotalSize = Stream.of(sources).mapToLong(src -> src.size()).sum();
+        long size = 0;
+        for (DataSource src : sources) {
+            size += src.size();
+        }
+        mTotalSize = size;
     }
 
     @Override
@@ -134,6 +137,7 @@ public class ChainedDataSource implements DataSource {
 
     /**
      * Find the index of DataSource that offset is at.
+     *
      * @return Pair of DataSource index and the local offset in the DataSource.
      */
     private Pair<Integer, Long> locateDataSource(long offset) {

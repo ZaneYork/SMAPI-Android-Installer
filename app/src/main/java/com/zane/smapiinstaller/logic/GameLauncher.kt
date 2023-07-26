@@ -1,82 +1,83 @@
-package com.zane.smapiinstaller.logic;
+package com.zane.smapiinstaller.logic
 
-import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.view.View;
-
-import com.microsoft.appcenter.crashes.Crashes;
-import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.constant.Constants;
-import com.zane.smapiinstaller.utils.DialogUtils;
+import android.app.Activity
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.os.Build
+import android.view.View
+import com.microsoft.appcenter.crashes.Crashes
+import com.zane.smapiinstaller.R
+import com.zane.smapiinstaller.constant.Constants
+import com.zane.smapiinstaller.logic.CommonLogic.computePackageName
+import com.zane.smapiinstaller.logic.CommonLogic.getActivityFromView
+import com.zane.smapiinstaller.logic.CommonLogic.unpackSmapiFiles
+import com.zane.smapiinstaller.utils.DialogUtils.showAlertDialog
 
 /**
  * 游戏启动器
  * @author Zane
  */
-public class GameLauncher {
-
-    private final View root;
-
-    public GameLauncher(View root) {
-        this.root = root;
-    }
-
-    /**
-     * 检查已安装MOD版本游戏
-     * @param context 上下文
-     * @return 软件包信息
-     */
-    public static PackageInfo getGamePackageInfo(Activity context) {
-        PackageManager packageManager = context.getPackageManager();
-        try {
-            PackageInfo packageInfo;
-            try {
-                packageInfo = packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME, 0);
-            } catch (PackageManager.NameNotFoundException ignored) {
-                packageInfo = packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME_SAMSUNG, 0);
-            }
-            return packageInfo;
-        } catch (PackageManager.NameNotFoundException ignored) {
-            return null;
-        }
-    }
-
+class GameLauncher(private val root: View) {
     /**
      * 启动逻辑
      */
-    public void launch() {
-        Activity context = CommonLogic.getActivityFromView(root);
-        PackageManager packageManager = context.getPackageManager();
+    fun launch() {
+        val context = getActivityFromView(root) ?: return
+        val packageManager = context.packageManager
         try {
-            PackageInfo packageInfo = getGamePackageInfo(context);
-            if(packageInfo == null) {
-                DialogUtils.showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed);
-                return;
+            val packageInfo = getGamePackageInfo(context)
+            if (packageInfo == null) {
+                showAlertDialog(root, R.string.error, R.string.error_smapi_not_installed)
+                return
             }
-            long versionCode;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                versionCode = packageInfo.getLongVersionCode();
+            val versionCode: Long
+            versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode
+            } else {
+                packageInfo.versionCode.toLong()
             }
-            else {
-                versionCode = packageInfo.versionCode;
+            if (!unpackSmapiFiles(
+                    context,
+                    packageInfo.applicationInfo.publicSourceDir,
+                    true,
+                    computePackageName(packageInfo),
+                    versionCode
+                )
+            ) {
+                showAlertDialog(root, R.string.error, R.string.error_failed_to_repair)
+                return
             }
-            if(!CommonLogic.unpackSmapiFiles(context, packageInfo.applicationInfo.publicSourceDir, true, CommonLogic.computePackageName(packageInfo), versionCode)) {
-                DialogUtils.showAlertDialog(root, R.string.error, R.string.error_failed_to_repair);
-                return;
-            }
-            ModAssetsManager modAssetsManager = new ModAssetsManager(root);
-            modAssetsManager.checkModEnvironment((isConfirm) -> {
-                if(isConfirm) {
-                    Intent intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName);
-                    context.startActivity(intent);
+            val modAssetsManager = ModAssetsManager(root)
+            modAssetsManager.checkModEnvironment { isConfirm ->
+                if (isConfirm) {
+                    val intent = packageManager.getLaunchIntentForPackage(packageInfo.packageName)
+                    context.startActivity(intent)
                 }
-            });
-        } catch (Exception e) {
-            Crashes.trackError(e);
-            DialogUtils.showAlertDialog(root, R.string.error, e.getLocalizedMessage());
+            }
+        } catch (e: Exception) {
+            Crashes.trackError(e)
+            showAlertDialog(root, R.string.error, e.localizedMessage)
+        }
+    }
+
+    companion object {
+        /**
+         * 检查已安装MOD版本游戏
+         * @param context 上下文
+         * @return 软件包信息
+         */
+        fun getGamePackageInfo(context: Activity): PackageInfo? {
+            val packageManager = context.packageManager
+            return try {
+                val packageInfo: PackageInfo? = try {
+                    packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME, 0)
+                } catch (ignored: PackageManager.NameNotFoundException) {
+                    packageManager.getPackageInfo(Constants.TARGET_PACKAGE_NAME_SAMSUNG, 0)
+                }
+                packageInfo
+            } catch (ignored: PackageManager.NameNotFoundException) {
+                null
+            }
         }
     }
 }

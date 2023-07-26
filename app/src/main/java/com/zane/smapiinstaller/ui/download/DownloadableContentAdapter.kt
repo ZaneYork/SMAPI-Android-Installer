@@ -1,209 +1,226 @@
-package com.zane.smapiinstaller.ui.download;
+package com.zane.smapiinstaller.ui.download
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.lmntrx.android.library.livin.missme.ProgressDialog;
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.callback.FileCallback;
-import com.lzy.okgo.model.Progress;
-import com.lzy.okgo.model.Response;
-import com.microsoft.appcenter.crashes.Crashes;
-import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.constant.DialogAction;
-import com.zane.smapiinstaller.constant.DownloadableContentTypeConstants;
-import com.zane.smapiinstaller.databinding.DownloadContentItemBinding;
-import com.zane.smapiinstaller.entity.DownloadableContent;
-import com.zane.smapiinstaller.entity.ModManifestEntry;
-import com.zane.smapiinstaller.logic.ModAssetsManager;
-import com.zane.smapiinstaller.utils.DialogUtils;
-import com.zane.smapiinstaller.utils.FileUtils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.zeroturnaround.zip.ZipUtil;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.lzy.okgo.OkGo
+import com.lzy.okgo.callback.FileCallback
+import com.lzy.okgo.model.Progress
+import com.lzy.okgo.model.Response
+import com.microsoft.appcenter.crashes.Crashes
+import com.zane.smapiinstaller.R
+import com.zane.smapiinstaller.constant.DialogAction
+import com.zane.smapiinstaller.constant.DownloadableContentTypeConstants
+import com.zane.smapiinstaller.databinding.DownloadContentItemBinding
+import com.zane.smapiinstaller.entity.DownloadableContent
+import com.zane.smapiinstaller.entity.ModManifestEntry
+import com.zane.smapiinstaller.logic.ModAssetsManager.Companion.findFirstModIf
+import com.zane.smapiinstaller.utils.DialogUtils
+import com.zane.smapiinstaller.utils.DialogUtils.dismissDialog
+import com.zane.smapiinstaller.utils.DialogUtils.showAlertDialog
+import com.zane.smapiinstaller.utils.DialogUtils.showProgressDialog
+import com.zane.smapiinstaller.utils.FileUtils
+import org.apache.commons.lang3.StringUtils
+import org.zeroturnaround.zip.ZipUtil
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link DownloadableContent}
+ * [RecyclerView.Adapter] that can display a [DownloadableContent]
  *
  * @author Zane
  */
-public class DownloadableContentAdapter extends RecyclerView.Adapter<DownloadableContentAdapter.ViewHolder> {
-
-    private List<DownloadableContent> downloadableContentList;
-
-    public void setDownloadableContentList(List<DownloadableContent> downloadableContentList) {
-        this.downloadableContentList = downloadableContentList;
-        notifyDataSetChanged();
+class DownloadableContentAdapter(private var downloadableContentList: List<DownloadableContent>) :
+    RecyclerView.Adapter<DownloadableContentAdapter.ViewHolder>() {
+    fun setDownloadableContentList(downloadableContentList: List<DownloadableContent>) {
+        this.downloadableContentList = downloadableContentList
+        notifyDataSetChanged()
     }
 
-    public DownloadableContentAdapter(List<DownloadableContent> items) {
-        downloadableContentList = items;
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.download_content_item, parent, false)
+        return ViewHolder(view)
     }
 
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.download_content_item, parent, false);
-        return new ViewHolder(view);
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.updateDownloadableContent(downloadableContentList[position])
     }
 
-    @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.setDownloadableContent(downloadableContentList.get(position));
+    override fun getItemCount(): Int {
+        return downloadableContentList.size
     }
 
-    @Override
-    public int getItemCount() {
-        return downloadableContentList.size();
-    }
-
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        private final DownloadContentItemBinding binding;
-
-        private final AtomicBoolean downloading = new AtomicBoolean(false);
-
-        public DownloadableContent downloadableContent;
-
-        public void setDownloadableContent(DownloadableContent downloadableContent) {
-            this.downloadableContent = downloadableContent;
-            binding.textItemType.setText(downloadableContent.getType());
-            binding.textItemName.setText(downloadableContent.getName());
-            binding.textItemDescription.setText(downloadableContent.getDescription());
-            if (StringUtils.isNoneBlank(downloadableContent.getAssetPath())) {
-                File contentFile = new File(itemView.getContext().getFilesDir(), downloadableContent.getAssetPath());
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val binding: DownloadContentItemBinding
+        private val downloading = AtomicBoolean(false)
+        lateinit var downloadableContent: DownloadableContent
+        fun updateDownloadableContent(dlc: DownloadableContent) {
+            this.downloadableContent = dlc
+            binding.textItemType.text = dlc.type
+            binding.textItemName.text = dlc.name
+            binding.textItemDescription.text = dlc.description
+            if (StringUtils.isNoneBlank(dlc.assetPath)) {
+                val contentFile = File(itemView.context.filesDir, dlc.assetPath)
                 if (contentFile.exists()) {
-                    Context context = itemView.getContext();
-                    File file = new File(context.getCacheDir(), downloadableContent.getName() + ".zip");
-                    if (!file.exists() || !StringUtils.equalsIgnoreCase(FileUtils.getFileHash(file), downloadableContent.getHash())) {
-                        binding.buttonRemoveContent.setVisibility(View.VISIBLE);
-                        binding.buttonDownloadContent.setVisibility(View.VISIBLE);
-                        return;
+                    val context = itemView.context
+                    val file = File(context.cacheDir, dlc.name + ".zip")
+                    if (!file.exists() || !StringUtils.equalsIgnoreCase(
+                            FileUtils.getFileHash(file), dlc.hash
+                        )
+                    ) {
+                        binding.buttonRemoveContent.visibility = View.VISIBLE
+                        binding.buttonDownloadContent.visibility = View.VISIBLE
+                        return
                     }
-                    binding.buttonRemoveContent.setVisibility(View.VISIBLE);
-                    binding.buttonDownloadContent.setVisibility(View.INVISIBLE);
-                    return;
+                    binding.buttonRemoveContent.visibility = View.VISIBLE
+                    binding.buttonDownloadContent.visibility = View.INVISIBLE
+                    return
                 }
             }
-            binding.buttonRemoveContent.setVisibility(View.INVISIBLE);
-            binding.buttonDownloadContent.setVisibility(View.VISIBLE);
+            binding.buttonRemoveContent.visibility = View.INVISIBLE
+            binding.buttonDownloadContent.visibility = View.VISIBLE
+
         }
 
-        public ViewHolder(View view) {
-            super(view);
-            binding = DownloadContentItemBinding.bind(view);
-            binding.buttonRemoveContent.setOnClickListener(v -> removeContent());
-            binding.buttonDownloadContent.setOnClickListener(v -> downloadContent());
+
+        init {
+            binding = DownloadContentItemBinding.bind(view)
+            binding.buttonRemoveContent.setOnClickListener { removeContent() }
+            binding.buttonDownloadContent.setOnClickListener { downloadContent() }
         }
 
-        void removeContent() {
-            if (StringUtils.isNoneBlank(downloadableContent.getAssetPath())) {
-                File contentFile = new File(itemView.getContext().getFilesDir(), downloadableContent.getAssetPath());
+        fun removeContent() {
+            if (StringUtils.isNoneBlank(downloadableContent.assetPath)) {
+                val contentFile = File(itemView.context.filesDir, downloadableContent.assetPath)
                 if (contentFile.exists()) {
-                    DialogUtils.showConfirmDialog(itemView, R.string.confirm, R.string.confirm_delete_content, (dialog, which) -> {
-                        if (which == DialogAction.POSITIVE) {
+                    DialogUtils.showConfirmDialog(
+                        itemView, R.string.confirm, R.string.confirm_delete_content
+                    ) { _, which ->
+                        if (which === DialogAction.POSITIVE) {
                             try {
-                                FileUtils.forceDelete(contentFile);
-                                binding.buttonDownloadContent.setVisibility(View.VISIBLE);
-                                binding.buttonRemoveContent.setVisibility(View.INVISIBLE);
-                            } catch (IOException e) {
-                                DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
+                                org.zeroturnaround.zip.commons.FileUtils.forceDelete(contentFile)
+                                binding.buttonDownloadContent.visibility = View.VISIBLE
+                                binding.buttonRemoveContent.visibility = View.INVISIBLE
+                            } catch (e: IOException) {
+                                showAlertDialog(itemView, R.string.error, e.localizedMessage)
                             }
                         }
-                    });
+                    }
                 }
             }
         }
 
-        void downloadContent() {
-            Context context = itemView.getContext();
-            ModManifestEntry modManifestEntry = null;
-            if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypeConstants.LOCALE)) {
-                modManifestEntry = ModAssetsManager.findFirstModIf(mod -> StringUtils.equals(mod.getUniqueID(), "ZaneYork.CustomLocalization") || StringUtils.equals(mod.getUniqueID(), "SMAPI.CustomLocalization"));
+        fun downloadContent() {
+            val context = itemView.context
+            var modManifestEntry: ModManifestEntry? = null
+            if (StringUtils.equals(
+                    downloadableContent.type, DownloadableContentTypeConstants.LOCALE
+                )
+            ) {
+                modManifestEntry = findFirstModIf { mod: ModManifestEntry ->
+                    StringUtils.equals(
+                        mod.uniqueID, "ZaneYork.CustomLocalization"
+                    ) || StringUtils.equals(mod.uniqueID, "SMAPI.CustomLocalization")
+                }
                 if (modManifestEntry == null) {
-                    DialogUtils.showAlertDialog(itemView, R.string.error, String.format(context.getString(R.string.error_depends_on_mod), context.getString(R.string.locale_pack), "ZaneYork.CustomLocalization"));
-                    return;
+                    showAlertDialog(
+                        itemView, R.string.error, String.format(
+                            context.getString(R.string.error_depends_on_mod),
+                            context.getString(R.string.locale_pack),
+                            "ZaneYork.CustomLocalization"
+                        )
+                    )
+                    return
                 }
             }
-            File file = new File(context.getCacheDir(), downloadableContent.getName() + ".zip");
+            val file = File(context.cacheDir, downloadableContent.name + ".zip")
             if (file.exists()) {
-                if (!StringUtils.equalsIgnoreCase(FileUtils.getFileHash(file), downloadableContent.getHash())) {
+                if (!StringUtils.equalsIgnoreCase(
+                        FileUtils.getFileHash(file), downloadableContent.hash
+                    )
+                ) {
                     try {
-                        FileUtils.forceDelete(file);
-                    } catch (IOException e) {
-                        Crashes.trackError(e);
-                        return;
+                        org.zeroturnaround.zip.commons.FileUtils.forceDelete(file)
+                    } catch (e: IOException) {
+                        Crashes.trackError(e)
+                        return
                     }
                 } else {
-                    unpackLogic(context, file, modManifestEntry);
-                    return;
+                    unpackLogic(context, file, modManifestEntry)
+                    return
                 }
             }
             if (downloading.get()) {
-                return;
+                return
             }
-            downloading.set(true);
-            ModManifestEntry finalModManifestEntry = modManifestEntry;
-            AtomicReference<ProgressDialog> dialogRef = DialogUtils.showProgressDialog(itemView, R.string.progress, "");
-            OkGo.<File>get(downloadableContent.getUrl()).execute(new FileCallback(file.getParentFile().getAbsolutePath(), file.getName()) {
-                @Override
-                public void onError(Response<File> response) {
-                    super.onError(response);
-                    DialogUtils.dismissDialog(itemView, dialogRef.get());
-                    downloading.set(false);
-                    DialogUtils.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
-                }
-
-                @Override
-                public void downloadProgress(Progress progress) {
-                    super.downloadProgress(progress);
-                    ProgressDialog dialog = dialogRef.get();
-                    if (dialog != null) {
-                        dialog.setMessage(context.getString(R.string.downloading, progress.currentSize / 1024, progress.totalSize / 1024));
-                        dialog.setProgress((int) (progress.currentSize * 100.0 / progress.totalSize));
+            downloading.set(true)
+            val finalModManifestEntry = modManifestEntry
+            val dialogRef = showProgressDialog(itemView, R.string.progress, "")
+            OkGo.get<File>(downloadableContent.url)
+                .execute(object : FileCallback(file.parentFile!!.absolutePath, file.name) {
+                    override fun onError(response: Response<File>) {
+                        super.onError(response)
+                        dismissDialog(itemView, dialogRef.get())
+                        downloading.set(false)
+                        showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download)
                     }
-                }
 
-                @Override
-                public void onSuccess(Response<File> response) {
-                    DialogUtils.dismissDialog(itemView, dialogRef.get());
-                    downloading.set(false);
-                    File downloadedFile = response.body();
-                    String hash = com.zane.smapiinstaller.utils.FileUtils.getFileHash(downloadedFile);
-                    if (!StringUtils.equalsIgnoreCase(hash, downloadableContent.getHash())) {
-                        DialogUtils.showAlertDialog(itemView, R.string.error, R.string.error_failed_to_download);
-                        return;
+                    override fun downloadProgress(progress: Progress) {
+                        super.downloadProgress(progress)
+                        val dialog = dialogRef.get()
+                        if (dialog != null) {
+                            dialog.setMessage(
+                                context.getString(
+                                    R.string.downloading,
+                                    progress.currentSize / 1024,
+                                    progress.totalSize / 1024
+                                )
+                            )
+                            dialog.setProgress((progress.currentSize * 100.0 / progress.totalSize).toInt())
+                        }
                     }
-                    unpackLogic(context, downloadedFile, finalModManifestEntry);
-                }
-            });
+
+                    override fun onSuccess(response: Response<File>) {
+                        dismissDialog(itemView, dialogRef.get())
+                        downloading.set(false)
+                        val downloadedFile = response.body()
+                        val hash = FileUtils.getFileHash(downloadedFile)
+                        if (!StringUtils.equalsIgnoreCase(hash, downloadableContent.hash)) {
+                            showAlertDialog(
+                                itemView, R.string.error, R.string.error_failed_to_download
+                            )
+                            return
+                        }
+                        unpackLogic(context, downloadedFile, finalModManifestEntry)
+                    }
+                })
         }
 
-        private void unpackLogic(Context context, File downloadedFile, ModManifestEntry finalModManifestEntry) {
+        private fun unpackLogic(
+            context: Context, downloadedFile: File, finalModManifestEntry: ModManifestEntry?
+        ) {
             try {
-                if (StringUtils.equals(downloadableContent.getType(), DownloadableContentTypeConstants.LOCALE)) {
+                if (StringUtils.equals(
+                        downloadableContent.type, DownloadableContentTypeConstants.LOCALE
+                    )
+                ) {
                     if (finalModManifestEntry != null) {
-                        ZipUtil.unpack(downloadedFile, new File(finalModManifestEntry.getAssetPath()));
+                        ZipUtil.unpack(downloadedFile, File(finalModManifestEntry.assetPath))
                     }
                 } else {
-                    ZipUtil.unpack(downloadedFile, new File(context.getFilesDir(), downloadableContent.getAssetPath()));
+                    ZipUtil.unpack(
+                        downloadedFile, File(context.filesDir, downloadableContent.assetPath)
+                    )
                 }
-                DialogUtils.showAlertDialog(itemView, R.string.info, R.string.download_unpack_success);
-                binding.buttonDownloadContent.setVisibility(View.INVISIBLE);
-                binding.buttonRemoveContent.setVisibility(View.VISIBLE);
-            } catch (Exception e) {
-                DialogUtils.showAlertDialog(itemView, R.string.error, e.getLocalizedMessage());
+                showAlertDialog(itemView, R.string.info, R.string.download_unpack_success)
+                binding.buttonDownloadContent.visibility = View.INVISIBLE
+                binding.buttonRemoveContent.visibility = View.VISIBLE
+            } catch (e: Exception) {
+                showAlertDialog(itemView, R.string.error, e.localizedMessage)
             }
         }
     }

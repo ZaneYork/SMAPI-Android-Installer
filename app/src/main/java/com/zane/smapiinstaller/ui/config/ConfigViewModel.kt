@@ -1,187 +1,195 @@
-package com.zane.smapiinstaller.ui.config;
+package com.zane.smapiinstaller.ui.config
 
-import android.view.View;
+import android.view.View
+import androidx.lifecycle.ViewModel
+import com.google.common.collect.Maps
+import com.hjq.language.MultiLanguages
+import com.zane.smapiinstaller.constant.AppConfigKeyConstants
+import com.zane.smapiinstaller.entity.AppConfig
+import com.zane.smapiinstaller.entity.ModManifestEntry
+import com.zane.smapiinstaller.entity.TranslationResultDao
+import com.zane.smapiinstaller.logic.CommonLogic.getApplicationFromView
+import com.zane.smapiinstaller.logic.ListenableObject
+import com.zane.smapiinstaller.logic.ModAssetsManager
+import com.zane.smapiinstaller.utils.ConfigUtils
+import com.zane.smapiinstaller.utils.TranslateUtil
+import org.apache.commons.lang3.StringUtils
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.hjq.language.MultiLanguages;
-import com.zane.smapiinstaller.MainApplication;
-import com.zane.smapiinstaller.constant.AppConfigKeyConstants;
-import com.zane.smapiinstaller.entity.AppConfig;
-import com.zane.smapiinstaller.entity.DaoSession;
-import com.zane.smapiinstaller.entity.ModManifestEntry;
-import com.zane.smapiinstaller.entity.TranslationResult;
-import com.zane.smapiinstaller.entity.TranslationResultDao;
-import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.logic.ListenableObject;
-import com.zane.smapiinstaller.logic.ModAssetsManager;
-import com.zane.smapiinstaller.utils.ConfigUtils;
-import com.zane.smapiinstaller.utils.TranslateUtil;
+class ConfigViewModel(private val root: View) : ViewModel(),
+    ListenableObject<List<ModManifestEntry>> {
+    val modList: MutableList<ModManifestEntry> = ModAssetsManager.findAllInstalledMods()
+    private var filteredModList: MutableList<ModManifestEntry>? = null
+    var sortBy = "Name asc"
+        private set
+    override val onChangedListenerList: MutableList<(List<ModManifestEntry>) -> Boolean> =
+        ArrayList()
 
-import org.apache.commons.lang3.StringUtils;
-import org.greenrobot.greendao.query.Query;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModel;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-class ConfigViewModel extends ViewModel implements ListenableObject<List<ModManifestEntry>> {
-
-    @NonNull
-    private final List<ModManifestEntry> modList;
-    private List<ModManifestEntry> filteredModList;
-
-    private String sortBy = "Name asc";
-
-    public String getSortBy() {
-        return sortBy;
-    }
-
-    private final View root;
-
-    private final List<Predicate<List<ModManifestEntry>>> onChangedListener = new ArrayList<>();
-
-    ConfigViewModel(View root) {
-        this.root = root;
-        this.modList = ModAssetsManager.findAllInstalledMods();
-        translateLogic(root);
-        MainApplication app = CommonLogic.getApplicationFromView(root);
+    init {
+        translateLogic(root)
+        val app = getApplicationFromView(root)
         if (null != app) {
-            AppConfig appConfig = ConfigUtils.getConfig(app, AppConfigKeyConstants.MOD_LIST_SORT_BY, sortBy);
-            sortBy = appConfig.getValue();
+            val appConfig =
+                ConfigUtils.getConfig(app, AppConfigKeyConstants.MOD_LIST_SORT_BY, sortBy)
+            sortBy = appConfig.value
         }
-        sortLogic(sortBy);
+        sortLogic(sortBy)
     }
 
-    public void switchSortBy(String sortBy) {
-        MainApplication app = CommonLogic.getApplicationFromView(root);
-        if (null == app) {
-            return;
-        }
-        this.sortBy = sortBy;
-        AppConfig appConfig = new AppConfig(null, AppConfigKeyConstants.MOD_LIST_SORT_BY, sortBy);
-        ConfigUtils.saveConfig(app, appConfig);
-        sortLogic(appConfig.getValue());
+    fun switchSortBy(sortBy: String) {
+        val app = getApplicationFromView(root) ?: return
+        this.sortBy = sortBy
+        val appConfig = AppConfig(null, AppConfigKeyConstants.MOD_LIST_SORT_BY, sortBy)
+        ConfigUtils.saveConfig(app, appConfig)
+        sortLogic(appConfig.value)
     }
 
-    private void sortLogic(String sortBy) {
-        switch (sortBy) {
-            case "Name asc":
-                Collections.sort(modList, (a, b) -> a.getName().compareTo(b.getName()));
-                if (filteredModList != null && filteredModList != modList) {
-                    Collections.sort(filteredModList, (a, b) -> a.getName().compareTo(b.getName()));
+    private fun sortLogic(sortBy: String) {
+        when (sortBy) {
+            "Name asc" -> {
+                modList.sortWith { a, b ->
+                    a.name.compareTo(
+                        b.name
+                    )
                 }
-                break;
-            case "Name desc":
-                Collections.sort(modList, (a, b) -> b.getName().compareTo(a.getName()));
-                if (filteredModList != null && filteredModList != modList) {
-                    Collections.sort(filteredModList, (a, b) -> b.getName().compareTo(a.getName()));
-                }
-                break;
-            case "Date asc":
-                Collections.sort(modList, (a, b) -> a.getLastModified().compareTo(b.getLastModified()));
-                if (filteredModList != null && filteredModList != modList) {
-                    Collections.sort(filteredModList, (a, b) -> a.getLastModified().compareTo(b.getLastModified()));
-                }
-                break;
-            case "Date desc":
-                Collections.sort(modList, (a, b) -> b.getLastModified().compareTo(a.getLastModified()));
-                if (filteredModList != null && filteredModList != modList) {
-                    Collections.sort(filteredModList, (a, b) -> b.getLastModified().compareTo(a.getLastModified()));
-                }
-                break;
-            default:
-                return;
-        }
-        if (filteredModList != null) {
-            emitDataChangeEvent(filteredModList);
-        } else {
-            emitDataChangeEvent(modList);
-        }
-    }
-
-    private void translateLogic(View root) {
-        MainApplication app = CommonLogic.getApplicationFromView(root);
-        if (null != app) {
-            DaoSession daoSession = app.getDaoSession();
-            AppConfig activeTranslator = ConfigUtils.getConfig(app, AppConfigKeyConstants.ACTIVE_TRANSLATOR, TranslateUtil.NONE);
-            if (!StringUtils.equals(activeTranslator.getValue(), TranslateUtil.NONE)) {
-                String translator = activeTranslator.getValue();
-                List<String> descriptions = this.modList.stream().map(ModManifestEntry::getDescription).filter(Objects::nonNull).collect(Collectors.toList());
-                String language = MultiLanguages.getAppLanguage().getLanguage();
-                Query<TranslationResult> query = daoSession.getTranslationResultDao().queryBuilder().where(
-                        TranslationResultDao.Properties.Origin.in(descriptions),
-                        TranslationResultDao.Properties.Locale.eq(language),
-                        TranslationResultDao.Properties.Translator.eq(translator)
-                ).build();
-                List<TranslationResult> translationResults = query.list();
-                ImmutableMap<String, TranslationResult> translateMap = Maps.uniqueIndex(translationResults, TranslationResult::getOrigin);
-                List<String> untranslatedText = modList.stream().map(mod -> {
-                    if (translateMap.containsKey(mod.getDescription())) {
-                        mod.setTranslatedDescription(translateMap.get(mod.getDescription()).getTranslation());
-                        return null;
-                    } else {
-                        return mod.getDescription();
+                if (filteredModList !== modList) {
+                    filteredModList?.let {
+                        it.sortWith { a, b ->
+                            a.name.compareTo(
+                                b.name
+                            )
+                        }
                     }
-                }).filter(Objects::nonNull).distinct().collect(Collectors.toList());
-                if (!untranslatedText.isEmpty()) {
-                    TranslateUtil.translateText(untranslatedText, translator, language, (result) -> {
-                        CommonLogic.doOnNonNull(result, (results) -> {
-                            daoSession.getTranslationResultDao().insertOrReplaceInTx(results);
-                            ImmutableMap<String, TranslationResult> map = Maps.uniqueIndex(results, TranslationResult::getOrigin);
-                            for (ModManifestEntry mod : modList) {
-                                if (map.containsKey(mod.getDescription())) {
-                                    mod.setTranslatedDescription(map.get(mod.getDescription()).getTranslation());
+                }
+            }
+
+            "Name desc" -> {
+                modList.sortWith { a, b ->
+                    b.name.compareTo(
+                        a.name
+                    )
+                }
+                if (filteredModList !== modList) {
+                    filteredModList?.let {
+                        it.sortWith { a, b ->
+                            b.name.compareTo(
+                                a.name
+                            )
+                        }
+                    }
+                }
+            }
+
+            "Date asc" -> {
+                modList.sortWith { a, b ->
+                    a.lastModified.compareTo(
+                        b.lastModified
+                    )
+                }
+                if (filteredModList !== modList) {
+                    filteredModList?.let {
+                        it.sortWith { a, b ->
+                            a.lastModified.compareTo(
+                                b.lastModified
+                            )
+                        }
+                    }
+                }
+            }
+
+            "Date desc" -> {
+                modList.sortWith { a, b ->
+                    b.lastModified.compareTo(
+                        a.lastModified
+                    )
+                }
+                if (filteredModList !== modList) {
+                    filteredModList?.let {
+                        it.sortWith { a, b ->
+                            b.lastModified.compareTo(
+                                a.lastModified
+                            )
+                        }
+                    }
+                }
+            }
+
+            else -> return
+        }
+        filteredModList?.let {
+            emitDataChangeEvent(it)
+        } ?: emitDataChangeEvent(modList)
+    }
+
+    private fun translateLogic(root: View) {
+        val app = getApplicationFromView(root)
+        if (null != app) {
+            val daoSession = app.daoSession
+            val activeTranslator = ConfigUtils.getConfig(
+                app, AppConfigKeyConstants.ACTIVE_TRANSLATOR, TranslateUtil.NONE
+            )
+            if (!StringUtils.equals(activeTranslator.value, TranslateUtil.NONE)) {
+                val translator = activeTranslator.value
+                val descriptions = modList.mapNotNull { obj -> obj.description }.toMutableList()
+                val language = MultiLanguages.getAppLanguage().language
+                val query = daoSession.translationResultDao.queryBuilder().where(
+                    TranslationResultDao.Properties.Origin.`in`(descriptions),
+                    TranslationResultDao.Properties.Locale.eq(language),
+                    TranslationResultDao.Properties.Translator.eq(translator)
+                ).build()
+                val translationResults = query.list()
+                val translateMap = Maps.uniqueIndex(translationResults) { obj -> obj!!.origin }
+                val untranslatedText = modList.map { mod ->
+                    if (translateMap.containsKey(mod.description)) {
+                        mod.translatedDescription = translateMap[mod.description]!!.translation
+                        return@map null
+                    } else {
+                        return@map mod.description
+                    }
+                }.filterNotNull().distinct().toMutableList()
+                if (untranslatedText.isNotEmpty()) {
+                    TranslateUtil.translateText(
+                        untranslatedText, translator, language
+                    ) { result ->
+                        result?.let { results ->
+                            daoSession.translationResultDao.insertOrReplaceInTx(results)
+                            val map = Maps.uniqueIndex(results) { obj -> obj!!.origin }
+                            for (mod in modList) {
+                                if (map.containsKey(mod.description)) {
+                                    mod.translatedDescription = map[mod.description]!!.translation
                                 }
                             }
-                            emitDataChangeEvent(modList);
-                        });
-                        return true;
-                    });
+                            emitDataChangeEvent(modList)
+                        }
+                        true
+                    }
                 }
             }
         }
     }
 
-    @NonNull
-    public List<ModManifestEntry> getModList() {
-        return modList;
-    }
-
-    public void removeAll(Predicate<ModManifestEntry> predicate) {
-        for (int i = modList.size() - 1; i >= 0; i--) {
-            if (predicate.test(modList.get(i))) {
-                modList.remove(i);
+    fun removeAll(predicate: (ModManifestEntry) -> Boolean) {
+        for (i in modList.indices.reversed()) {
+            if (predicate.invoke(modList[i])) {
+                modList.removeAt(i)
             }
         }
     }
 
-    public void filter(CharSequence text) {
-        if (StringUtils.isBlank(text)) {
-            filteredModList = modList;
+    fun filter(text: CharSequence?) {
+        val list = if (StringUtils.isBlank(text)) {
+            modList
         } else {
-            filteredModList = modList.stream().filter(mod -> {
-                if (StringUtils.containsIgnoreCase(mod.getName(), text)) {
-                    return true;
-                }
-                if (StringUtils.isNoneBlank(mod.getTranslatedDescription())) {
-                    return StringUtils.containsIgnoreCase(mod.getTranslatedDescription(), text);
+            modList.filter { mod ->
+                if (StringUtils.containsIgnoreCase(mod.name, text)) {
+                    true
+                } else if (StringUtils.isNoneBlank(mod.translatedDescription)) {
+                    StringUtils.containsIgnoreCase(mod.translatedDescription, text)
                 } else {
-                    return StringUtils.containsIgnoreCase(mod.getDescription(), text);
+                    StringUtils.containsIgnoreCase(mod.description, text)
                 }
-            }).collect(Collectors.toList());
+            }.toMutableList()
         }
-        emitDataChangeEvent(filteredModList);
-    }
-
-    @Override
-    public List<Predicate<List<ModManifestEntry>>> getOnChangedListenerList() {
-        return onChangedListener;
+        filteredModList = list
+        emitDataChangeEvent(list)
     }
 }

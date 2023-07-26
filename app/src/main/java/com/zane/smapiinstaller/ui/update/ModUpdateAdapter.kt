@@ -1,92 +1,95 @@
-package com.zane.smapiinstaller.ui.update;
+package com.zane.smapiinstaller.ui.update
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
-import com.zane.smapiinstaller.R;
-import com.zane.smapiinstaller.databinding.UpdatableModListItemBinding;
-import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto;
-import com.zane.smapiinstaller.entity.ModManifestEntry;
-import com.zane.smapiinstaller.logic.CommonLogic;
-import com.zane.smapiinstaller.logic.ModAssetsManager;
-import com.zane.smapiinstaller.utils.VersionUtil;
-
-import java.util.List;
-import java.util.Optional;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import android.app.Activity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.google.common.collect.ImmutableListMultimap
+import com.google.common.collect.Multimaps
+import com.zane.smapiinstaller.R
+import com.zane.smapiinstaller.databinding.UpdatableModListItemBinding
+import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto
+import com.zane.smapiinstaller.entity.ModManifestEntry
+import com.zane.smapiinstaller.logic.CommonLogic.getActivityFromView
+import com.zane.smapiinstaller.logic.CommonLogic.openUrl
+import com.zane.smapiinstaller.logic.ModAssetsManager
+import com.zane.smapiinstaller.utils.VersionUtil
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link ModUpdateCheckResponseDto.UpdateInfo}
+ * [RecyclerView.Adapter] that can display a [ModUpdateCheckResponseDto.UpdateInfo]
  *
  * @author Zane
  */
-public class ModUpdateAdapter extends RecyclerView.Adapter<ModUpdateAdapter.ViewHolder> {
+class ModUpdateAdapter(private val updateInfoList: List<ModUpdateCheckResponseDto>) :
+    RecyclerView.Adapter<ModUpdateAdapter.ViewHolder>() {
+    private val installedModMap: ImmutableListMultimap<String, ModManifestEntry>
 
-    private final ImmutableListMultimap<String, ModManifestEntry> installedModMap;
-
-    private final List<ModUpdateCheckResponseDto> updateInfoList;
-
-    public ModUpdateAdapter(List<ModUpdateCheckResponseDto> items) {
-        updateInfoList = items;
-        installedModMap = Multimaps.index(ModAssetsManager.findAllInstalledMods(), ModManifestEntry::getUniqueID);
+    init {
+        installedModMap =
+            Multimaps.index(ModAssetsManager.findAllInstalledMods()) { obj -> obj!!.uniqueID }
     }
 
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.updatable_mod_list_item, parent, false);
-        return new ViewHolder(view);
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.updatable_mod_list_item, parent, false)
+        return ViewHolder(view)
     }
 
-    @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.setUpdateInfo(updateInfoList.get(position));
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.updateInfo = updateInfoList[position]
     }
 
-    @Override
-    public int getItemCount() {
-        return updateInfoList.size();
+    override fun getItemCount(): Int {
+        return updateInfoList.size
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-        public ModUpdateCheckResponseDto updateInfo;
-        private final UpdatableModListItemBinding binding;
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        var updateInfo: ModUpdateCheckResponseDto? = null
+            set(value) {
+                field = value
+                field?.let { updateInfo ->
+                    {
+                        val id = updateInfo.id
+                        val mod = installedModMap[id].minWithOrNull { a, b ->
+                            VersionUtil.compareVersion(
+                                a.version, b.version
+                            )
+                        }
+                        if (mod != null) {
+                            binding.textViewModName.text = mod.name
+                            getActivityFromView(binding.textViewModName)?.let {
+                                binding.textViewModVersion.text = it.getString(
+                                    R.string.mod_version_update_text,
+                                    mod.version,
+                                    updateInfo.suggestedUpdate.version
+                                )
+                            }
+                        } else {
+                            binding.textViewModName.text = updateInfo.id
+                            getActivityFromView(binding.textViewModName)?.let { activity ->
+                                binding.textViewModVersion.text = activity.getString(
+                                    R.string.mod_version_update_text,
+                                    updateInfo.suggestedUpdate.version,
+                                    updateInfo.suggestedUpdate.version
+                                )
+                            }
+                        }
 
-        public void setUpdateInfo(ModUpdateCheckResponseDto updateInfo) {
-            this.updateInfo = updateInfo;
-            String id = updateInfo.getId();
-            Optional<ModManifestEntry> mod = installedModMap.get(id).stream().min((a, b) -> VersionUtil.compareVersion(a.getVersion(), b.getVersion()));
-            if (mod.isPresent()) {
-                ModManifestEntry modManifestEntry = mod.get();
-                binding.textViewModName.setText(modManifestEntry.getName());
-                CommonLogic.doOnNonNull(CommonLogic.getActivityFromView(binding.textViewModName),
-                        activity -> binding.textViewModVersion.setText(
-                                activity.getString(R.string.mod_version_update_text, modManifestEntry.getVersion(), updateInfo.getSuggestedUpdate().getVersion())
-                        ));
+                    }
+                }
             }
-            else {
-                binding.textViewModName.setText(this.updateInfo.getId());
-                CommonLogic.doOnNonNull(CommonLogic.getActivityFromView(binding.textViewModName),
-                        activity -> binding.textViewModVersion.setText(
-                                activity.getString(R.string.mod_version_update_text, updateInfo.getSuggestedUpdate().getVersion(), updateInfo.getSuggestedUpdate().getVersion())
-                        ));
-            }
+        private val binding: UpdatableModListItemBinding
+
+        init {
+            binding = UpdatableModListItemBinding.bind(view)
+            binding.buttonUpdateMod.setOnClickListener { onUpdateClick() }
         }
 
-        public ViewHolder(View view) {
-            super(view);
-            binding = UpdatableModListItemBinding.bind(view);
-            binding.buttonUpdateMod.setOnClickListener(v -> onUpdateClick());
-        }
-
-        void onUpdateClick() {
-            CommonLogic.doOnNonNull(CommonLogic.getActivityFromView(binding.textViewModName), context -> CommonLogic.openUrl(context, updateInfo.getSuggestedUpdate().getUrl()));
+        fun onUpdateClick() {
+            getActivityFromView(binding.textViewModName)?.let {
+                openUrl(it, updateInfo?.suggestedUpdate?.url)
+            }
         }
     }
 }

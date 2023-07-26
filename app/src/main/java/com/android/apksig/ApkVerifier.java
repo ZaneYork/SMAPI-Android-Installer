@@ -642,7 +642,7 @@ public class ApkVerifier {
             if(source == null) {
                 return;
             }
-            switch (source.signatureSchemeVersion) {
+            switch (source.getSignatureSchemeVersion()) {
                 case ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2:
                     mVerifiedUsingV2Scheme = source.verified;
                     for (ApkSigningBlockUtils.Result.SignerInfo signer : source.signers) {
@@ -793,7 +793,7 @@ public class ApkVerifier {
          */
         public static class V2SchemeSignerInfo {
             private final int mIndex;
-            private final List<X509Certificate> mCerts;
+            private final List<? extends X509Certificate> mCerts;
 
             private final List<IssueWithParams> mErrors;
             private final List<IssueWithParams> mWarnings;
@@ -829,7 +829,7 @@ public class ApkVerifier {
              * key. An empty list may be returned if an error was encountered during verification
              * (see {@link #containsErrors()}).
              */
-            public List<X509Certificate> getCertificates() {
+            public List<? extends X509Certificate> getCertificates() {
                 return mCerts;
             }
 
@@ -855,7 +855,7 @@ public class ApkVerifier {
          */
         public static class V3SchemeSignerInfo {
             private final int mIndex;
-            private final List<X509Certificate> mCerts;
+            private final List<? extends X509Certificate> mCerts;
 
             private final List<IssueWithParams> mErrors;
             private final List<IssueWithParams> mWarnings;
@@ -891,7 +891,7 @@ public class ApkVerifier {
              * key. An empty list may be returned if an error was encountered during verification
              * (see {@link #containsErrors()}).
              */
-            public List<X509Certificate> getCertificates() {
+            public List<? extends X509Certificate> getCertificates() {
                 return mCerts;
             }
 

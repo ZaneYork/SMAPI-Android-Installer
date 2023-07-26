@@ -298,7 +298,7 @@ public abstract class V2SchemeVerifier {
             return;
         }
         for (ApkSigningBlockUtils.SupportedSignature signature : signaturesToVerify) {
-            SignatureAlgorithm signatureAlgorithm = signature.algorithm;
+            SignatureAlgorithm signatureAlgorithm = signature.getAlgorithm();
             String jcaSignatureAlgorithm =
                     signatureAlgorithm.getJcaSignatureAlgorithmAndParams().getFirst();
             AlgorithmParameterSpec jcaSignatureAlgorithmParams =
@@ -321,7 +321,7 @@ public abstract class V2SchemeVerifier {
                 }
                 signedData.position(0);
                 sig.update(signedData);
-                byte[] sigBytes = signature.signature;
+                byte[] sigBytes = signature.getSignature();
                 if (!sig.verify(sigBytes)) {
                     result.addError(Issue.V2_SIG_DID_NOT_VERIFY, signatureAlgorithm);
                     return;

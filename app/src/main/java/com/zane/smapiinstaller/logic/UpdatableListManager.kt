@@ -1,34 +1,28 @@
-package com.zane.smapiinstaller.logic;
+package com.zane.smapiinstaller.logic
 
-import android.view.View;
-
-import com.hjq.language.MultiLanguages;
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.callback.StringCallback;
-import com.lzy.okgo.model.Response;
-import com.zane.smapiinstaller.entity.UpdatableList;
-import com.zane.smapiinstaller.utils.FileUtils;
-import com.zane.smapiinstaller.utils.JsonUtil;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
-import java.util.function.Predicate;
+import android.view.View
+import com.hjq.language.MultiLanguages
+import com.lzy.okgo.OkGo
+import com.lzy.okgo.callback.StringCallback
+import com.lzy.okgo.model.Response
+import com.zane.smapiinstaller.entity.UpdatableList
+import com.zane.smapiinstaller.utils.FileUtils
+import com.zane.smapiinstaller.utils.JsonUtil
+import org.apache.commons.lang3.StringUtils
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 在线列表更新管理器
  * @author Zane
  * @param <T> 列表类型
- */
-public class UpdatableListManager<T extends UpdatableList> implements ListenableObject<T> {
-    private static final ConcurrentHashMap<Class<?>, Boolean> updateChecked = new ConcurrentHashMap<>();
-
-    private static UpdatableList updatableList = null;
-
-    private final List<Predicate<T>> onChangedListener = new ArrayList<>();
+</T> */
+class UpdatableListManager<T : UpdatableList?>(
+    root: View,
+    filename: String,
+    tClass: Class<T>,
+    updateUrl: String
+) : ListenableObject<T> {
+    override val onChangedListenerList: MutableList<(T) -> Boolean> = ArrayList()
 
     /**
      * @param root      context容器
@@ -36,49 +30,52 @@ public class UpdatableListManager<T extends UpdatableList> implements Listenable
      * @param tClass    目标类型
      * @param updateUrl 更新地址
      */
-    public UpdatableListManager(View root, String filename, Class<T> tClass, String updateUrl) {
-        updatableList = FileUtils.getLocaledAssetJson(root.getContext(), filename, tClass);
-        Boolean updated = updateChecked.get(tClass);
-        if(updated == null || !updated) {
-            updateChecked.put(tClass, true);
-            String languageSuffix = '.' + MultiLanguages.getAppLanguage().getLanguage();
-            updateList(root, tClass, updateUrl, filename, languageSuffix);
+    init {
+        updatableList = FileUtils.getLocaledAssetJson(root.context, filename, tClass)!!
+        val updated = updateChecked[tClass]
+        if (updated == null || !updated) {
+            updateChecked[tClass] = true
+            val languageSuffix = '.'.toString() + MultiLanguages.getAppLanguage().language
+            updateList(root, tClass, updateUrl, filename, languageSuffix)
         }
     }
 
-    private void updateList(View root, Class<T> tClass, String updateUrl, String filename, String languageSuffix) {
-        String finalUpdateUrl = updateUrl + languageSuffix;
-        String finalFilename = filename + languageSuffix;
-        OkGo.<String>get(finalUpdateUrl).execute(new StringCallback(){
-            @Override
-            public void onError(Response<String> response) {
-                if(StringUtils.isNoneBlank(languageSuffix)) {
-                    updateList(root, tClass, updateUrl, filename, "");
+    private fun updateList(
+        root: View,
+        tClass: Class<T>,
+        updateUrl: String,
+        filename: String,
+        languageSuffix: String
+    ) {
+        val finalUpdateUrl = updateUrl + languageSuffix
+        val finalFilename = filename + languageSuffix
+        OkGo.get<String>(finalUpdateUrl).execute(object : StringCallback() {
+            override fun onError(response: Response<String>) {
+                if (StringUtils.isNoneBlank(languageSuffix)) {
+                    updateList(root, tClass, updateUrl, filename, "")
                 }
-                super.onError(response);
+                super.onError(response)
             }
 
-            @Override
-            public void onSuccess(Response<String> response) {
-                UpdatableList content = JsonUtil.fromJson(response.body(), tClass);
-                if(content != null && updatableList.getVersion() < content.getVersion()) {
-                    FileUtils.writeAssetJson(root.getContext(), finalFilename, content);
-                    updatableList = content;
-                    emitDataChangeEvent(getList());
+            override fun onSuccess(response: Response<String>) {
+                val content: UpdatableList? = JsonUtil.fromJson(response.body(), tClass)
+                if (content != null && updatableList.version < content.version) {
+                    FileUtils.writeAssetJson(root.context, finalFilename, content)
+                    updatableList = content
+                    list?.let { emitDataChangeEvent(it) }
                 }
             }
-        });
+        })
     }
 
     /**
      * @return 列表
      */
-    public T getList() {
-        return (T) updatableList;
-    }
+    val list: T
+        get() = updatableList as T
 
-    @Override
-    public List<Predicate<T>> getOnChangedListenerList() {
-        return onChangedListener;
+    companion object {
+        private val updateChecked = ConcurrentHashMap<Class<*>, Boolean>()
+        private lateinit var updatableList: UpdatableList
     }
 }
