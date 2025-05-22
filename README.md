@@ -1,3 +1,6 @@
+# This project has stopped to maintenance
+ * Please go to [NRTnarathip](https://github.com/NRTnarathip/SMAPILoader)'s project for latest mod support.
+
 # SMAPI-Android-Installer
 
 本软件可以提供安装 SMAPI 框架到安卓系统，SMAPI 是星露谷物语的 MOD 加载框架
