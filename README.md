@@ -1,5 +1,4 @@
-# This project has stopped to maintenance
- * Please go to [NRTnarathip](https://github.com/NRTnarathip/SMAPILoader)'s project for latest mod support.
+
 
 # SMAPI-Android-Installer
 
