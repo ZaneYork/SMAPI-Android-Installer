@@ -41,7 +41,7 @@ public class ByteBufferSink implements DataSink {
         try {
             mBuffer.put(buf, offset, length);
         } catch (BufferOverflowException e) {
-            throw new IOException(
+            throw new RuntimeException(
                     "Insufficient space in output buffer for " + length + " bytes", e);
         }
     }
@@ -52,7 +52,7 @@ public class ByteBufferSink implements DataSink {
         try {
             mBuffer.put(buf);
         } catch (BufferOverflowException e) {
-            throw new IOException(
+            throw new RuntimeException(
                     "Insufficient space in output buffer for " + length + " bytes", e);
         }
     }

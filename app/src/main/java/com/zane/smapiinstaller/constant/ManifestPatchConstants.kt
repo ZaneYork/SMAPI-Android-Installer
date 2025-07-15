@@ -9,7 +9,7 @@ object ManifestPatchConstants {
     const val PATTERN_VERSION_CODE = "versionCode"
     const val PATTERN_VERSION_NAME = "versionName"
     @JvmField
-    val APP_PACKAGE_NAME = "com.chucklefish.stardewvalley"
+    val APP_PACKAGE_NAME = "com.chucklefish.stardewvalley.MainActivity"
     const val PATTERN_VERSION_AMAZON = "amazon"
     const val PATTERN_EXTRACT_NATIVE_LIBS = "extractNativeLibs"
 }

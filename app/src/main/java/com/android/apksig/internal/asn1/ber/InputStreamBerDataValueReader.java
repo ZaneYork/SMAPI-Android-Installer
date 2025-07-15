@@ -302,7 +302,7 @@ public class InputStreamBerDataValueReader implements BerDataValueReader {
 
         @Override
         public synchronized void reset() throws IOException {
-            throw new IOException("mark/reset not supported");
+            throw new RuntimeException("mark/reset not supported");
         }
 
         @Override

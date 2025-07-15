@@ -1,0 +1,57 @@
+/*
+ *  Copyright (C) 2022 github.com/REAndroid
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.reandroid.dex.common;
+
+public class RegisterType {
+
+    public static final RegisterType READ;
+    public static final RegisterType WRITE;
+    public static final RegisterType RW;
+
+    static {
+
+        READ = new RegisterType("READ");
+        WRITE = new RegisterType("WRITE");
+        RW = new RegisterType("RW");
+    }
+
+    private final String name;
+
+    private RegisterType(String name){
+        this.name = name;
+    }
+
+    public boolean is(RegisterType type){
+        if(type == null){
+            return false;
+        }
+        return type == this ||
+                type == RW || this == RW;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this;
+    }
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+}

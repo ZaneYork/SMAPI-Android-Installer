@@ -1,6 +1,5 @@
 package com.zane.smapiinstaller
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,16 +10,15 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import android.Manifest;
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.Navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.AppBarConfiguration.Builder
 import androidx.navigation.ui.NavigationUI.navigateUp
 import androidx.navigation.ui.NavigationUI.setupActionBarWithNavController
 import androidx.navigation.ui.NavigationUI.setupWithNavController
-import com.afollestad.materialdialogs.MaterialDialog
+import com.abdurazaaqmohammed.AntiSplit.main.LegacyUtils
 import com.hjq.language.MultiLanguages
 import com.hjq.permissions.OnPermissionCallback
 import com.hjq.permissions.Permission
@@ -36,7 +34,6 @@ import com.zane.smapiinstaller.constant.Constants
 import com.zane.smapiinstaller.constant.DialogAction
 import com.zane.smapiinstaller.databinding.ActivityMainBinding
 import com.zane.smapiinstaller.dto.AppUpdateCheckResultDto
-import com.zane.smapiinstaller.dto.ModUpdateCheckResponseDto
 import com.zane.smapiinstaller.entity.AppConfig
 import com.zane.smapiinstaller.logic.ActivityResultHandler
 import com.zane.smapiinstaller.logic.CommonLogic
@@ -59,6 +56,7 @@ import java.util.Locale
 class MainActivity : AppCompatActivity() {
     private var mAppBarConfiguration: AppBarConfiguration? = null
     private var currentFragment = R.id.nav_main
+
     private lateinit var binding: ActivityMainBinding
     private fun requestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -111,6 +109,11 @@ class MainActivity : AppCompatActivity() {
                 }
             })
     }
+    fun doesNotHaveStoragePerm(context: Context): Boolean {
+        return Build.VERSION.SDK_INT > 22 && (if (LegacyUtils.supportsWriteExternalStorage) context.checkSelfPermission(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_DENIED else !Environment.isExternalStorageManager())
+    }
 
     private val permissionCallback: OnPermissionCallback
         get() = object : OnPermissionCallback {
@@ -144,6 +147,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         instance = this
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

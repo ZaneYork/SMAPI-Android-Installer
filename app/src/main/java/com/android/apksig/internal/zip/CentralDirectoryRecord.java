@@ -16,7 +16,10 @@
 
 package com.android.apksig.internal.zip;
 
+import com.aefyr.pseudoapksigner.Constants;
 import com.android.apksig.zip.ZipFormatException;
+
+import java.io.UnsupportedEncodingException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -223,7 +226,11 @@ public class CentralDirectoryRecord {
             long compressedSize,
             long uncompressedSize,
             long localFileHeaderOffset) {
-        byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
+        byte[] nameBytes = null;
+        try {
+            nameBytes = name.getBytes(Constants.UTF8);
+        } catch (UnsupportedEncodingException ignored) {
+        }
         short gpFlags = ZipUtils.GP_FLAG_EFS; // UTF-8 character encoding used for entry name
         short compressionMethod = ZipUtils.COMPRESSION_METHOD_DEFLATED;
         int recordSize = HEADER_SIZE_BYTES + nameBytes.length;

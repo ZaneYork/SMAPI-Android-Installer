@@ -17,9 +17,10 @@
 package com.android.apksig.util;
 
 import com.android.apksig.internal.util.ByteBufferDataSource;
-import com.android.apksig.internal.util.RandomAccessFileDataSource;
+import com.android.apksig.internal.util.FileChannelDataSource;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
  * Utility methods for working with {@link DataSource} abstraction.
@@ -44,10 +45,7 @@ public abstract class DataSources {
      * file, including changes to size of file, will be visible in the data source.
      */
     public static DataSource asDataSource(RandomAccessFile file) {
-        if (file == null) {
-            throw new NullPointerException();
-        }
-        return new RandomAccessFileDataSource(file);
+        return asDataSource(file.getChannel());
     }
 
     /**
@@ -55,9 +53,28 @@ public abstract class DataSources {
      * Changes to the file will be visible in the data source.
      */
     public static DataSource asDataSource(RandomAccessFile file, long offset, long size) {
-        if (file == null) {
+        return asDataSource(file.getChannel(), offset, size);
+    }
+
+    /**
+     * Returns a {@link DataSource} backed by the provided {@link FileChannel}. Changes to the
+     * file, including changes to size of file, will be visible in the data source.
+     */
+    public static DataSource asDataSource(FileChannel channel) {
+        if (channel == null) {
             throw new NullPointerException();
         }
-        return new RandomAccessFileDataSource(file, offset, size);
+        return new FileChannelDataSource(channel);
+    }
+
+    /**
+     * Returns a {@link DataSource} backed by the provided region of the {@link FileChannel}.
+     * Changes to the file will be visible in the data source.
+     */
+    public static DataSource asDataSource(FileChannel channel, long offset, long size) {
+        if (channel == null) {
+            throw new NullPointerException();
+        }
+        return new FileChannelDataSource(channel, offset, size);
     }
 }

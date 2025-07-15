@@ -18,15 +18,11 @@ package com.android.apksig.internal.util;
 
 import com.android.apksig.util.DataSink;
 import com.android.apksig.util.DataSource;
-import com.zane.smapiinstaller.utils.MathUtils;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-/**
- * Pseudo {@link DataSource} that chains the given {@link DataSource} as a continuous one.
- */
+/** Pseudo {@link DataSource} that chains the given {@link DataSource} as a continuous one. */
 public class ChainedDataSource implements DataSource {
 
     private final DataSource[] mSources;
@@ -34,9 +30,9 @@ public class ChainedDataSource implements DataSource {
 
     public ChainedDataSource(DataSource... sources) {
         mSources = sources;
-        long size = 0;
-        for (DataSource src : sources) {
-            size += src.size();
+        long size = 0L;
+        for (DataSource source : sources) {
+            size += source.size();
         }
         mTotalSize = size;
     }
@@ -53,15 +49,14 @@ public class ChainedDataSource implements DataSource {
         }
 
         for (DataSource src : mSources) {
-            long srcSize = src.size();
             // Offset is beyond the current source. Skip.
-            if (offset >= srcSize) {
-                offset -= srcSize;
+            if (offset >= src.size()) {
+                offset -= src.size();
                 continue;
             }
 
             // If the remaining is enough, finish it.
-            long remaining = srcSize - offset;
+            long remaining = src.size() - offset;
             if (remaining >= size) {
                 src.feed(offset, size, sink);
                 break;
@@ -94,7 +89,7 @@ public class ChainedDataSource implements DataSource {
         ByteBuffer buffer = ByteBuffer.allocate(size);
         for (; i < mSources.length && buffer.hasRemaining(); i++) {
             long sizeToCopy = Math.min(mSources[i].size() - offset, buffer.remaining());
-            mSources[i].copyTo(offset, MathUtils.toIntExact(sizeToCopy), buffer);
+            mSources[i].copyTo(offset, Math.toIntExact(sizeToCopy), buffer);
             offset = 0;  // may not be zero for the first source, but reset after that.
         }
         buffer.rewind();
@@ -137,7 +132,6 @@ public class ChainedDataSource implements DataSource {
 
     /**
      * Find the index of DataSource that offset is at.
-     *
      * @return Pair of DataSource index and the local offset in the DataSource.
      */
     private Pair<Integer, Long> locateDataSource(long offset) {

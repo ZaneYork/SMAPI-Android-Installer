@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2022 Muntashir Al-Islam
  * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +17,13 @@
 
 package com.android.apksig.internal.util;
 
+
+import com.aefyr.pseudoapksigner.Base64;
 import com.android.apksig.internal.asn1.Asn1BerParser;
 import com.android.apksig.internal.asn1.Asn1DecodingException;
 import com.android.apksig.internal.asn1.Asn1DerEncoder;
 import com.android.apksig.internal.asn1.Asn1EncodingException;
 import com.android.apksig.internal.x509.Certificate;
-
-import net.fornwall.apksigner.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -262,7 +263,7 @@ public class X509CertificateUtils {
                                 + "valid certificate footer");
             }
         }
-        byte[] derEncoding = Base64.decode(pemEncoding.toString());
+        byte[] derEncoding = Base64.decode(pemEncoding.toString(), Base64.NO_WRAP);
         // consume any trailing whitespace in the byte buffer
         int nextEncodedChar = certificateBuffer.position();
         while (certificateBuffer.hasRemaining()) {

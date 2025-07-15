@@ -61,9 +61,6 @@ import java.util.Set;
  * @see <a href="https://source.android.com/security/apksigning/v2.html">APK Signature Scheme v2</a>
  */
 public abstract class V2SchemeVerifier {
-
-    private static final int APK_SIGNATURE_SCHEME_V2_BLOCK_ID = 0x7109871a;
-
     /** Hidden constructor to prevent instantiation. */
     private V2SchemeVerifier() {}
 
@@ -101,7 +98,7 @@ public abstract class V2SchemeVerifier {
                 ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V2);
         SignatureInfo signatureInfo =
                 ApkSigningBlockUtils.findSignature(apk, zipSections,
-                        APK_SIGNATURE_SCHEME_V2_BLOCK_ID , result);
+                        V2SchemeConstants.APK_SIGNATURE_SCHEME_V2_BLOCK_ID , result);
 
         DataSource beforeApkSigningBlock = apk.slice(0, signatureInfo.apkSigningBlockOffset);
         DataSource centralDir =
@@ -175,7 +172,7 @@ public abstract class V2SchemeVerifier {
      * expected to be encountered on an Android platform version in the
      * {@code [minSdkVersion, maxSdkVersion]} range.
      */
-    private static void parseSigners(
+    public static void parseSigners(
             ByteBuffer apkSignatureSchemeV2Block,
             Set<ContentDigestAlgorithm> contentDigestsToVerify,
             Map<Integer, String> supportedApkSigSchemeNames,
@@ -247,8 +244,7 @@ public abstract class V2SchemeVerifier {
             Map<Integer, String> supportedApkSigSchemeNames,
             Set<Integer> foundApkSigSchemeIds,
             int minSdkVersion,
-            int maxSdkVersion)
-                    throws ApkFormatException, NoSuchAlgorithmException {
+            int maxSdkVersion) throws ApkFormatException, NoSuchAlgorithmException {
         ByteBuffer signedData = ApkSigningBlockUtils.getLengthPrefixedSlice(signerBlock);
         byte[] signedDataBytes = new byte[signedData.remaining()];
         signedData.get(signedDataBytes);
@@ -294,11 +290,11 @@ public abstract class V2SchemeVerifier {
                     ApkSigningBlockUtils.getSignaturesToVerify(
                             supportedSignatures, minSdkVersion, maxSdkVersion);
         } catch (ApkSigningBlockUtils.NoSupportedSignaturesException e) {
-            result.addError(Issue.V2_SIG_NO_SUPPORTED_SIGNATURES);
+            result.addError(Issue.V2_SIG_NO_SUPPORTED_SIGNATURES, e);
             return;
         }
         for (ApkSigningBlockUtils.SupportedSignature signature : signaturesToVerify) {
-            SignatureAlgorithm signatureAlgorithm = signature.getAlgorithm();
+            SignatureAlgorithm signatureAlgorithm = signature.algorithm;
             String jcaSignatureAlgorithm =
                     signatureAlgorithm.getJcaSignatureAlgorithmAndParams().getFirst();
             AlgorithmParameterSpec jcaSignatureAlgorithmParams =
@@ -321,7 +317,7 @@ public abstract class V2SchemeVerifier {
                 }
                 signedData.position(0);
                 sig.update(signedData);
-                byte[] sigBytes = signature.getSignature();
+                byte[] sigBytes = signature.signature;
                 if (!sig.verify(sigBytes)) {
                     result.addError(Issue.V2_SIG_DID_NOT_VERIFY, signatureAlgorithm);
                     return;
@@ -370,7 +366,15 @@ public abstract class V2SchemeVerifier {
             return;
         }
         X509Certificate mainCertificate = result.certs.get(0);
-        byte[] certificatePublicKeyBytes = mainCertificate.getPublicKey().getEncoded();
+        byte[] certificatePublicKeyBytes;
+        try {
+            certificatePublicKeyBytes = ApkSigningBlockUtils.encodePublicKey(
+                    mainCertificate.getPublicKey());
+        } catch (InvalidKeyException e) {
+            System.out.println("Caught an exception encoding the public key: " + e);
+            e.printStackTrace();
+            certificatePublicKeyBytes = mainCertificate.getPublicKey().getEncoded();
+        }
         if (!Arrays.equals(publicKeyBytes, certificatePublicKeyBytes)) {
             result.addError(
                     Issue.V2_SIG_PUBLIC_KEY_MISMATCH_BETWEEN_CERTIFICATE_AND_SIGNATURES_RECORD,
@@ -427,7 +431,7 @@ public abstract class V2SchemeVerifier {
                 result.additionalAttributes.add(
                         new ApkSigningBlockUtils.Result.SignerInfo.AdditionalAttribute(id, value));
                 switch (id) {
-                    case V2SchemeSigner.STRIPPING_PROTECTION_ATTR_ID:
+                    case V2SchemeConstants.STRIPPING_PROTECTION_ATTR_ID:
                         // stripping protection added when signing with a newer scheme
                         int foundId = ByteBuffer.wrap(value).order(
                                 ByteOrder.LITTLE_ENDIAN).getInt();

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2022 Muntashir Al-Islam
  * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,11 +22,12 @@ import com.android.apksig.internal.asn1.ber.BerDataValueFormatException;
 import com.android.apksig.internal.asn1.ber.BerDataValueReader;
 import com.android.apksig.internal.asn1.ber.BerEncoding;
 import com.android.apksig.internal.asn1.ber.ByteBufferBerDataValueReader;
+import com.android.apksig.internal.compat.ClassCompat;
 import com.android.apksig.internal.util.ByteBufferUtils;
-import com.zane.smapiinstaller.utils.MathUtils;
-import com.zane.smapiinstaller.utils.ReflectionUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -175,9 +177,11 @@ public final class Asn1BerParser {
 
         // Instantiate the container object / result
         T obj;
+
         try {
             obj = containerClass.getConstructor().newInstance();
-        } catch (IllegalArgumentException | ReflectiveOperationException e) {
+        } catch (IllegalArgumentException | NoSuchMethodException | IllegalAccessException |
+                 InstantiationException | InvocationTargetException e) {
             throw new Asn1DecodingException("Failed to instantiate " + containerClass.getName(), e);
         }
         // Set the matching field's value from the data value
@@ -223,7 +227,8 @@ public final class Asn1BerParser {
         T t;
         try {
             t = containerClass.getConstructor().newInstance();
-        } catch (IllegalArgumentException | ReflectiveOperationException e) {
+        } catch (IllegalArgumentException | NoSuchMethodException | IllegalAccessException |
+                 InstantiationException | InvocationTargetException e) {
             throw new Asn1DecodingException("Failed to instantiate " + containerClass.getName(), e);
         }
 
@@ -313,7 +318,7 @@ public final class Asn1BerParser {
 
     private static Asn1Type getContainerAsn1Type(Class<?> containerClass)
             throws Asn1DecodingException {
-        Asn1Class containerAnnotation = ReflectionUtils.getDeclaredAnnotation(containerClass, Asn1Class.class);
+        Asn1Class containerAnnotation = ClassCompat.getDeclaredAnnotation(containerClass, Asn1Class.class);
         if (containerAnnotation == null) {
             throw new Asn1DecodingException(
                     containerClass.getName() + " is not annotated with "
@@ -337,10 +342,7 @@ public final class Asn1BerParser {
         String type;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             type = field.getGenericType().getTypeName();
-        }
-        else {
-            type = field.getGenericType().toString();
-        }
+        } else type = field.getGenericType().toString();
         int delimiterIndex =  type.indexOf('<');
         if (delimiterIndex == -1) {
             throw new Asn1DecodingException("Not a container type: " + field.getGenericType());
@@ -515,23 +517,22 @@ public final class Asn1BerParser {
 
     private static int integerToInt(ByteBuffer encoded) throws Asn1DecodingException {
         BigInteger value = integerToBigInteger(encoded);
-        try {
-            return MathUtils.intValueExact(value);
-        } catch (ArithmeticException e) {
+        if (value.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) < 0
+            || value.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
             throw new Asn1DecodingException(
-                    String.format("INTEGER cannot be represented as int: %1$d (0x%1$x)", value), e);
+                String.format("INTEGER cannot be represented as int: %1$d (0x%1$x)", value));
         }
+        return value.intValue();
     }
 
     private static long integerToLong(ByteBuffer encoded) throws Asn1DecodingException {
         BigInteger value = integerToBigInteger(encoded);
-        try {
-            return MathUtils.longValueExact(value);
-        } catch (ArithmeticException e) {
+        if (value.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0
+                || value.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0) {
             throw new Asn1DecodingException(
-                    String.format("INTEGER cannot be represented as long: %1$d (0x%1$x)", value),
-                    e);
+                String.format("INTEGER cannot be represented as long: %1$d (0x%1$x)", value));
         }
+        return value.longValue();
     }
 
     private static List<AnnotatedField> getAnnotatedFields(Class<?> containerClass)
@@ -539,7 +540,7 @@ public final class Asn1BerParser {
         Field[] declaredFields = containerClass.getDeclaredFields();
         List<AnnotatedField> result = new ArrayList<>(declaredFields.length);
         for (Field field : declaredFields) {
-            Asn1Field annotation = ReflectionUtils.getDeclaredAnnotation(field, Asn1Field.class);
+            Asn1Field annotation = field.getAnnotation(Asn1Field.class);
             if (annotation == null) {
                 continue;
             }
@@ -583,7 +584,12 @@ public final class Asn1BerParser {
                         field.set(obj, convert(type, dataValue, field.getType()));
                         break;
                 }
-            } catch (ReflectiveOperationException e) {
+            } catch (IllegalAccessException e) {
+                throw new Asn1DecodingException(
+                        "Failed to set value of " + obj.getClass().getName()
+                                + "." + field.getName(),
+                        e);
+            } catch (ClassNotFoundException e) {
                 throw new Asn1DecodingException(
                         "Failed to set value of " + obj.getClass().getName()
                                 + "." + field.getName(),
@@ -648,13 +654,13 @@ public final class Asn1BerParser {
                         } else {
                             result = true;
                         }
-                        return (T) new Boolean(result);
+                        return (T) Boolean.valueOf(result);
                     }
                     break;
                 case SEQUENCE:
                 {
                     Asn1Class containerAnnotation =
-                            ReflectionUtils.getDeclaredAnnotation(targetType, Asn1Class.class);
+                            ClassCompat.getDeclaredAnnotation(targetType, Asn1Class.class);
                     if ((containerAnnotation != null)
                             && (containerAnnotation.type() == Asn1Type.SEQUENCE)) {
                         return parseSequence(dataValue, targetType);
@@ -664,7 +670,7 @@ public final class Asn1BerParser {
                 case CHOICE:
                 {
                     Asn1Class containerAnnotation =
-                            ReflectionUtils.getDeclaredAnnotation(targetType, Asn1Class.class);
+                            ClassCompat.getDeclaredAnnotation(targetType, Asn1Class.class);
                     if ((containerAnnotation != null)
                             && (containerAnnotation.type() == Asn1Type.CHOICE)) {
                         return parseChoice(dataValue, targetType);

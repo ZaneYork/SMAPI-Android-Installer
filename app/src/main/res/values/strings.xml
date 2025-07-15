@@ -64,29 +64,49 @@
     <string name="text_install_tip1">Notes: Game version 1.5.6.39 or later is required.</string>
     <string name="text_install_tip2">The base game is required when updating/installing.</string>
     <string name="unpacking_smapi_files">Unpacking</string>
-
     <string name="toast_redpacket_message" translatable="false">红包码已复制\n支付宝首页搜索“9188262” 立即领红包</string>
     <string name="icon_desc" translatable="false">icon</string>
     <string name="mod_version_update_text" translatable="false">%1$s -> %2$s</string>
-    <string name="sort_by">Sort by</string>
-    <string name="text_too_large">Text file is too large for editor</string>
-    <string name="open_with">Open With</string>
-    <string name="no_update_text">All mods are up to date</string>
-    <string name="app_update_detected">New version detected: %1$s</string>
-    <string name="parser">Parser</string>
-    <string name="mod_version_update_checking">Checking for mod updates</string>
-    <string name="smapi_version_runing">Latest running: %s</string>
-    <string name="settings_disable_mono_mod">Disable Harmony</string>
-    <string name="settings_set_max_log_size">Max Log Size</string>
-    <string name="button_qq_group_text">QQ Group</string>
-    <string name="privacy_policy">Privacy Policy</string>
-    <string name="settings_advanced_mode">Advanced Patch Mode</string>
-    <string name="button_initial">Initial</string>
-    <string name="error_directory_exists_with_same_filename">%1$s is not a directory, please delete it manually.</string>
-    <string name="error_patch_crc_incorrect">Patch %1$s failed: CRC (%2$s))</string>
-    <string name="settings_rewrite_in_parallel">Rewrite in Parallel</string>
-    <string name="request_unknown_source_permission">Needs to switch unknown source permission on to install mod framework, open settings?</string>
-    <string name="settings_rewrite_missing">Rewrite Missing</string>
-    <string name="settings_set_app_name">Patched App Name</string>
-    <string name="request_all_files_access_permission">Need all files access permission on Android Q or above to install mod framework, continue?</string>
+    <string name="sort_by" translatable="false">Sort by</string>
+    <string name="text_too_large" translatable="false">Text file is too large for editor</string>
+    <string name="open_with" translatable="false">Open With</string>
+    <string name="no_update_text" translatable="false">All mods are up to date</string>
+    <string name="app_update_detected" translatable="false">New version detected: %1$s</string>
+    <string name="parser" translatable="false">Parser</string>
+    <string name="mod_version_update_checking" translatable="false">Checking for mod updates</string>
+    <string name="smapi_version_runing" translatable="false">Latest running: %s</string>
+    <string name="settings_disable_mono_mod" translatable="false">Disable Harmony</string>
+    <string name="settings_set_max_log_size" translatable="false">Max Log Size</string>
+    <string name="button_qq_group_text" translatable="false">QQ Group</string>
+    <string name="privacy_policy" translatable="false">Privacy Policy</string>
+    <string name="settings_advanced_mode" translatable="false">Advanced Patch Mode</string>
+    <string name="button_initial" translatable="false">Initial</string>
+    <string name="error_directory_exists_with_same_filename" translatable="false">%1$s is not a directory, please delete it manually.</string>
+    <string name="error_patch_crc_incorrect" translatable="false">Patch %1$s failed: CRC (%2$s))</string>
+    <string name="settings_rewrite_in_parallel" translatable="false">Rewrite in Parallel</string>
+    <string name="request_unknown_source_permission" translatable="false">Needs to switch unknown source permission on to install mod framework, open settings?</string>
+    <string name="settings_rewrite_missing" translatable="false">Rewrite Missing</string>
+    <string name="settings_set_app_name" translatable="false">Patched App Name</string>
+    <string name="request_all_files_access_permission" translatable="false">Need all files access permission on Android Q or above to install mod framework, continue?</string>
+    <string name="app_icon_list_label" translatable="false">App icon</string>
+    <string name="skipping" translatable="false">"Skipping "</string>
+    <string name="unselected" translatable="false" >unselected</string>
+    <string name="not_apk" translatable="false" >>not_apk</string>
+    <string name="warning" translatable="false">Warning</string>
+    <string name="repackaging_apk" translatable="false">The APK is being repackaged...</string>
+    <string name="failed_to_repack" translatable="false">Repack failed</string>
+    <string name="pairip_warning" translatable="false" >pairip_warning</string>
+    <string name="sanitizing_manifest" translatable="false" >sanitizing_manifest</string>
+    <string name="removed_table_entry" translatable="false" >removed_table_entry</string>
+    <string name="saving" translatable="false" >saving</string>
+    <string name="signing" translatable="false" >signing</string>
+    <string name="searching" translatable="false" >searching</string>
+    <string name="mismatch" translatable="false" > mismatch</string>
+    <string name="mismatch_base" translatable="false" >mismatch_base</string>
+    <string name="extracting_assemblies" translatable="false">Unzip the assembly file</string>
+    <string name="unpacking_smapi_project" translatable="false">Unpacking SMAPI project...</string>
+    <string name="failed_to_unpack_smapi_project" translatable="false">Failed to unpack SMAPI project</string>
+    <string name="error_base0_not_found" translatable="false">Base APK (base_0.apk) not found</string>
+    <string name="failed_to_extract_dlls" translatable="false">Failed to extract required DLLs</string>
+    <string name="extracting_game_content" translatable="false">Extracting game content...</string>
 </resources>

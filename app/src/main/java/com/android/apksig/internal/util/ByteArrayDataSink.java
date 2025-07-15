@@ -89,7 +89,7 @@ public class ByteArrayDataSink implements ReadableDataSink {
         }
     }
 
-    private void ensureAvailable(int minAvailable) throws IOException {
+    private void ensureAvailable(int minAvailable) {
         if (minAvailable <= 0) {
             return;
         }
@@ -99,7 +99,7 @@ public class ByteArrayDataSink implements ReadableDataSink {
             return;
         }
         if (minCapacity > Integer.MAX_VALUE) {
-            throw new IOException(
+            throw new RuntimeException(
                     "Required capacity too large: " + minCapacity + ", max: " + Integer.MAX_VALUE);
         }
         int doubleCurrentSize = (int) Math.min(mArray.length * 2L, Integer.MAX_VALUE);
@@ -191,7 +191,7 @@ public class ByteArrayDataSink implements ReadableDataSink {
         }
 
         @Override
-        public ByteBuffer getByteBuffer(long offset, int size) throws IOException {
+        public ByteBuffer getByteBuffer(long offset, int size) {
             checkChunkValid(offset, size);
             // checkChunkValid combined with the way instances of this class are constructed ensures
             // that mSliceOffset + offset does not overflow.
@@ -199,7 +199,7 @@ public class ByteArrayDataSink implements ReadableDataSink {
         }
 
         @Override
-        public void copyTo(long offset, int size, ByteBuffer dest) throws IOException {
+        public void copyTo(long offset, int size, ByteBuffer dest) {
             checkChunkValid(offset, size);
             // checkChunkValid combined with the way instances of this class are constructed ensures
             // that mSliceOffset + offset does not overflow.

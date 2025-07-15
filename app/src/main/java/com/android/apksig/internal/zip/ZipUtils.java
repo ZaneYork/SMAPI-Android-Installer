@@ -16,12 +16,18 @@
 
 package com.android.apksig.internal.zip;
 
+import com.android.apksig.apk.ApkFormatException;
 import com.android.apksig.internal.util.Pair;
 import com.android.apksig.util.DataSource;
+import com.android.apksig.zip.ZipFormatException;
+import com.android.apksig.zip.ZipSections;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.CRC32;
 import java.util.zip.Deflater;
 
@@ -61,6 +67,20 @@ public abstract class ZipUtils {
                 zipEndOfCentralDirectory,
                 zipEndOfCentralDirectory.position() + ZIP_EOCD_CENTRAL_DIR_OFFSET_FIELD_OFFSET,
                 offset);
+    }
+
+    /**
+     * Sets the length of EOCD comment.
+     *
+     * <p>NOTE: Byte order of {@code zipEndOfCentralDirectory} must be little-endian.
+     */
+    public static void updateZipEocdCommentLen(ByteBuffer zipEndOfCentralDirectory) {
+        assertByteOrderLittleEndian(zipEndOfCentralDirectory);
+        int commentLen = zipEndOfCentralDirectory.remaining() - ZIP_EOCD_REC_MIN_SIZE;
+        setUnsignedInt16(
+                zipEndOfCentralDirectory,
+                zipEndOfCentralDirectory.position() + ZIP_EOCD_COMMENT_LENGTH_FIELD_OFFSET,
+                commentLen);
     }
 
     /**
@@ -245,6 +265,46 @@ public abstract class ZipUtils {
 
     public static int getUnsignedInt16(ByteBuffer buffer) {
         return buffer.getShort() & 0xffff;
+    }
+
+    public static List<CentralDirectoryRecord> parseZipCentralDirectory(
+            DataSource apk,
+            ZipSections apkSections)
+            throws IOException, ApkFormatException {
+        // Read the ZIP Central Directory
+        long cdSizeBytes = apkSections.getZipCentralDirectorySizeBytes();
+        if (cdSizeBytes > Integer.MAX_VALUE) {
+            throw new ApkFormatException("ZIP Central Directory too large: " + cdSizeBytes);
+        }
+        long cdOffset = apkSections.getZipCentralDirectoryOffset();
+        ByteBuffer cd = apk.getByteBuffer(cdOffset, (int) cdSizeBytes);
+        cd.order(ByteOrder.LITTLE_ENDIAN);
+
+        // Parse the ZIP Central Directory
+        int expectedCdRecordCount = apkSections.getZipCentralDirectoryRecordCount();
+        List<CentralDirectoryRecord> cdRecords = new ArrayList<>(expectedCdRecordCount);
+        for (int i = 0; i < expectedCdRecordCount; i++) {
+            CentralDirectoryRecord cdRecord;
+            int offsetInsideCd = cd.position();
+            try {
+                cdRecord = CentralDirectoryRecord.getRecord(cd);
+            } catch (ZipFormatException e) {
+                throw new ApkFormatException(
+                        "Malformed ZIP Central Directory record #" + (i + 1)
+                                + " at file offset " + (cdOffset + offsetInsideCd),
+                        e);
+            }
+            String entryName = cdRecord.getName();
+            if (entryName.endsWith("/")) {
+                // Ignore directory entries
+                continue;
+            }
+            cdRecords.add(cdRecord);
+        }
+        // There may be more data in Central Directory, but we don't warn or throw because Android
+        // ignores unused CD data.
+
+        return cdRecords;
     }
 
     static void setUnsignedInt16(ByteBuffer buffer, int offset, int value) {

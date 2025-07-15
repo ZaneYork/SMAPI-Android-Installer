@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2022 Muntashir Al-Islam
  * Copyright (C) 2016 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,29 +17,23 @@
 
 package com.android.apksig.internal.apk.v1;
 
+
+import static com.android.apksig.Constants.OID_RSA_ENCRYPTION;
+import static com.android.apksig.internal.pkcs7.AlgorithmIdentifier.getSignerInfoDigestAlgorithmOid;
+import static com.android.apksig.internal.pkcs7.AlgorithmIdentifier.getSignerInfoSignatureAlgorithm;
+
+import com.aefyr.pseudoapksigner.Base64;
 import com.android.apksig.apk.ApkFormatException;
-import com.android.apksig.internal.asn1.Asn1DerEncoder;
+import com.android.apksig.internal.apk.ApkSigningBlockUtils;
 import com.android.apksig.internal.asn1.Asn1EncodingException;
-import com.android.apksig.internal.asn1.Asn1OpaqueObject;
-import com.android.apksig.internal.asn1.ber.BerEncoding;
 import com.android.apksig.internal.jar.ManifestWriter;
 import com.android.apksig.internal.jar.SignatureFileWriter;
 import com.android.apksig.internal.pkcs7.AlgorithmIdentifier;
-import com.android.apksig.internal.pkcs7.ContentInfo;
-import com.android.apksig.internal.pkcs7.EncapsulatedContentInfo;
-import com.android.apksig.internal.pkcs7.IssuerAndSerialNumber;
-import com.android.apksig.internal.pkcs7.Pkcs7Constants;
-import com.android.apksig.internal.pkcs7.SignedData;
-import com.android.apksig.internal.pkcs7.SignerIdentifier;
-import com.android.apksig.internal.pkcs7.SignerInfo;
 import com.android.apksig.internal.util.Pair;
-
-import net.fornwall.apksigner.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -46,6 +41,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -59,7 +55,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import javax.security.auth.x500.X500Principal;
 
 /**
  * APK signer which uses JAR signing (aka v1 signing scheme).
@@ -67,17 +62,15 @@ import javax.security.auth.x500.X500Principal;
  * @see <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#Signed_JAR_File">Signed JAR File</a>
  */
 public abstract class V1SchemeSigner {
-
-    public static final String MANIFEST_ENTRY_NAME = "META-INF/MANIFEST.MF";
+    public static final String MANIFEST_ENTRY_NAME = V1SchemeConstants.MANIFEST_ENTRY_NAME;
 
     private static final Attributes.Name ATTRIBUTE_NAME_CREATED_BY =
             new Attributes.Name("Created-By");
     private static final String ATTRIBUTE_VALUE_MANIFEST_VERSION = "1.0";
     private static final String ATTRIBUTE_VALUE_SIGNATURE_VERSION = "1.0";
 
-    static final String SF_ATTRIBUTE_NAME_ANDROID_APK_SIGNED_NAME_STR = "X-Android-APK-Signed";
     private static final Attributes.Name SF_ATTRIBUTE_NAME_ANDROID_APK_SIGNED_NAME =
-            new Attributes.Name(SF_ATTRIBUTE_NAME_ANDROID_APK_SIGNED_NAME_STR);
+            new Attributes.Name(V1SchemeConstants.SF_ATTRIBUTE_NAME_ANDROID_APK_SIGNED_NAME_STR);
 
     /**
      * Signer configuration.
@@ -99,6 +92,11 @@ public abstract class V1SchemeSigner {
          * Digest algorithm used for the signature.
          */
         public DigestAlgorithm signatureDigestAlgorithm;
+
+        /**
+         * If DSA is the signing algorithm, whether or not deterministic DSA signing should be used.
+         */
+        public boolean deterministicDsaSigning;
     }
 
     /** Hidden constructor to prevent instantiation. */
@@ -116,7 +114,7 @@ public abstract class V1SchemeSigner {
     public static DigestAlgorithm getSuggestedSignatureDigestAlgorithm(
             PublicKey signingKey, int minSdkVersion) throws InvalidKeyException {
         String keyAlgorithm = signingKey.getAlgorithm();
-        if ("RSA".equalsIgnoreCase(keyAlgorithm)) {
+        if ("RSA".equalsIgnoreCase(keyAlgorithm) || OID_RSA_ENCRYPTION.equals((keyAlgorithm))) {
             // Prior to API Level 18, only SHA-1 can be used with RSA.
             if (minSdkVersion < 18) {
                 return DigestAlgorithm.SHA1;
@@ -311,7 +309,7 @@ public abstract class V1SchemeSigner {
             signatureJarEntries.add(
                     Pair.of(signatureBlockFileName, signatureBlock));
         }
-        signatureJarEntries.add(Pair.of(MANIFEST_ENTRY_NAME, manifest.contents));
+        signatureJarEntries.add(Pair.of(V1SchemeConstants.MANIFEST_ENTRY_NAME, manifest.contents));
         return signatureJarEntries;
     }
 
@@ -329,7 +327,7 @@ public abstract class V1SchemeSigner {
                             + publicKey.getAlgorithm().toUpperCase(Locale.US);
             result.add(signatureBlockFileName);
         }
-        result.add(MANIFEST_ENTRY_NAME);
+        result.add(V1SchemeConstants.MANIFEST_ENTRY_NAME);
         return result;
     }
 
@@ -377,7 +375,7 @@ public abstract class V1SchemeSigner {
             Attributes entryAttrs = new Attributes();
             entryAttrs.putValue(
                     entryDigestAttributeName,
-                    Base64.encode(entryDigest));
+                    Base64.encodeToString(entryDigest, Base64.NO_WRAP));
             ByteArrayOutputStream sectionOut = new ByteArrayOutputStream();
             byte[] sectionBytes;
             try {
@@ -450,7 +448,7 @@ public abstract class V1SchemeSigner {
         MessageDigest md = getMessageDigestInstance(manifestDigestAlgorithm);
         mainAttrs.putValue(
                 getManifestDigestAttributeName(manifestDigestAlgorithm),
-                Base64.encode(md.digest(manifest.contents)));
+                Base64.encodeToString(md.digest(manifest.contents), Base64.NO_WRAP));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             SignatureFileWriter.writeMainSection(out, mainAttrs);
@@ -466,7 +464,7 @@ public abstract class V1SchemeSigner {
             Attributes attrs = new Attributes();
             attrs.putValue(
                     entryDigestAttributeName,
-                    Base64.encode(sectionDigest));
+                    Base64.encodeToString(sectionDigest, Base64.NO_WRAP));
 
             try {
                 SignatureFileWriter.writeIndividualSection(out, sectionName, attrs);
@@ -489,9 +487,7 @@ public abstract class V1SchemeSigner {
         return out.toByteArray();
     }
 
-    /** ASN.1 DER-encoded {@code NULL}. */
-    private static final Asn1OpaqueObject ASN1_DER_NULL =
-            new Asn1OpaqueObject(new byte[] {BerEncoding.TAG_NUMBER_NULL, 0});
+
 
     /**
      * Generates the CMS PKCS #7 signature block corresponding to the provided signature file and
@@ -507,7 +503,8 @@ public abstract class V1SchemeSigner {
         PublicKey publicKey = signingCert.getPublicKey();
         DigestAlgorithm digestAlgorithm = signerConfig.signatureDigestAlgorithm;
         Pair<String, AlgorithmIdentifier> signatureAlgs =
-                getSignerInfoSignatureAlgorithm(publicKey, digestAlgorithm);
+                getSignerInfoSignatureAlgorithm(publicKey, digestAlgorithm,
+                        signerConfig.deterministicDsaSigning);
         String jcaSignatureAlgorithm = signatureAlgs.getFirst();
 
         // Generate the cryptographic signature of the signature file
@@ -543,126 +540,21 @@ public abstract class V1SchemeSigner {
                     e);
         }
 
-        // Wrap the signature into the JAR signature block which is created according to CMS PKCS #7
-        // RFC 5652.
-        // The high-level simplified structure is as follows:
-        // ContentInfo
-        //   digestAlgorithm
-        //   SignedData
-        //     bag of certificates
-        //     SignerInfo
-        //       signing cert issuer and serial number (for locating the cert in the above bag)
-        //       digestAlgorithm
-        //       signatureAlgorithm
-        //       signature
+        AlgorithmIdentifier digestAlgorithmId =
+                getSignerInfoDigestAlgorithmOid(digestAlgorithm);
+        AlgorithmIdentifier signatureAlgorithmId = signatureAlgs.getSecond();
         try {
-            SignerInfo signerInfo = new SignerInfo();
-            signerInfo.version = 1;
-            X500Principal signerCertIssuer = signingCert.getIssuerX500Principal();
-            signerInfo.sid =
-                    new SignerIdentifier(
-                            new IssuerAndSerialNumber(
-                                    new Asn1OpaqueObject(signerCertIssuer.getEncoded()),
-                                    signingCert.getSerialNumber()));
-            AlgorithmIdentifier digestAlgorithmId =
-                    getSignerInfoDigestAlgorithmOid(digestAlgorithm);
-            AlgorithmIdentifier signatureAlgorithmId = signatureAlgs.getSecond();
-            signerInfo.digestAlgorithm = digestAlgorithmId;
-            signerInfo.signatureAlgorithm = signatureAlgorithmId;
-            signerInfo.signature = ByteBuffer.wrap(signatureBytes);
-
-            SignedData signedData = new SignedData();
-            signedData.certificates = new ArrayList<>(signerCerts.size());
-            for (X509Certificate cert : signerCerts) {
-                signedData.certificates.add(new Asn1OpaqueObject(cert.getEncoded()));
-            }
-            signedData.version = 1;
-            signedData.digestAlgorithms = Collections.singletonList(digestAlgorithmId);
-            signedData.encapContentInfo = new EncapsulatedContentInfo(Pkcs7Constants.OID_DATA);
-            signedData.signerInfos = Collections.singletonList(signerInfo);
-
-            ContentInfo contentInfo = new ContentInfo();
-            contentInfo.contentType = Pkcs7Constants.OID_SIGNED_DATA;
-            contentInfo.content = new Asn1OpaqueObject(Asn1DerEncoder.encode(signedData));
-            return Asn1DerEncoder.encode(contentInfo);
-        } catch (Asn1EncodingException e) {
-            throw new SignatureException("Failed to encode signature block", e);
+            return ApkSigningBlockUtils.generatePkcs7DerEncodedMessage(
+                    signatureBytes,
+                    null,
+                    signerCerts, digestAlgorithmId,
+                    signatureAlgorithmId);
+        } catch (Asn1EncodingException | CertificateEncodingException ex) {
+            throw new SignatureException("Failed to encode signature block");
         }
     }
 
-    /**
-     * Returns the PKCS #7 {@code DigestAlgorithm} to use when signing using the specified digest
-     * algorithm.
-     */
-    private static AlgorithmIdentifier getSignerInfoDigestAlgorithmOid(
-            DigestAlgorithm digestAlgorithm) {
-        switch (digestAlgorithm) {
-            case SHA1:
-                return new AlgorithmIdentifier(
-                        V1SchemeVerifier.Signer.OID_DIGEST_SHA1, ASN1_DER_NULL);
-            case SHA256:
-                return new AlgorithmIdentifier(
-                        V1SchemeVerifier.Signer.OID_DIGEST_SHA256, ASN1_DER_NULL);
-            default:
-                throw new RuntimeException("Unsupported digest algorithm: " + digestAlgorithm);
-        }
-    }
 
-    /**
-     * Returns the JCA {@link Signature} algorithm and PKCS #7 {@code SignatureAlgorithm} to use
-     * when signing with the specified key and digest algorithm.
-     */
-    private static Pair<String, AlgorithmIdentifier> getSignerInfoSignatureAlgorithm(
-            PublicKey publicKey, DigestAlgorithm digestAlgorithm) throws InvalidKeyException {
-        String keyAlgorithm = publicKey.getAlgorithm();
-        String jcaDigestPrefixForSigAlg;
-        switch (digestAlgorithm) {
-            case SHA1:
-                jcaDigestPrefixForSigAlg = "SHA1";
-                break;
-            case SHA256:
-                jcaDigestPrefixForSigAlg = "SHA256";
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "Unexpected digest algorithm: " + digestAlgorithm);
-        }
-        if ("RSA".equalsIgnoreCase(keyAlgorithm)) {
-            return Pair.of(
-                    jcaDigestPrefixForSigAlg + "withRSA",
-                    new AlgorithmIdentifier(V1SchemeVerifier.Signer.OID_SIG_RSA, ASN1_DER_NULL));
-        } else if ("DSA".equalsIgnoreCase(keyAlgorithm)) {
-            AlgorithmIdentifier sigAlgId;
-            switch (digestAlgorithm) {
-                case SHA1:
-                    sigAlgId =
-                            new AlgorithmIdentifier(
-                                    V1SchemeVerifier.Signer.OID_SIG_DSA, ASN1_DER_NULL);
-                    break;
-                case SHA256:
-                    // DSA signatures with SHA-256 in SignedData are accepted by Android API Level
-                    // 21 and higher. However, there are two ways to specify their SignedData
-                    // SignatureAlgorithm: dsaWithSha256 (2.16.840.1.101.3.4.3.2) and
-                    // dsa (1.2.840.10040.4.1). The latter works only on API Level 22+. Thus, we use
-                    // the former.
-                    sigAlgId =
-                            new AlgorithmIdentifier(
-                                    V1SchemeVerifier.Signer.OID_SIG_SHA256_WITH_DSA, ASN1_DER_NULL);
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            "Unexpected digest algorithm: " + digestAlgorithm);
-            }
-            return Pair.of(jcaDigestPrefixForSigAlg + "withDSA", sigAlgId);
-        } else if ("EC".equalsIgnoreCase(keyAlgorithm)) {
-            return Pair.of(
-                    jcaDigestPrefixForSigAlg + "withECDSA",
-                    new AlgorithmIdentifier(
-                            V1SchemeVerifier.Signer.OID_SIG_EC_PUBLIC_KEY, ASN1_DER_NULL));
-        } else {
-            throw new InvalidKeyException("Unsupported key algorithm: " + keyAlgorithm);
-        }
-    }
 
     private static String getEntryDigestAttributeName(DigestAlgorithm digestAlgorithm) {
         switch (digestAlgorithm) {

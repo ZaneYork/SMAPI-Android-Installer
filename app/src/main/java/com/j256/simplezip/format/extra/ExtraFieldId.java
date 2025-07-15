@@ -1,0 +1,62 @@
+package com.j256.simplezip.format.extra;
+
+/**
+ * Id of the extra byte information.
+ * 
+ * @author graywatson
+ */
+public enum ExtraFieldId {
+
+	ZIP64_EXTENDED(0x1),
+	AV_INFO(0x7),
+	FUTURE_UNICODE_NAME(0x8),
+	OS2(0x9),
+	NTFS(0xa),
+	OPENVMS(0xc),
+	UNIX(0xd),
+	RESERVED_FILE_STREAM(0xe),
+	PATCH_DESCRIPTOR(0xf),
+	X509_CERTIFICATE_STORE(0x14),
+	X509_CERTIFICATE_ID_FILE(0x15),
+	X509_CERTIFICATE_ID_CENTRAL(0x16),
+	STRONG_ENCRYPTION(0x17),
+	RECORD_MANAGEMENT(0x18),
+	ENCRYPTION_RECIPIENT(0x19),
+	IBM_ATTRIBUTES(0x65),
+	RESERVED_IBM_ATTRIBUTES(0x66),
+	// third party mappings commonly used
+	MACINTOSH(0x7c0),
+	ZIPIT_MACINTOSH(0x2605),
+	ZIPIT_MACINTOSH_135_1(0x2705),
+	ZIPIT_MACINTOSH_135_2(0x2805),
+	INFO_ZIP_MACINTOSH(0x334d),
+	ACORN(0x4341),
+	WINDOW_NT_SECURITY(0x4453),
+	VM_CMS(0x4704),
+	MVS(0x470f),
+	FWKCS_MD5(0x4b46),
+	OS2_ACCESS_CONTROL(0x4c41),
+	INFO_ZIP_OPENVMS(0x4d49),
+	XCEED_ORIGINAL_LOCATION(0x4f4c),
+	AOS_VS(0x5356),
+	EXTENDED_TIMESTAMP(0x5455),
+	XCEED_UNICODE(0x554e),
+	INFO_SIZE_UNIX(0x5855),
+	BEOS_BEBOX(0x6542),
+	ASI(0x756e),
+	INFO_ZIP_UNIX_NEW(0x7855),
+	SMS_QDOS(0xfd4a),
+
+	// end
+	;
+
+	private final int value;
+
+	private ExtraFieldId(int value) {
+		this.value = value;
+	}
+
+	public int getValue() {
+		return value;
+	}
+}

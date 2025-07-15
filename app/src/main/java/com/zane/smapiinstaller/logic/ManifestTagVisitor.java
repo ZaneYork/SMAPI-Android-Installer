@@ -1,5 +1,7 @@
 package com.zane.smapiinstaller.logic;
 
+import android.os.Build;
+
 import java.util.List;
 import java.util.function.Function;
 import pxb.android.axml.NodeVisitor;
@@ -20,7 +22,10 @@ public class ManifestTagVisitor extends NodeVisitor {
     @Override
     public void attr(String ns, String name, int resourceId, int type, Object obj) {
         AttrArgs attrArgs = new AttrArgs(ns, name, resourceId, type, obj);
-        List<AttrArgs> appendAttrs = attrProcessLogic.apply(attrArgs);
+        List<AttrArgs> appendAttrs = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            appendAttrs = attrProcessLogic.apply(attrArgs);
+        }
         super.attr(attrArgs.ns, attrArgs.name, attrArgs.resourceId, attrArgs.type, attrArgs.obj);
         if (appendAttrs != null) {
             for (AttrArgs attr : appendAttrs) {
@@ -32,7 +37,10 @@ public class ManifestTagVisitor extends NodeVisitor {
     @Override
     public NodeVisitor child(String ns, String name) {
         ChildArgs childArgs = new ChildArgs(ns, name, null);
-        List<ChildArgs> appendChild = childProcessLogic.apply(childArgs);
+        List<ChildArgs> appendChild = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            appendChild = childProcessLogic.apply(childArgs);
+        }
         NodeVisitor child = super.child(childArgs.ns, childArgs.name);
         if (appendChild != null) {
             for (ChildArgs c : appendChild) {

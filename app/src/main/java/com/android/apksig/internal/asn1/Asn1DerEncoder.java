@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2022 Muntashir Al-Islam
  * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,11 +18,9 @@
 package com.android.apksig.internal.asn1;
 
 import com.android.apksig.internal.asn1.ber.BerEncoding;
-import com.google.common.collect.Iterables;
-import com.zane.smapiinstaller.utils.ReflectionUtils;
+import com.android.apksig.internal.compat.ClassCompat;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
@@ -56,7 +55,7 @@ public final class Asn1DerEncoder {
      */
     public static byte[] encode(Object container) throws Asn1EncodingException {
         Class<?> containerClass = container.getClass();
-        Asn1Class containerAnnotation = ReflectionUtils.getDeclaredAnnotation(containerClass, Asn1Class.class);
+        Asn1Class containerAnnotation = ClassCompat.getDeclaredAnnotation(containerClass, Asn1Class.class);
         if (containerAnnotation == null) {
             throw new Asn1EncodingException(
                     containerClass.getName() + " not annotated with " + Asn1Class.class.getName());
@@ -219,7 +218,7 @@ public final class Asn1DerEncoder {
         Field[] declaredFields = containerClass.getDeclaredFields();
         List<AnnotatedField> result = new ArrayList<>(declaredFields.length);
         for (Field field : declaredFields) {
-            Asn1Field annotation = ReflectionUtils.getDeclaredAnnotation(field, Asn1Field.class);
+            Asn1Field annotation = field.getAnnotation(Asn1Field.class);
             if (annotation == null) {
                 continue;
             }
@@ -340,7 +339,7 @@ public final class Asn1DerEncoder {
             throws Asn1EncodingException {
         try {
             return field.get(obj);
-        } catch (ReflectiveOperationException e) {
+        } catch (IllegalAccessException e) {
             throw new Asn1EncodingException(
                     "Failed to read " + obj.getClass().getName() + "." + field.getName(), e);
         }
@@ -564,7 +563,7 @@ public final class Asn1DerEncoder {
                 case SEQUENCE:
                 {
                     Asn1Class containerAnnotation =
-                            ReflectionUtils.getDeclaredAnnotation(sourceType, Asn1Class.class);
+                            ClassCompat.getDeclaredAnnotation(sourceType, Asn1Class.class);
                     if ((containerAnnotation != null)
                             && (containerAnnotation.type() == Asn1Type.SEQUENCE)) {
                         return toSequence(source);
@@ -574,7 +573,7 @@ public final class Asn1DerEncoder {
                 case CHOICE:
                 {
                     Asn1Class containerAnnotation =
-                            ReflectionUtils.getDeclaredAnnotation(sourceType, Asn1Class.class);
+                            ClassCompat.getDeclaredAnnotation(sourceType, Asn1Class.class);
                     if ((containerAnnotation != null)
                             && (containerAnnotation.type() == Asn1Type.CHOICE)) {
                         return toChoice(source);
@@ -593,4 +592,7 @@ public final class Asn1DerEncoder {
                     "Unsupported conversion: " + sourceType.getName() + " to ASN.1 " + targetType);
         }
     }
+    /** ASN.1 DER-encoded {@code NULL}. */
+    public static final Asn1OpaqueObject ASN1_DER_NULL =
+            new Asn1OpaqueObject(new byte[] {BerEncoding.TAG_NUMBER_NULL, 0});
 }

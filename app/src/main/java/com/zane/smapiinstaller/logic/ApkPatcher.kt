@@ -88,9 +88,9 @@ class ApkPatcher(context: Context) {
      * 依次扫描package_names.json文件对应的包名，抽取找到的第一个游戏APK到SMAPI Installer路径
      *
      * @param advancedStage 0: 初始化，1: 高级安装，-1: 普通安装
-     * @return 抽取后的APK文件路径，如果抽取失败返回null
+     * @return 抽取后的APK文件路径列表，如果抽取失败返回null
      */
-    fun extract(advancedStage: Int): Tuple2<String, Array<String?>>? {
+    fun extract(advancedStage: Int): Tuple2<List<String>, Array<String?>>? {
         emitProgress(0)
         val packageManager = context.packageManager
         val packageNames = FileUtils.getAssetJson(
@@ -105,18 +105,44 @@ class ApkPatcher(context: Context) {
             return try {
                 val packageInfo = packageManager.getPackageInfo(packageName, 0)
                 val sourceDir = packageInfo.applicationInfo.publicSourceDir
+                val splitDirs = packageInfo.applicationInfo.splitSourceDirs
+
                 gamePackageName.set(CommonLogic.computePackageName(packageInfo))
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     gameVersionCode.set(packageInfo.longVersionCode)
                 } else {
                     gameVersionCode.set(packageInfo.versionCode.toLong())
                 }
-                val apkFile = File(sourceDir)
+
                 val stadewValleyBasePath = FileUtils.stadewValleyBasePath
+                val destDir = File("$stadewValleyBasePath/SMAPI Installer/")
+                if (!destDir.exists()) {
+                    destDir.mkdirs()
+                }
+
+                // 收集所有APK文件路径（主APK + 拆分APK）
+                val allApkPaths = mutableListOf<String>()
+                allApkPaths.add(sourceDir)
+                splitDirs?.forEach { if (it != null) allApkPaths.add(it) }
+
+                // 将所有APK文件复制到目标目录
+                allApkPaths.forEachIndexed { index, apkPath ->
+                    val srcFile = File(apkPath)
+                    val destFile = File(destDir, "base_${index}.apk")
+                    srcFile.copyTo(destFile, overwrite = true)
+                    emitProgress(10 + (index * 80 / allApkPaths.size))
+                }
+
+                // 返回复制后的APK文件路径列表
+                val copiedApkPaths = allApkPaths.mapIndexed { index, _ ->
+                    File(destDir, "base_${index}.apk").absolutePath
+                }
+
                 if (advancedStage == 0) {
+                    // 初始化阶段提取资源
                     val count = AtomicInteger()
                     ZipUtil.unpack(
-                        apkFile, File("$stadewValleyBasePath/StardewValley/")
+                        File(sourceDir), File("$stadewValleyBasePath/StardewValley/")
                     ) { name ->
                         if (name.startsWith("assets/")) {
                             val progress = count.incrementAndGet()
@@ -127,26 +153,15 @@ class ApkPatcher(context: Context) {
                         }
                         null
                     }
-                    return Tuple2(apkFile.absolutePath, arrayOfNulls(0))
                 } else if (advancedStage == 1) {
+                    // 高级安装阶段确保资源存在
                     val contentFolder = File("$stadewValleyBasePath/StardewValley/Content")
-                    if (contentFolder.exists()) {
-                        if (!contentFolder.isDirectory) {
-                            errorMessage.set(
-                                context.getString(
-                                    R.string.error_directory_exists_with_same_filename,
-                                    contentFolder.absolutePath
-                                )
-                            )
-                            return null
-                        }
-                    } else {
+                    if (!contentFolder.exists()) {
                         extract(0)
                     }
-                    return Tuple2(apkFile.absolutePath, arrayOfNulls(0))
                 }
-                emitProgress(5)
-                Tuple2(apkFile.absolutePath, packageInfo.applicationInfo.splitSourceDirs)
+
+                Tuple2(copiedApkPaths, arrayOfNulls(0))
             } catch (ignored: PackageManager.NameNotFoundException) {
                 null
             }
@@ -155,337 +170,9 @@ class ApkPatcher(context: Context) {
         return null
     }
 
-    /**
-     * 将指定APK文件重新打包，添加SMAPI，修改AndroidManifest.xml，同时验证版本是否正确
-     *
-     * @param apkPath    APK文件路径
-     * @param targetFile 目标文件
-     * @param isAdvanced 是否高级模式
-     * @return 是否成功打包
-     */
-    fun patch(
-        apkPath: String?,
-        resourcePacks: Array<String?>?,
-        targetFile: File,
-        isAdvanced: Boolean,
-        isResourcePack: Boolean
-    ): Boolean {
-        if (apkPath == null) {
-            return false
-        }
-        val file = File(apkPath)
-        if (!file.exists()) {
-            return false
-        }
-        try {
-            val manifest = ZipUtil.unpackEntry(file, "AndroidManifest.xml")
-            emitProgress(9)
-            val apkFilesManifests = CommonLogic.findAllApkFileManifest(context)
-            val modifiedManifest = modifyManifest(manifest, apkFilesManifests)
-            if (apkFilesManifests.isEmpty()) {
-                errorMessage.set(context.getString(R.string.error_no_supported_game_version))
-                switchAction.set(R.string.menu_download)
-                return false
-            }
-            if (modifiedManifest == null) {
-                errorMessage.set(context.getString(R.string.failed_to_process_manifest))
-                return false
-            }
-            val apkFilesManifest = apkFilesManifests[0]
-            val manifestEntries = apkFilesManifest.manifestEntries
-            errorMessage.set(null)
-            val entries: MutableList<ZipUtils.ZipEntrySource> =
-                if (isResourcePack) ArrayList() else manifestEntries.mapNotNull { entry ->
-                    processFileEntry(
-                        file, apkFilesManifest, entry, isAdvanced
-                    )
-                }.flatMap { list -> list.asList() }.filterNotNull().distinct().toMutableList()
-            entries.add(
-                ZipUtils.ZipEntrySource(
-                    "AndroidManifest.xml", modifiedManifest, Deflater.DEFLATED
-                )
-            )
-            emitProgress(10)
-            val baseProgress = 10
-            stopwatch.reset()
-            stopwatch.start()
-            originSignInfo = ZipUtils.addOrReplaceEntries(apkPath,
-                resourcePacks,
-                entries,
-                targetFile.absolutePath,
-                { entryName ->
-                    entryName.startsWith("assemblies/assemblies.") || isAdvanced && entryName.startsWith(
-                        "assets/Content"
-                    )
-                }) { progress -> emitProgress((baseProgress + progress / 100.0 * 35).toInt()) }
-            stopwatch.stop()
-            emitProgress(46)
-            return true
-        } catch (e: Exception) {
-            Log.e(TAG, "Patch error", e)
-            errorMessage.set(e.localizedMessage)
-        }
-        return false
-    }
 
-    private fun processFileEntry(
-        apkFile: File,
-        apkFilesManifest: ApkFilesManifest?,
-        entry: ManifestEntry,
-        isAdvanced: Boolean
-    ): Array<ZipUtils.ZipEntrySource?>? {
-        if (entry.isAdvanced && !isAdvanced) {
-            return null
-        }
-        if (entry.targetPath.endsWith(Constants.FILE_SEPARATOR)) {
-            if (entry.isXABA) {
-                val manifestBytes = ZipUtil.unpackEntry(apkFile, entry.assetPath + ".manifest")
-                val xabaBytes = ZipUtil.unpackEntry(apkFile, entry.assetPath + ".blob")
-                val unpackedAssemblies = ZipUtils.unpackXABA(manifestBytes, xabaBytes)
-                val list = ArrayList<ZipUtils.ZipEntrySource?>()
-                unpackedAssemblies.forEach { (filename, bytes) ->
-                    list.add(
-                        ZipUtils.ZipEntrySource(
-                            entry.targetPath + filename, bytes, entry.compression
-                        )
-                    )
-                }
-                return list.toTypedArray()
-            } else if (entry.assetPath.contains("*")) {
-                val path =
-                    StringUtils.substringBeforeLast(entry.assetPath, Constants.FILE_SEPARATOR)
-                val pattern =
-                    StringUtils.substringAfterLast(entry.assetPath, Constants.FILE_SEPARATOR)
-                try {
-                    return if (entry.origin == 1) {
-                        val list = ArrayList<ZipUtils.ZipEntrySource?>()
-                        ZipUtil.iterate(apkFile) { inputStream, zipEntry ->
-                            val entryPath = StringUtils.substringBeforeLast(
-                                zipEntry.name, Constants.FILE_SEPARATOR
-                            )
-                            val filename = StringUtils.substringAfterLast(
-                                zipEntry.name, Constants.FILE_SEPARATOR
-                            )
-                            if (entryPath == path && StringUtils.wildCardMatch(filename, pattern)) {
-                                val bytes = ByteStreams.toByteArray(inputStream)
-                                val source: ZipUtils.ZipEntrySource
-                                source = if (entry.isXALZ) {
-                                    ZipUtils.ZipEntrySource(
-                                        entry.targetPath + filename, entry.compression
-                                    ) {
-                                        ByteArrayInputStream(
-                                            ZipUtils.decompressXALZ(bytes)
-                                        )
-                                    }
-                                } else {
-                                    ZipUtils.ZipEntrySource(
-                                        entry.targetPath + filename, bytes, entry.compression
-                                    )
-                                }
-                                list.add(source)
-                            }
-                        }
-                        list.toTypedArray()
-                    } else {
-                        context.assets.list(path)?.filter { filename ->
-                            StringUtils.wildCardMatch(
-                                filename, pattern
-                            )
-                        }?.map { filename ->
-                            ZipUtils.ZipEntrySource(
-                                entry.targetPath + filename, entry.compression
-                            ) {
-                                try {
-                                    FileUtils.getLocalAsset(
-                                        context, path + Constants.FILE_SEPARATOR + filename
-                                    )
-                                } catch (ignored: IOException) {
-                                    null
-                                }
-                            }
-                        }?.toTypedArray()
-                    }
-                } catch (ignored: IOException) {
-                }
-            }
-            return null
-        }
-        val source: ZipUtils.ZipEntrySource
-        if (entry.origin == 1) {
-            val unpackEntryBytes = ZipUtil.unpackEntry(apkFile, entry.assetPath)
-            source = if (entry.isXALZ) {
-                ZipUtils.ZipEntrySource(entry.targetPath, entry.compression) {
-                    ByteArrayInputStream(
-                        ZipUtils.decompressXALZ(unpackEntryBytes)
-                    )
-                }
-            } else {
-                ZipUtils.ZipEntrySource(entry.targetPath, unpackEntryBytes, entry.compression)
-            }
-        } else {
-            source = ZipUtils.ZipEntrySource(entry.targetPath, entry.compression) {
-                var inputStream: InputStream? = null
-                try {
-                    inputStream = if (entry.isExternal) {
-                        FileUtils.getLocalAsset(
-                            context, apkFilesManifest!!.basePath + entry.assetPath
-                        )
-                    } else {
-                        FileUtils.getLocalAsset(context, entry.assetPath)
-                    }
-                } catch (ignored: IOException) {
-                }
-                if (StringUtils.isNoneBlank(entry.patchCrc)) {
-                    throw NotImplementedException("bs patch mode is not supported anymore.")
-                }
-                inputStream
-            }
-        }
-        return arrayOf(source)
-    }
 
-    /**
-     * 扫描全部兼容包，寻找匹配的版本，修改AndroidManifest.xml文件
-     *
-     * @param bytes     AndroidManifest.xml的字节数组
-     * @param manifests 兼容包列表
-     * @return 修改后的AndroidManifest.xml的字节数组
-     */
-    private fun modifyManifest(
-        bytes: ByteArray, manifests: MutableList<ApkFilesManifest>
-    ): ByteArray? {
-        val packageName = AtomicReference<String?>()
-        val versionName = AtomicReference<String?>()
-        val versionCode = AtomicLong()
-        val attrProcessLogic = { attr: AttrArgs? ->
-            when {
-                attr == null -> {
-                }
 
-                attr.type == NodeVisitor.TYPE_STRING -> {
-                    val strObj = attr.obj as String
-                    when (attr.name) {
-                        "package" -> if (packageName.get() == null) {
-                            packageName.set(strObj)
-                            attr.obj = strObj.replace(
-                                ManifestPatchConstants.APP_PACKAGE_NAME,
-                                Constants.TARGET_PACKAGE_NAME
-                            )
-                        }
-
-                        ManifestPatchConstants.PATTERN_VERSION_NAME -> if (versionName.get() == null) {
-                            versionName.set(attr.obj as String)
-                        }
-
-                        "label" -> if (strObj.contains(ManifestPatchConstants.APP_NAME)) {
-                            if (StringUtils.isBlank(Constants.PATCHED_APP_NAME)) {
-                                attr.obj = context.getString(R.string.smapi_game_name)
-                            } else {
-                                attr.obj = Constants.PATCHED_APP_NAME!!
-                            }
-                            //                            return Collections.singletonList(new ManifestTagVisitor.AttrArgs(attr.ns, "requestLegacyExternalStorage", -1, NodeVisitor.TYPE_INT_BOOLEAN, true));
-                        }
-
-                        "authorities" -> {
-                            if (strObj.contains(packageName.get()!!)) {
-                                attr.obj = strObj.replace(
-                                    packageName.get()!!, Constants.TARGET_PACKAGE_NAME
-                                )
-                            } else if (strObj.contains(ManifestPatchConstants.APP_PACKAGE_NAME)) {
-                                attr.obj = strObj.replace(
-                                    ManifestPatchConstants.APP_PACKAGE_NAME,
-                                    Constants.TARGET_PACKAGE_NAME
-                                )
-                            }
-                            if (strObj.contains(ManifestPatchConstants.PATTERN_MAIN_ACTIVITY)) {
-                                if (versionCode.get() > Constants.MONO_10_VERSION_CODE) {
-                                    attr.obj = strObj.replaceFirst(
-                                        "\\w+\\.MainActivity".toRegex(),
-                                        "crc648e5438a58262f792.SMainActivity"
-                                    )
-                                } else {
-                                    attr.obj = strObj.replaceFirst(
-                                        "\\w+\\.MainActivity".toRegex(),
-                                        "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity"
-                                    )
-                                }
-                            }
-                        }
-
-                        "name" -> if (strObj.contains(ManifestPatchConstants.PATTERN_MAIN_ACTIVITY)) {
-                            if (versionCode.get() > Constants.MONO_10_VERSION_CODE) {
-                                attr.obj = strObj.replaceFirst(
-                                    "\\w+\\.MainActivity".toRegex(),
-                                    "crc648e5438a58262f792.SMainActivity"
-                                )
-                            } else {
-                                attr.obj = strObj.replaceFirst(
-                                    "\\w+\\.MainActivity".toRegex(),
-                                    "md5723872fa9a204f7f942686e9ed9d0b7d.SMainActivity"
-                                )
-                            }
-                        }
-
-                        else -> {}
-                    }
-                }
-
-                attr.type == NodeVisitor.TYPE_FIRST_INT -> {
-                    if (StringUtils.equals(
-                            attr.name, ManifestPatchConstants.PATTERN_VERSION_CODE
-                        )
-                    ) {
-                        versionCode.set((attr.obj as Int).toLong())
-                    }
-                }
-
-                attr.type == NodeVisitor.TYPE_INT_BOOLEAN -> {
-                    if (StringUtils.equals(
-                            attr.name, ManifestPatchConstants.PATTERN_EXTRACT_NATIVE_LIBS
-                        )
-                    ) {
-                        attr.obj = true
-                    }
-                }
-            }
-            null
-        }
-        val permissionAppended = AtomicReference(true)
-        val childProcessLogic = { child: ChildArgs ->
-            if (!permissionAppended.get() && StringUtils.equals(child.name, "uses-permission")) {
-                permissionAppended.set(true)
-                listOf(
-                    ChildArgs(
-                        child.ns, child.name, listOf(
-                            AttrArgs(
-                                "http://schemas.android.com/apk/res/android",
-                                "name",
-                                -1,
-                                NodeVisitor.TYPE_STRING,
-                                "android.permission.MANAGE_EXTERNAL_STORAGE"
-                            )
-                        )
-                    )
-                )
-            }
-            null
-        }
-        return try {
-            val modifyManifest =
-                ManifestUtil.modifyManifest(bytes, attrProcessLogic, childProcessLogic)
-            if (StringUtils.endsWith(
-                    versionName.get(), ManifestPatchConstants.PATTERN_VERSION_AMAZON
-                )
-            ) {
-                packageName.set(ManifestPatchConstants.APP_PACKAGE_NAME + ManifestPatchConstants.PATTERN_VERSION_AMAZON)
-            }
-            CommonLogic.filterManifest(manifests, packageName.get(), versionCode.get())
-            modifyManifest
-        } catch (e: Exception) {
-            errorMessage.set(e.localizedMessage)
-            null
-        }
-    }
 
     /**
      * 重新签名安装包

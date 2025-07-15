@@ -23,6 +23,7 @@ import com.android.apksig.apk.ApkUtils;
 import com.android.apksig.internal.apk.ApkSigningBlockUtils;
 import com.android.apksig.internal.apk.SignatureAlgorithm;
 import com.android.apksig.internal.apk.SignatureInfo;
+import com.android.apksig.internal.apk.v3.V3SchemeConstants;
 import com.android.apksig.internal.apk.v3.V3SchemeSigner;
 import com.android.apksig.internal.apk.v3.V3SigningCertificateLineage;
 import com.android.apksig.internal.apk.v3.V3SigningCertificateLineage.SigningCertificateNode;
@@ -123,6 +124,11 @@ public class SigningCertificateLineage {
         return signingCertificateLineage.spawnDescendant(parent, child, childCapabilities);
     }
 
+    public static SigningCertificateLineage readFromBytes(byte[] lineageBytes)
+            throws IOException {
+        return readFromDataSource(DataSources.asDataSource(ByteBuffer.wrap(lineageBytes)));
+    }
+
     public static SigningCertificateLineage readFromFile(File file)
             throws IOException {
         if (file == null) {
@@ -185,41 +191,62 @@ public class SigningCertificateLineage {
      */
     public static SigningCertificateLineage readFromApkDataSource(DataSource apk)
             throws IOException, ApkFormatException {
-        SignatureInfo signatureInfo;
+        ApkUtils.ZipSections zipSections;
         try {
-            ApkUtils.ZipSections zipSections = ApkUtils.findZipSections(apk);
-            ApkSigningBlockUtils.Result result = new ApkSigningBlockUtils.Result(
-                    ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3);
-            signatureInfo =
-                    ApkSigningBlockUtils.findSignature(apk, zipSections,
-                            V3SchemeSigner.APK_SIGNATURE_SCHEME_V3_BLOCK_ID, result);
+            zipSections = ApkUtils.findZipSections(apk);
         } catch (ZipFormatException e) {
             throw new ApkFormatException(e.getMessage());
-        } catch (ApkSigningBlockUtils.SignatureNotFoundException e) {
+        }
+
+        List<SignatureInfo> signatureInfoList = new ArrayList<>();
+        try {
+            ApkSigningBlockUtils.Result result = new ApkSigningBlockUtils.Result(
+                    ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V31);
+            signatureInfoList.add(
+                    ApkSigningBlockUtils.findSignature(apk, zipSections,
+                            V3SchemeConstants.APK_SIGNATURE_SCHEME_V31_BLOCK_ID, result));
+        }
+        catch (ApkSigningBlockUtils.SignatureNotFoundException ignored) {
+            // This could be expected if there's only a V3 signature block.
+        }
+        try {
+            ApkSigningBlockUtils.Result result = new ApkSigningBlockUtils.Result(
+                    ApkSigningBlockUtils.VERSION_APK_SIGNATURE_SCHEME_V3);
+            signatureInfoList.add(
+                    ApkSigningBlockUtils.findSignature(apk, zipSections,
+                            V3SchemeConstants.APK_SIGNATURE_SCHEME_V3_BLOCK_ID, result));
+        }
+        catch (ApkSigningBlockUtils.SignatureNotFoundException ignored) {
+            // This could be expected if the provided APK is not signed with the v3 signature scheme
+        }
+        if (signatureInfoList.isEmpty()) {
             throw new IllegalArgumentException(
                     "The provided APK does not contain a valid V3 signature block.");
         }
 
-        // FORMAT:
-        // * length-prefixed sequence of length-prefixed signers:
-        //   * length-prefixed signed data
-        //   * minSDK
-        //   * maxSDK
-        //   * length-prefixed sequence of length-prefixed signatures
-        //   * length-prefixed public key
-        ByteBuffer signers = getLengthPrefixedSlice(signatureInfo.signatureBlock);
         List<SigningCertificateLineage> lineages = new ArrayList<>(1);
-        while (signers.hasRemaining()) {
-            ByteBuffer signer = getLengthPrefixedSlice(signers);
-            ByteBuffer signedData = getLengthPrefixedSlice(signer);
-            try {
-                SigningCertificateLineage lineage = readFromSignedData(signedData);
-                lineages.add(lineage);
-            } catch (IllegalArgumentException ignored) {
-                // The current signer block does not contain a valid lineage, but it is possible
-                // another block will.
+        for (SignatureInfo signatureInfo : signatureInfoList) {
+            // FORMAT:
+            // * length-prefixed sequence of length-prefixed signers:
+            //   * length-prefixed signed data
+            //   * minSDK
+            //   * maxSDK
+            //   * length-prefixed sequence of length-prefixed signatures
+            //   * length-prefixed public key
+            ByteBuffer signers = getLengthPrefixedSlice(signatureInfo.signatureBlock);
+            while (signers.hasRemaining()) {
+                ByteBuffer signer = getLengthPrefixedSlice(signers);
+                ByteBuffer signedData = getLengthPrefixedSlice(signer);
+                try {
+                    SigningCertificateLineage lineage = readFromSignedData(signedData);
+                    lineages.add(lineage);
+                } catch (IllegalArgumentException ignored) {
+                    // The current signer block does not contain a valid lineage, but it is possible
+                    // another block will.
+                }
             }
         }
+
         SigningCertificateLineage result;
         if (lineages.isEmpty()) {
             throw new IllegalArgumentException(
@@ -263,7 +290,7 @@ public class SigningCertificateLineage {
         while (additionalAttributes.hasRemaining()) {
             ByteBuffer attribute = getLengthPrefixedSlice(additionalAttributes);
             int id = attribute.getInt();
-            if (id == V3SchemeSigner.PROOF_OF_ROTATION_ATTR_ID) {
+            if (id == V3SchemeConstants.PROOF_OF_ROTATION_ATTR_ID) {
                 byte[] value = ByteBufferUtils.toByteArray(attribute);
                 SigningCertificateLineage lineage = readFromV3AttributeValue(value);
                 lineages.add(lineage);
@@ -280,6 +307,10 @@ public class SigningCertificateLineage {
             result = lineages.get(0);
         }
         return result;
+    }
+
+    public byte[] getBytes() {
+        return write().array();
     }
 
     public void writeToFile(File file) throws IOException {
@@ -401,7 +432,8 @@ public class SigningCertificateLineage {
 
         // TODO switch to one signature algorithm selection, or add support for multiple algorithms
         List<SignatureAlgorithm> algorithms = V3SchemeSigner.getSuggestedSignatureAlgorithms(
-                publicKey, mMinSdkVersion, false /* padding support */);
+                publicKey, mMinSdkVersion, false /* verityEnabled */,
+                false /* deterministicDsaSigning */);
         return algorithms.get(0);
     }
 
@@ -452,7 +484,7 @@ public class SigningCertificateLineage {
                     return new SigningCertificateLineage(minSdkVersion, nodes);
                 } catch (ApkFormatException e) {
                     // unable to get a proper length-prefixed lineage slice
-                    throw new IOException("Unable to read list of signing certificate nodes in "
+                    throw new RuntimeException("Unable to read list of signing certificate nodes in "
                             + "SigningCertificateLineage", e);
                 }
             default:
@@ -491,20 +523,8 @@ public class SigningCertificateLineage {
         return result;
     }
 
-    public byte[] generateV3SignerAttribute() {
-        // FORMAT (little endian):
-        // * length-prefixed bytes: attribute pair
-        //   * uint32: ID
-        //   * bytes: value - encoded V3 SigningCertificateLineage
-        byte[] encodedLineage =
-                V3SigningCertificateLineage.encodeSigningCertificateLineage(mSigningLineage);
-        int payloadSize = 4 + 4 + encodedLineage.length;
-        ByteBuffer result = ByteBuffer.allocate(payloadSize);
-        result.order(ByteOrder.LITTLE_ENDIAN);
-        result.putInt(4 + encodedLineage.length);
-        result.putInt(V3SchemeSigner.PROOF_OF_ROTATION_ATTR_ID);
-        result.put(encodedLineage);
-        return result.array();
+    public byte[] encodeSigningCertificateLineage() {
+        return V3SigningCertificateLineage.encodeSigningCertificateLineage(mSigningLineage);
     }
 
     public List<DefaultApkSignerEngine.SignerConfig> sortSignerConfigs(

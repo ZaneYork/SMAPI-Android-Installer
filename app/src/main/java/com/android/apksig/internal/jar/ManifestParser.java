@@ -16,6 +16,9 @@
 
 package com.android.apksig.internal.jar;
 
+import android.os.Build;
+import android.text.TextUtils;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,14 +83,14 @@ public class ManifestParser {
             if (attr == null) {
                 return null;
             }
-        } while (attr.length() == 0);
+        } while (TextUtils.isEmpty(attr));
         List<Attribute> attrs = new ArrayList<>();
         attrs.add(parseAttr(attr));
 
         // Read attributes until end of section reached
         while (true) {
             attr = readAttribute();
-            if ((attr == null) || (attr.length() == 0)) {
+            if (TextUtils.isEmpty(attr)) {
                 // End of section
                 break;
             }
@@ -248,7 +251,14 @@ public class ManifestParser {
         if (newlineStartOffset == startOffset) {
             return EMPTY_BYTE_ARRAY;
         }
-        return Arrays.copyOfRange(mManifest, startOffset, newlineStartOffset);
+        if(Build.VERSION.SDK_INT > 8) return Arrays.copyOfRange(mManifest, startOffset, newlineStartOffset);
+        else {
+            int newLength = startOffset - newlineStartOffset;
+            byte[] copy = new byte[newLength];
+            System.arraycopy(mManifest, startOffset, copy, 0,
+                    Math.min(mManifest.length - startOffset, newLength));
+            return copy;
+        }
     }
 
 

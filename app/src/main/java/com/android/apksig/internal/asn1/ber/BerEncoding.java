@@ -16,6 +16,8 @@
 
 package com.android.apksig.internal.asn1.ber;
 
+import android.text.TextUtils;
+
 import com.android.apksig.internal.asn1.Asn1Type;
 import com.android.apksig.internal.asn1.Asn1TagClass;
 
@@ -159,7 +161,7 @@ public abstract class BerEncoding {
     public static String tagClassAndNumberToString(int tagClass, int tagNumber) {
         String classString = tagClassToString(tagClass);
         String numberString = tagNumberToString(tagNumber);
-        return classString.isEmpty() ? numberString : classString + " " + numberString;
+        return TextUtils.isEmpty(classString) ? numberString : classString + " " + numberString;
     }
 
 

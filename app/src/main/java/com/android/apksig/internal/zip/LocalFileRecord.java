@@ -16,6 +16,7 @@
 
 package com.android.apksig.internal.zip;
 
+import com.aefyr.pseudoapksigner.Constants;
 import com.android.apksig.internal.util.ByteBufferSink;
 import com.android.apksig.util.DataSink;
 import com.android.apksig.util.DataSource;
@@ -24,7 +25,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -162,7 +162,7 @@ public class LocalFileRecord {
         try {
             header = apk.getByteBuffer(headerStartOffset, headerSizeWithName);
         } catch (IOException e) {
-            throw new IOException("Failed to read Local File Header of " + entryName, e);
+            throw new RuntimeException("Failed to read Local File Header of " + entryName, e);
         }
         header.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -174,14 +174,8 @@ public class LocalFileRecord {
         }
         short gpFlags = header.getShort(GP_FLAGS_OFFSET);
         boolean dataDescriptorUsed = (gpFlags & ZipUtils.GP_FLAG_DATA_DESCRIPTOR_USED) != 0;
-        boolean cdDataDescriptorUsed =
-                (cdRecord.getGpFlags() & ZipUtils.GP_FLAG_DATA_DESCRIPTOR_USED) != 0;
-        if (dataDescriptorUsed != cdDataDescriptorUsed) {
-            throw new ZipFormatException(
-                    "Data Descriptor presence mismatch between Local File Header and Central"
-                            + " Directory for entry " + entryName
-                            + ". LFH: " + dataDescriptorUsed + ", CD: " + cdDataDescriptorUsed);
-        }
+        //boolean cdDataDescriptorUsed = (cdRecord.getGpFlags() & ZipUtils.GP_FLAG_DATA_DESCRIPTOR_USED) != 0;
+        //if (dataDescriptorUsed != cdDataDescriptorUsed) throw new ZipFormatException("Data Descriptor presence mismatch between Local File Header and Central" + " Directory for entry " + entryName + ". LFH: " + dataDescriptorUsed + ", CD: " + cdDataDescriptorUsed);
         long uncompressedDataCrc32FromCdRecord = cdRecord.getCrc32();
         long compressedDataSizeFromCdRecord = cdRecord.getCompressedSize();
         long uncompressedDataSizeFromCdRecord = cdRecord.getUncompressedSize();
@@ -341,7 +335,7 @@ public class LocalFileRecord {
             long crc32,
             long uncompressedSize,
             DataSink output) throws IOException {
-        byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
+        byte[] nameBytes = name.getBytes(Constants.UTF8);
         int recordSize = HEADER_SIZE_BYTES + nameBytes.length;
         ByteBuffer result = ByteBuffer.allocate(recordSize);
         result.order(ByteOrder.LITTLE_ENDIAN);
@@ -376,7 +370,7 @@ public class LocalFileRecord {
      */
     public void outputUncompressedData(
             DataSource lfhSection,
-            DataSink sink) throws IOException, ZipFormatException {
+            DataSink sink) throws ZipFormatException {
         long dataStartOffsetInArchive = mStartOffsetInArchive + mDataStartOffset;
         try {
             if (mDataCompressed) {
@@ -401,7 +395,7 @@ public class LocalFileRecord {
                 // guaranteed to output exactly the number of bytes requested.
             }
         } catch (IOException e) {
-            throw new IOException(
+            throw new RuntimeException(
                     "Failed to read data of " + ((mDataCompressed) ? "compressed" : "uncompressed")
                         + " entry " + mName,
                     e);
@@ -442,7 +436,7 @@ public class LocalFileRecord {
             CentralDirectoryRecord cdRecord,
             long cdStartOffsetInArchive) throws ZipFormatException, IOException {
         if (cdRecord.getUncompressedSize() > Integer.MAX_VALUE) {
-            throw new IOException(
+            throw new RuntimeException(
                     cdRecord.getName() + " too large: " + cdRecord.getUncompressedSize());
         }
         byte[] result = new byte[(int) cdRecord.getUncompressedSize()];
@@ -485,7 +479,7 @@ public class LocalFileRecord {
                 try {
                     outputChunkSize = mInflater.inflate(mOutputBuffer);
                 } catch (DataFormatException e) {
-                    throw new IOException("Failed to inflate data", e);
+                    throw new RuntimeException("Failed to inflate data", e);
                 }
                 if (outputChunkSize == 0) {
                     return;
@@ -518,7 +512,7 @@ public class LocalFileRecord {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             mClosed = true;
             mInputBuffer = null;
             mOutputBuffer = null;

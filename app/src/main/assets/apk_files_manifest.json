@@ -11,32 +11,56 @@
       "external": false
     },
     {
-      "targetPath": "res/mipmap-mdpi-v4/ic_launcher_foreground.png",
-      "assetPath": "apk/ic_launcher_foreground.png",
+      "targetPath": "AndroidManifest.xml",
+      "assetPath": "apk/AndroidManifest.xml",
       "compression": 8,
       "external": false
     },
     {
-      "targetPath": "res/mipmap-hdpi-v4/ic_launcher_foreground.png",
-      "assetPath": "apk/ic_launcher_foreground.png",
+      "targetPath": "resources.arsc",
+      "assetPath": "apk/resources.arsc",
       "compression": 8,
       "external": false
     },
     {
-      "targetPath": "res/mipmap-xhdpi-v4/ic_launcher_foreground.png",
-      "assetPath": "apk/ic_launcher_foreground.png",
+      "targetPath": "res/mipmap/ic_launcher.png",
+      "assetPath": "apk/res/mipmap/ic_launcher.png",
       "compression": 8,
       "external": false
     },
     {
-      "targetPath": "res/mipmap-xxhdpi-v4/ic_launcher_foreground.png",
-      "assetPath": "apk/ic_launcher_foreground.png",
+      "targetPath": "res/drawable/ic_launcher.png",
+      "assetPath": "apk/res/drawable/ic_launcher.png",
       "compression": 8,
       "external": false
     },
     {
-      "targetPath": "res/mipmap-xxxhdpi-v4/ic_launcher_foreground.png",
-      "assetPath": "apk/ic_launcher_foreground.png",
+      "targetPath": "res/drawable/screen.png",
+      "assetPath": "apk/res/drawable/screen.png",
+      "compression": 8,
+      "external": false
+    },
+    {
+      "targetPath": "res/drawable/splash_logos.png",
+      "assetPath": "apk/res/drawable/splash_logos.png",
+      "compression": 8,
+      "external": false
+    },
+    {
+      "targetPath": "res/drawable/splash_logos_crop.png",
+      "assetPath": "apk/res/drawable/splash_logos_crop.png",
+      "compression": 8,
+      "external": false
+    },
+    {
+      "targetPath": "res/drawable/splash_screen.xml",
+      "assetPath": "apk/res/drawable/splash_screen.xml",
+      "compression": 8,
+      "external": false
+    },
+    {
+      "targetPath": "res/drawable/splash_screen_tencent.xml",
+      "assetPath": "apk/res/drawable/splash_screen_tencent.xml",
       "compression": 8,
       "external": false
     },
