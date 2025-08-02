@@ -1,0 +1,21 @@
+name: Android CI
+on:
+  push:
+    tags: [v*]  # 根据 tag 触发构建
+  pull_request: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4  # 检出代码
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'       # 推荐 JDK 17
+      - name: Build APK
+        run: ./gradlew assembleRelease  # 执行 Gradle 打包:cite[1]:cite[2]
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.apk
+          path: app/build/outputs/apk/release/aaa.apk  # 上传生成的 APK:cite[5]
